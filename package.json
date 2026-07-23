@@ -1,0 +1,18 @@
+{
+  "name": "stc-competitor-dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node scripts/start-next.mjs",
+    "live-server": "node scripts/live-fetch-server.mjs"
+  },
+  "dependencies": {
+    "next": "^16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "lucide-react": "^1.21.0",
+    "playwright": "^1.61.1",
+    "sharp": "^0.34.5"
+  }
+}
