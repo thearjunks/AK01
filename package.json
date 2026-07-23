@@ -7,8 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node scripts/start-next.mjs",
-    "live-server": "node scripts/live-fetch-server.mjs"
+    "start": "node scripts/start-next.mjs"
   },
   "dependencies": {
     "next": "^16.2.10",

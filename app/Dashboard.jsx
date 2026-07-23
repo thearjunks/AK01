@@ -62,9 +62,7 @@ const offerCategories = [
 ];
 
 function apiUrl(path) {
-  if (typeof window === 'undefined') return path;
-  const localHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  return `${localHost ? 'http://127.0.0.1:8787' : ''}${path}`;
+  return path;
 }
 
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
