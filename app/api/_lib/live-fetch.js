@@ -9,6 +9,14 @@ const plansDataPath = join(root, 'public', 'data', 'plans.json');
 const devicesDataPath = join(root, 'public', 'data', 'devices.json');
 
 let socialFetchPromise = null;
+let adsFetchPromise = null;
+let adsFetchJob = {
+  state: 'idle',
+  message: 'No live ad refresh is currently running.',
+  started_at: '',
+  finished_at: '',
+  count: 0,
+};
 
 function normalizePayload(payload) {
   const records = Array.isArray(payload) ? payload : payload.data || payload.ads || [];
@@ -88,6 +96,52 @@ export async function fetchFromProvider() {
   const payload = normalizePayload(await response.json());
   await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
   return { ok: true, message: `Fetched ${payload.data.length} live records.`, payload };
+}
+
+export function getAdsFetchJob() {
+  return { ...adsFetchJob };
+}
+
+export function startAdsFetchJob() {
+  if (adsFetchPromise) {
+    return { accepted: false, job: getAdsFetchJob() };
+  }
+
+  adsFetchJob = {
+    state: 'running',
+    message: 'Fetching live ads from the configured Meta Ads Library pages.',
+    started_at: new Date().toISOString(),
+    finished_at: '',
+    count: 0,
+  };
+
+  adsFetchPromise = fetchFromProvider()
+    .then((result) => {
+      if (!result?.ok) throw new Error(result?.error || 'Live ad refresh failed.');
+      const count = result.payload?.data?.length || 0;
+      adsFetchJob = {
+        state: 'complete',
+        message: result.message || `Live refresh completed with ${count} ads.`,
+        started_at: adsFetchJob.started_at,
+        finished_at: new Date().toISOString(),
+        count,
+      };
+    })
+    .catch((error) => {
+      console.error(`[fetch-live] background refresh failed: ${error.message}`);
+      adsFetchJob = {
+        state: 'error',
+        message: error.message,
+        started_at: adsFetchJob.started_at,
+        finished_at: new Date().toISOString(),
+        count: 0,
+      };
+    })
+    .finally(() => {
+      adsFetchPromise = null;
+    });
+
+  return { accepted: true, job: getAdsFetchJob() };
 }
 
 export async function fetchPlans() {

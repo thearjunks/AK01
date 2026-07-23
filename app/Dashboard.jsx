@@ -65,6 +65,23 @@ function apiUrl(path) {
   return path;
 }
 
+async function responseJson(response, action) {
+  const body = await response.text();
+  let result;
+  try {
+    result = body ? JSON.parse(body) : {};
+  } catch {
+    const summary = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error(`${action} returned HTTP ${response.status} ${response.statusText || ''} instead of JSON${summary ? `: ${summary}` : ''}`.trim());
+  }
+  if (!response.ok || result.ok === false) throw new Error(result.error || result.message || `${action} failed with HTTP ${response.status}.`);
+  return result;
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
 function imageOf(ad) { return ad.local_artwork_url || ad.artwork_url || ''; }
 function dateOf(ad) { return String(ad.ad_delivery_start_time || '').slice(0, 10); }
@@ -423,11 +440,28 @@ export default function Dashboard() {
   const fetchLiveAds = useCallback(async () => {
     setAdsFetchState({ state: 'fetching', message: 'Fetching all live ads from stc, Ooredoo, and Zain. This may take a few minutes.' });
     try {
-      const response = await fetch(apiUrl('/api/fetch-live'), { cache: 'no-store' });
-      const result = await response.json();
-      if (!response.ok || !result.ok || !result.payload) throw new Error(result.error || 'Live fetch failed.');
-      applyAdsPayload(result.payload);
-      setAdsFetchState({ state: 'live', message: `Live fetch complete. ${result.payload.data?.length || 0} current Ads Library cards loaded.` });
+      const startResponse = await fetch(apiUrl('/api/fetch-live'), { method: 'POST', cache: 'no-store' });
+      await responseJson(startResponse, 'Live ad refresh');
+
+      const deadline = Date.now() + 12 * 60 * 1000;
+      let job;
+      while (Date.now() < deadline) {
+        await wait(5000);
+        const statusResponse = await fetch(apiUrl('/api/fetch-live?status=1'), { cache: 'no-store' });
+        const statusResult = await responseJson(statusResponse, 'Live ad refresh status');
+        job = statusResult.job;
+        if (job?.state === 'complete' || job?.state === 'error') break;
+        setAdsFetchState({ state: 'fetching', message: job?.message || 'The live ad refresh is still running.' });
+      }
+
+      if (!job || job.state === 'running' || job.state === 'idle') throw new Error('The live ad refresh did not finish within 12 minutes. Check the hosting application logs.');
+      if (job.state === 'error') throw new Error(job.message || 'The background live ad refresh failed.');
+
+      const dataResponse = await fetch(apiUrl('/api/current-data'), { cache: 'no-store' });
+      const dataResult = await responseJson(dataResponse, 'Updated ad data');
+      if (!dataResult.payload) throw new Error('The completed refresh did not return an updated dataset.');
+      applyAdsPayload(dataResult.payload);
+      setAdsFetchState({ state: 'live', message: job.message || `Live fetch complete. ${job.count || 0} current Ads Library cards loaded.` });
     } catch (error) {
       setAdsFetchState({ state: 'error', message: `Live fetch failed: ${error.message}. The previous snapshot is still displayed.` });
     }
@@ -488,12 +522,6 @@ export default function Dashboard() {
     const timer = window.setInterval(fetchLiveOrganic, 10 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [active, fetchLiveOrganic]);
-  useEffect(() => {
-    if (active !== 'boosted') return undefined;
-    fetchLiveAds();
-    const timer = window.setInterval(fetchLiveAds, 10 * 60 * 1000);
-    return () => window.clearInterval(timer);
-  }, [active, fetchLiveAds]);
   const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organic: ['Organic monitoring', 'Track new posts from configured competitor accounts.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
   return <div className="app-shell"><Sidebar active={active} onChange={setActive} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={setActive} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} source={source} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
 }
