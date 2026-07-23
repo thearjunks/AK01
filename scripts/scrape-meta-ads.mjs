@@ -17,7 +17,11 @@ const trackedPageIds = new Set(pageIdFilter);
 const trackedPages = pageIdFilter.length
   ? pagesModule.pages.filter((page) => trackedPageIds.has(page.pageId))
   : pagesModule.pages;
-const activeStatus = process.env.META_ADS_ACTIVE_STATUS || 'all';
+const activeStatus = process.env.META_ADS_ACTIVE_STATUS || 'active';
+// ponytail: a page that previously had this many ads or more suddenly returning 0 is
+// almost always a transient scrape/bot-block failure, not every campaign ending at once.
+// Raise this if a real "operator paused everything" event ever needs to clear the snapshot.
+const ZERO_RESULT_FALLBACK_MIN_PREVIOUS = 3;
 
 const maxScrolls = Number(process.env.META_ADS_MAX_SCROLLS || 120);
 const headless = process.env.META_ADS_HEADLESS !== '0';
@@ -231,28 +235,59 @@ async function scrapePage(browser, trackedPage) {
   return ads;
 }
 
+let previousAds = [];
+try {
+  previousAds = JSON.parse(await readFile(dataPath, 'utf8')).data || [];
+} catch {
+  // no previous snapshot yet, nothing to fall back to
+}
+const previousByPage = new Map();
+for (const ad of previousAds) {
+  const key = String(ad.page_id);
+  if (!previousByPage.has(key)) previousByPage.set(key, []);
+  previousByPage.get(key).push(ad);
+}
+
 const browser = await launchBrowser();
-const allAds = [];
 const displayedCounts = {};
+const resultsByPage = new Map();
 
 try {
   for (const trackedPage of trackedPages) {
     console.log(`Scraping ${trackedPage.name} (${trackedPage.pageId})...`);
-    const ads = await scrapePage(browser, trackedPage);
+    const previous = previousByPage.get(trackedPage.pageId) || [];
+    let ads = [];
+    try {
+      ads = await scrapePage(browser, trackedPage);
+    } catch (error) {
+      console.error(`  FAILED: ${error.message}`);
+    }
+    if (ads.length === 0 && previous.length >= ZERO_RESULT_FALLBACK_MIN_PREVIOUS) {
+      console.warn(`  0 ads found but ${previous.length} were in the previous snapshot; keeping previous snapshot for this page (likely a transient scrape failure).`);
+      ads = previous;
+    } else {
+      console.log(`  ${ads.length} ads found`);
+    }
     displayedCounts[trackedPage.pageId] = String(ads.length);
-    console.log(`  ${ads.length} ads found`);
-    allAds.push(...ads);
+    resultsByPage.set(trackedPage.pageId, ads);
   }
 } finally {
   await browser.close();
 }
 
+const trackedPageIdSet = new Set(trackedPages.map((page) => page.pageId));
+const untouchedAds = previousAds.filter((ad) => !trackedPageIdSet.has(String(ad.page_id)));
+const freshAds = trackedPages.flatMap((page) => resultsByPage.get(page.pageId) || []);
+
+// de-dupe by page + library id in case a page was scraped more than once in this run
+const dedupedAds = [...new Map([...untouchedAds, ...freshAds].map((ad) => [`${ad.page_id}:${ad.ad_archive_id}`, ad])).values()];
+
 const payload = {
   generated_at: new Date().toISOString(),
   source: `Meta Ads Library public pages, ${activeStatus} ads, country KW`,
   displayed_counts: displayedCounts,
-  data: allAds,
+  data: dedupedAds,
 };
 
 await writeFile(dataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-console.log(JSON.stringify({ ads: allAds.length, pages: trackedPages.length }, null, 2));
+console.log(JSON.stringify({ ads: dedupedAds.length, pages: trackedPages.length }, null, 2));

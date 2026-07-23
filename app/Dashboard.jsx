@@ -488,6 +488,12 @@ export default function Dashboard() {
     const timer = window.setInterval(fetchLiveOrganic, 10 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [active, fetchLiveOrganic]);
+  useEffect(() => {
+    if (active !== 'boosted') return undefined;
+    fetchLiveAds();
+    const timer = window.setInterval(fetchLiveAds, 10 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [active, fetchLiveAds]);
   const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organic: ['Organic monitoring', 'Track new posts from configured competitor accounts.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
   return <div className="app-shell"><Sidebar active={active} onChange={setActive} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={setActive} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} source={source} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
 }

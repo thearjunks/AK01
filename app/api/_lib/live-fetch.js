@@ -59,7 +59,14 @@ export async function readDevicesData() {
 }
 
 async function fetchFromMetaPages() {
-  const scrape = await runScript('scrape-meta-ads.mjs');
+  let scrape;
+  try {
+    scrape = await runScript('scrape-meta-ads.mjs');
+  } catch (error) {
+    console.error(`[fetch-live] scrape-meta-ads.mjs failed: ${error.message}`);
+    throw error;
+  }
+  if (scrape.stderr) console.error(`[fetch-live] scrape-meta-ads.mjs stderr:\n${scrape.stderr}`);
   const payload = normalizePayload(await readCurrentData());
   return {
     ok: true,
