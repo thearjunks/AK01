@@ -3,14 +3,13 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { socialCredentials } from './social-credentials.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const dataPath = path.join(root, 'public', 'data', 'social-posts.json');
 const maxScrolls = Math.max(3, Number(process.env.ORGANIC_MAX_SCROLLS || 20));
-const email = process.env.SOCIAL_FACEBOOK_EMAIL || socialCredentials.facebook.email;
-const password = process.env.SOCIAL_FACEBOOK_PASSWORD || socialCredentials.facebook.password;
+const email = process.env.SOCIAL_FACEBOOK_EMAIL || '';
+const password = process.env.SOCIAL_FACEBOOK_PASSWORD || '';
 const instagramEmail = process.env.SOCIAL_INSTAGRAM_EMAIL || email;
 const instagramPassword = process.env.SOCIAL_INSTAGRAM_PASSWORD || password;
 const authProfileDir = process.env.SOCIAL_BROWSER_PROFILE_DIR || path.join(root, '.auth', 'social-browser');

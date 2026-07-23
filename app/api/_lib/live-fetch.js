@@ -1,7 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { socialCredentials } from '../../../scripts/social-credentials.mjs';
 
 const root = process.cwd();
 const dataPath = join(root, 'public', 'data', 'ads.json');
@@ -100,10 +99,10 @@ async function fetchSocialPostsNow(credentials = {}) {
   const providerUrl = process.env.SOCIAL_POSTS_JSON_URL;
   if (!providerUrl) {
     await runScript('scrape-organic-posts.mjs', {
-      SOCIAL_FACEBOOK_EMAIL: credentials.facebook?.email || socialCredentials.facebook.email,
-      SOCIAL_FACEBOOK_PASSWORD: credentials.facebook?.password || socialCredentials.facebook.password,
-      SOCIAL_INSTAGRAM_EMAIL: credentials.instagram?.email || credentials.facebook?.email || socialCredentials.instagram.email,
-      SOCIAL_INSTAGRAM_PASSWORD: credentials.instagram?.password || credentials.facebook?.password || socialCredentials.instagram.password,
+      SOCIAL_FACEBOOK_EMAIL: credentials.facebook?.email || process.env.SOCIAL_FACEBOOK_EMAIL || '',
+      SOCIAL_FACEBOOK_PASSWORD: credentials.facebook?.password || process.env.SOCIAL_FACEBOOK_PASSWORD || '',
+      SOCIAL_INSTAGRAM_EMAIL: credentials.instagram?.email || credentials.facebook?.email || process.env.SOCIAL_INSTAGRAM_EMAIL || '',
+      SOCIAL_INSTAGRAM_PASSWORD: credentials.instagram?.password || credentials.facebook?.password || process.env.SOCIAL_INSTAGRAM_PASSWORD || '',
     });
     await runScript('cache-social-thumbnails.mjs');
     const payload = await readSocialData();
