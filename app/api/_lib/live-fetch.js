@@ -97,11 +97,6 @@ export async function readDevicesData() {
 }
 
 async function fetchFromMetaPages() {
-  try {
-    await import('node:fs/promises').then(({ access }) => access(chromium.executablePath()));
-  } catch {
-    throw new Error('Playwright Chromium is not installed. Redeploy after the postinstall browser setup completes.');
-  }
   let scrape;
   try {
     scrape = await runScript('scrape-meta-ads.mjs');
