@@ -1,0 +1,56 @@
+name: Refresh plans banners and devices
+
+on:
+  schedule:
+    - cron: '30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-comparison-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/playwright-core/.local-browsers
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - run: node scripts/install-playwright.mjs
+
+      - name: Collect active plans and homepage banners
+        run: node scripts/scrape-plans.mjs
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: '0'
+
+      - name: Collect current eStore devices
+        run: node scripts/scrape-devices.mjs
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: '0'
+
+      - name: Commit refreshed comparison snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/plans.json public/data/devices.json public/plan-banners public/device-images
+          git diff --cached --quiet && exit 0
+          git commit -m "Refresh comparison dashboard snapshots"
+          git pull --rebase
+          git push

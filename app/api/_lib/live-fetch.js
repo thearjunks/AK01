@@ -179,12 +179,28 @@ export function startAdsFetchJob() {
 }
 
 export async function fetchPlans() {
+  if (process.env.NODE_ENV === 'production') {
+    const response = await fetch(`${repositoryDataUrl}/plans.json?refresh=${Date.now()}`, { cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache' } });
+    if (!response.ok) throw new Error(`Automated plan snapshot returned HTTP ${response.status}.`);
+    const payload = await response.json();
+    if (!Array.isArray(payload.data) || !Array.isArray(payload.banners)) throw new Error('Automated plan snapshot has an invalid format.');
+    await writeFile(plansDataPath, JSON.stringify(payload, null, 2), 'utf8');
+    return { ok: true, payload, message: `Loaded ${payload.data.length} active plans and ${payload.banners.length} homepage banners from the hourly live collector.` };
+  }
   await runScript('scrape-plans.mjs');
   const payload = await readPlansData();
   return { ok: true, payload, message: `Fetched ${payload.data?.length || 0} telecom plans from the configured pages.` };
 }
 
 export async function fetchDevices() {
+  if (process.env.NODE_ENV === 'production') {
+    const response = await fetch(`${repositoryDataUrl}/devices.json?refresh=${Date.now()}`, { cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache' } });
+    if (!response.ok) throw new Error(`Automated device snapshot returned HTTP ${response.status}.`);
+    const payload = await response.json();
+    if (!Array.isArray(payload.data)) throw new Error('Automated device snapshot has an invalid format.');
+    await writeFile(devicesDataPath, JSON.stringify(payload, null, 2), 'utf8');
+    return { ok: true, payload, message: `Loaded ${payload.data.length} devices from the hourly live collector.` };
+  }
   await runScript('scrape-devices.mjs');
   const payload = await readDevicesData();
   return { ok: true, payload, message: `Fetched ${payload.data?.length || 0} devices from the configured e-store pages.` };
