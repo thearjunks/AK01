@@ -449,7 +449,8 @@ export default function Dashboard() {
       let response;
       try { response = await fetch(apiUrl('/api/current-data'), { cache: 'no-store' }); if (!response.ok) throw new Error(); }
       catch { response = await fetch('/data/ads.json', { cache: 'no-store' }); }
-      applyAdsPayload(await response.json());
+      const result = await response.json();
+      applyAdsPayload(result.payload || result);
     } catch {
       setAdsFetchState({ state: 'error', message: 'The saved ads dataset could not be loaded.' });
     }
