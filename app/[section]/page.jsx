@@ -1,0 +1,22 @@
+import { notFound } from 'next/navigation';
+import Dashboard from '../Dashboard.jsx';
+
+export const dynamic = 'force-dynamic';
+
+const sections = {
+  overview: 'overview',
+  'booster-ads': 'boosted',
+  organic: 'organic',
+  'plan-comparison': 'plans',
+  'banner-comparison': 'banners',
+  'device-comparison': 'devices',
+};
+
+export default async function SectionPage({ params }) {
+  const { section } = await params;
+  const activeSection = sections[section];
+
+  if (!activeSection) notFound();
+
+  return <Dashboard initialSection={activeSection} />;
+}

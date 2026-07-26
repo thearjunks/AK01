@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Activity, ArrowUpRight, BarChart3, Bell, ChevronRight, CircleAlert,
   Camera, Download, Eye, Filter, Grid2X2, LayoutDashboard,
@@ -64,6 +65,14 @@ const offerCategories = [
   ['Rewards & loyalty', ['qitaf', 'rewards', 'loyalty', 'مكافآت']],
 ];
 const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
+const sectionPaths = {
+  overview: '/overview',
+  boosted: '/booster-ads',
+  organic: '/organic',
+  plans: '/plan-comparison',
+  banners: '/banner-comparison',
+  devices: '/device-comparison',
+};
 
 function isInRollingMonth(value, now = Date.now()) {
   const time = new Date(value).getTime();
@@ -483,8 +492,9 @@ function DeviceComparison({ devices, payload, fetchState, onFetchDevices, onRelo
   </>;
 }
 
-export default function Dashboard() {
-  const [active, setActive] = useState('overview');
+export default function Dashboard({ initialSection = 'overview' }) {
+  const router = useRouter();
+  const [active, setActive] = useState(initialSection);
   const [ads, setAds] = useState([]);
   const [adsUpdatedAt, setAdsUpdatedAt] = useState('');
   const [adsFetchState, setAdsFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved Ads Library snapshot.' });
@@ -608,6 +618,14 @@ export default function Dashboard() {
     const timer = window.setInterval(fetchLiveOrganic, 60 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [active, fetchLiveOrganic]);
+  useEffect(() => setActive(initialSection), [initialSection]);
+  const navigate = useCallback((section) => {
+    const path = sectionPaths[section];
+    if (!path) return;
+    setActive(section);
+    setMenuOpen(false);
+    router.push(path);
+  }, [router]);
   const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organic: ['Organic monitoring', 'Track new posts from configured competitor accounts.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
-  return <div className="app-shell"><Sidebar active={active} onChange={setActive} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={setActive} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
+  return <div className="app-shell"><Sidebar active={active} onChange={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={navigate} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
 }
