@@ -94,7 +94,11 @@ function wait(milliseconds) {
 }
 
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
-function imageOf(ad) { return ad.local_artwork_url || ad.artwork_url || ''; }
+function imageOf(ad) {
+  const image = ad.local_artwork_url || ad.artwork_url || '';
+  if (!image || image.startsWith('/')) return image;
+  return image.replace(/s60x60/g, 's600x600');
+}
 function dateOf(ad) { return String(ad.ad_delivery_start_time || '').slice(0, 10); }
 function sourceOrderOf(ad) { return Number.isFinite(ad._source_index) ? ad._source_index : Number.MAX_SAFE_INTEGER; }
 function languageOf(ad) {
@@ -281,7 +285,7 @@ function exportAds(rows) {
 
 function CampaignGrid({ rows }) {
   if (!rows.length) return <div className="empty-state"><CircleAlert /><b>No campaigns match these filters</b><span>Try removing a filter or searching for a different keyword.</span></div>;
-  return <div className="campaign-grid">{rows.map((ad) => <article className="campaign-card-new" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="campaign-image">{imageOf(ad) ? <img src={imageOf(ad)} alt="Campaign creative" /> : <EmptyArtwork />}<span>{statusOf(ad) === 'inactive' ? 'Inactive' : 'Active'}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={ad.page_id} name={ad.page_name} /><span><b>{ad.page_name}</b><small>{dateOf(ad)}</small></span></div><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><div><span>ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open ad <ArrowUpRight size={14} /></a></div></div></article>)}</div>;
+  return <div className="campaign-grid boosted-campaign-grid">{rows.map((ad) => <article className="campaign-card-new" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="campaign-image">{imageOf(ad) ? <img src={imageOf(ad)} alt="Campaign creative" loading="lazy" decoding="async" /> : <EmptyArtwork />}<span>{statusOf(ad) === 'inactive' ? 'Inactive' : 'Active'}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={ad.page_id} name={ad.page_name} /><span><b>{ad.page_name}</b><small>{dateOf(ad)}</small></span></div><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><div><span>ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open ad <ArrowUpRight size={14} /></a></div></div></article>)}</div>;
 }
 
 function CompetitorColumns({ rows }) {
