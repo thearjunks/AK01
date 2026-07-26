@@ -14,6 +14,10 @@ function thumbnailUrl(post) {
   return String(post.thumbnail_url || post.thumbnail || post.image_url || post.media_url || post.cover_url || '').trim();
 }
 
+function profileImageUrl(profile) {
+  return String(profile.profile_picture_url || '').trim();
+}
+
 function hashUrl(url) {
   return createHash('sha1').update(url).digest('hex').slice(0, 20);
 }
@@ -88,7 +92,8 @@ async function worker(queue, results) {
 
 const payload = JSON.parse(await readFile(dataPath, 'utf8'));
 const records = Array.isArray(payload) ? payload : payload.data || [];
-const urls = [...new Set(records.map(thumbnailUrl).filter(Boolean))];
+const profiles = Array.isArray(payload) ? [] : payload.profiles || [];
+const urls = [...new Set([...records.map(thumbnailUrl), ...profiles.map(profileImageUrl)].filter(Boolean))];
 const queue = [...urls];
 const results = new Map();
 
@@ -105,6 +110,15 @@ for (const post of records) {
   }
 }
 
+let profilesUpdated = 0;
+for (const profile of profiles) {
+  const result = results.get(profileImageUrl(profile));
+  if (result?.ok) {
+    if (profile.local_profile_picture_url !== result.publicUrl) profilesUpdated += 1;
+    profile.local_profile_picture_url = result.publicUrl;
+  }
+}
+
 await writeFile(dataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 
 const downloaded = [...results.values()].filter((item) => item.ok && !item.reused).length;
@@ -118,4 +132,5 @@ console.log(JSON.stringify({
   reused,
   failed,
   rowsUpdated,
+  profilesUpdated,
 }, null, 2));

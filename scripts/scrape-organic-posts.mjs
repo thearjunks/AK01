@@ -46,6 +46,7 @@ const tiktokTargets = [
   { company: 'Zain Kuwait', handle: 'zainkuwait', url: 'https://www.tiktok.com/@zainkuwait?lang=en' },
 ];
 const instagramHandleCompanies = new Map(instagramTargets.map((target) => [target.handle.toLowerCase(), target.company]));
+const collectedProfiles = [];
 const instagramDirectPostUrls = [
   'https://www.instagram.com/p/Da2suqZlKu2/?img_index=1',
   'https://www.instagram.com/p/Da5DtWpFkjy/',
@@ -246,7 +247,7 @@ async function visibleFacebookPosts(page, target) {
       const cardText = clean(card.innerText);
       const metric = (pattern) => clean((cardText.match(pattern) || [])[1] || '');
       return { id, caption, thumbnail: images[0] || '', post_type: images.length > 1 ? 'Carousel' : images.length === 1 ? 'Image' : 'Post', url: url || arg.url, index, published_label: publishedLabel, published_at: publishedAt,
-        likes_label: metric(/([\d,.]+\s*[KMB]?)\s+(?:likes?|reactions?)/i), comments_label: metric(/([\d,.]+\s*[KMB]?)\s+comments?/i), views_label: metric(/([\d,.]+\s*[KMB]?)\s+views?/i) };
+        likes_label: metric(/([\d,.]+\s*[KMB]?)\s+(?:likes?|reactions?)/i), comments_label: metric(/([\d,.]+\s*[KMB]?)\s+comments?/i), shares_label: metric(/([\d,.]+\s*[KMB]?)\s+shares?/i), views_label: metric(/([\d,.]+\s*[KMB]?)\s+views?/i) };
     }).filter(Boolean);
   }, target);
 }
@@ -258,7 +259,7 @@ async function scrapeFacebook(page, target) {
   for (let scroll = 0; scroll <= maxScrolls; scroll += 1) {
     for (const post of await visibleFacebookPosts(page, target)) {
       const id = post.id || stableId(`${target.company}|${post.url}|${post.caption}`);
-      found.set(`facebook-${id}`, { ...post, id: `facebook-${id}`, company: target.company, platform: 'Facebook', published_at: post.published_at || relativeDate(post.published_label), likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), views: metricNumber(post.views_label), status: 'New' });
+      found.set(`facebook-${id}`, { ...post, id: `facebook-${id}`, company: target.company, platform: 'Facebook', published_at: post.published_at || relativeDate(post.published_label), likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), shares: metricNumber(post.shares_label), views: metricNumber(post.views_label), status: 'New' });
     }
     if (scroll < maxScrolls) { await page.mouse.wheel(0, 2400); await page.waitForTimeout(1400); }
   }
@@ -404,7 +405,20 @@ async function instagramApiPosts(request, target) {
   });
   if (!response.ok()) throw new Error(`Instagram public API returned HTTP ${response.status()} for ${target.handle}.`);
   const payload = await response.json();
-  const edges = payload?.data?.user?.edge_owner_to_timeline_media?.edges || [];
+  const user = payload?.data?.user;
+  const edges = user?.edge_owner_to_timeline_media?.edges || [];
+  if (user) collectedProfiles.push({
+    company: target.company,
+    platform: 'Instagram',
+    username: user.username || target.handle,
+    display_name: user.full_name || target.company,
+    profile_picture_url: user.profile_pic_url_hd || user.profile_pic_url || '',
+    followers: Number.isFinite(user.edge_followed_by?.count) ? user.edge_followed_by.count : null,
+    total_posts: Number.isFinite(user.edge_owner_to_timeline_media?.count) ? user.edge_owner_to_timeline_media.count : null,
+    verified: Boolean(user.is_verified),
+    profile_url: target.url,
+    captured_at: new Date().toISOString(),
+  });
   return edges.map(({ node }) => ({
     id: `instagram-${node.shortcode}`,
     company: target.company,
@@ -421,9 +435,36 @@ async function instagramApiPosts(request, target) {
   })).filter((post) => post.id !== 'instagram-undefined' && post.thumbnail && post.url);
 }
 
+async function instagramEmbedProfile(request, target) {
+  const response = await fetch(`${target.url.replace(/\/$/, '')}/embed/`, {
+    headers: { referer: target.url, accept: 'text/html,application/xhtml+xml', 'accept-language': 'en-US,en;q=0.9', 'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' },
+  });
+  if (!response.ok) throw new Error(`Instagram embed returned HTTP ${response.status} for ${target.handle}.`);
+  let html = await response.text();
+  for (let pass = 0; pass < 3; pass += 1) html = html.replace(/\\"/g, '"').replace(/\\\//g, '/').replace(/\\u0026/g, '&');
+  const value = (field) => (html.match(new RegExp(`"${field}"\\s*:\\s*"([^"]*)"`)) || [])[1] || '';
+  const count = (field) => {
+    const parsed = Number((html.match(new RegExp(`"${field}"\\s*:\\s*(\\d+)`)) || [])[1]);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  return {
+    company: target.company,
+    platform: 'Instagram',
+    username: value('username') || target.handle,
+    display_name: value('full_name') || target.company,
+    profile_picture_url: value('profile_pic_url'),
+    followers: count('followers_count'),
+    total_posts: count('posts_count'),
+    verified: /"(?:verified|is_verified)"\s*:\s*true/.test(html),
+    profile_url: target.url,
+    captured_at: new Date().toISOString(),
+  };
+}
+
 async function scrapeInstagram(page, request, target, { renderProfile = true } = {}) {
   const found = new Map();
   const errors = [];
+  try { collectedProfiles.push(await instagramEmbedProfile(request, target)); } catch (error) { errors.push(error.message); }
   try { for (const post of await instagramApiPosts(request, target)) found.set(post.id, post); } catch (error) { errors.push(error.message); }
   if (!renderProfile) {
     if (!found.size && errors.length) throw new Error(errors.join(' '));
@@ -463,9 +504,9 @@ async function scrapeX(page, target) {
       const image = [...article.querySelectorAll('img')].find((node) => /pbs\.twimg\.com\/media/.test(node.currentSrc || node.src));
       const metricLabel = (testId) => cleanText(article.querySelector(`[data-testid="${testId}"]`)?.getAttribute('aria-label') || article.querySelector(`[data-testid="${testId}"]`)?.innerText || '');
       const viewsLabel = cleanText([...article.querySelectorAll('a[href*="/analytics"], [aria-label*="views" i]')][0]?.getAttribute('aria-label') || [...article.querySelectorAll('a[href*="/analytics"]')][0]?.innerText || '');
-      return { id: `x-${id}`, company: arg.company, platform: 'X', published_at: time?.getAttribute('datetime') || '', thumbnail: image?.currentSrc || image?.src || '', caption, post_type: image ? 'Image' : 'Post', url: href, likes_label: metricLabel('like'), comments_label: metricLabel('reply'), views_label: viewsLabel, status: 'New' };
+      return { id: `x-${id}`, company: arg.company, platform: 'X', published_at: time?.getAttribute('datetime') || '', thumbnail: image?.currentSrc || image?.src || '', caption, post_type: image ? 'Image' : 'Post', url: href, likes_label: metricLabel('like'), comments_label: metricLabel('reply'), shares_label: metricLabel('retweet'), views_label: viewsLabel, status: 'New' };
     }).filter((post) => post.id !== 'x-' && post.url), target);
-    for (const post of rows) found.set(post.id, { ...post, likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), views: metricNumber(post.views_label) });
+    for (const post of rows) found.set(post.id, { ...post, likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), shares: metricNumber(post.shares_label), views: metricNumber(post.views_label) });
     if (scroll < maxScrolls) { await page.mouse.wheel(0, 2200); await page.waitForTimeout(1200); }
   }
   return [...found.values()];
@@ -573,9 +614,11 @@ try {
 
 const merged = new Map();
 let previousData = [];
+let previousProfiles = [];
 try {
   const previous = JSON.parse(await readFile(dataPath, 'utf8'));
   previousData = Array.isArray(previous.data) ? previous.data : [];
+  previousProfiles = Array.isArray(previous.profiles) ? previous.profiles : [];
 } catch {}
 const recentDiscovered = discovered.filter(isRecent);
 const previousToKeep = recentDiscovered.length ? previousData.filter(isRecent) : previousData;
@@ -586,11 +629,14 @@ const blockedCoverage = coverage.filter((item) => item.status !== 'ok');
 const blockedWarning = blockedCoverage.length
   ? `Live organic refresh was partial: ${blockedCoverage.map((item) => `${item.company} ${item.platform}`).join(', ')} need login, are rate-limited, or were blocked by the platform.`
   : '';
+const profileMap = new Map(previousProfiles.map((profile) => [`${profile.platform}|${profile.company}`, profile]));
+for (const profile of collectedProfiles) profileMap.set(`${profile.platform}|${profile.company}`, profile);
 
 const payload = {
   generated_at: new Date().toISOString(),
   source: 'Authenticated 30-day organic monitor for Facebook, Instagram, X, and TikTok',
   coverage,
+  profiles: [...profileMap.values()],
   fetched_count: recentDiscovered.length,
   mode: emptyFetch && previousData.length ? 'empty_fetch_preserved_previous' : 'live_merged',
   fetch_warning: emptyFetch && previousData.length ? 'Live organic fetch returned no posts, so the previous saved posts were preserved.' : blockedWarning,

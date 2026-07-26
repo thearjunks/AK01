@@ -1,4 +1,5 @@
 import './globals.css';
+import './organic-mobile.css';
 
 export const metadata = {
   title: 'stc Kuwait · Social Intelligence',
@@ -12,4 +13,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
