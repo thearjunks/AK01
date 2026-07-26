@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,6 +36,20 @@ function stableId(value) {
 
 function clean(value) {
   return String(value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+async function writeSnapshot(payload) {
+  let lastError;
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    try {
+      await writeFile(dataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, attempt * 500));
+    }
+  }
+  throw lastError;
 }
 
 function absoluteUrl(base, value) {
@@ -282,6 +296,31 @@ function addGapSignals(devices) {
   }));
 }
 
+function canonicalUrl(value) {
+  let result = value || '';
+  try {
+    const parsed = new URL(result);
+    result = `${parsed.origin}${parsed.pathname}`.replace(/\/$/, '');
+  } catch {}
+  return clean(result).toLowerCase();
+}
+
+function identityKey(device) {
+  return clean(`${device.provider}|${device.name}|${device.storage || ''}|${canonicalUrl(device.product_url)}`).toLowerCase();
+}
+
+function deviceChanged(previous, current) {
+  return ['name', 'price', 'monthly_installment', 'stock_status', 'offer', 'storage', 'product_url', 'image_url']
+    .some((field) => {
+      if (field === 'product_url' || field === 'image_url') return canonicalUrl(previous?.[field]) !== canonicalUrl(current?.[field]);
+      return clean(previous?.[field]) !== clean(current?.[field]);
+    });
+}
+
+let previousPayload = { data: [] };
+try { previousPayload = JSON.parse(await readFile(dataPath, 'utf8')); } catch {}
+const previousDevices = Array.isArray(previousPayload) ? previousPayload : previousPayload.data || [];
+
 const browser = await chromium.launch({ headless });
 const discovered = [];
 const coverage = [];
@@ -291,7 +330,7 @@ try {
       const rows = await scrapeSource(browser, source);
       const normalized = rows.map((row) => normalizeDevice(row, source));
       discovered.push(...normalized);
-      coverage.push({ provider: source.provider, category: source.category, source_url: source.url, status: 'ok', count: normalized.length });
+      coverage.push({ provider: source.provider, category: source.category, source_url: source.url, status: normalized.length ? 'ok' : 'No device cards were exposed.', count: normalized.length });
     } catch (error) {
       coverage.push({ provider: source.provider, category: source.category, source_url: source.url, status: error.message, count: 0 });
     }
@@ -300,10 +339,46 @@ try {
   await browser.close();
 }
 
-const deduped = addGapSignals(dedupeDevices(discovered.filter(isRealDeviceCandidate)));
+const liveDevices = dedupeDevices(discovered.filter(isRealDeviceCandidate));
+const liveKeys = new Set(liveDevices.map(identityKey));
+const failedSources = coverage.filter((item) => item.status !== 'ok');
+const preserved = previousDevices.filter((device) => {
+  if (liveKeys.has(identityKey(device))) return false;
+  const providerCoverage = coverage.filter((source) => source.provider === device.provider);
+  const providerFullyUnavailable = providerCoverage.length && providerCoverage.every((source) => source.status !== 'ok');
+  return providerFullyUnavailable || failedSources.some((source) => source.provider === device.provider
+    && (device.source_urls || [device.source_url]).includes(source.source_url));
+})
+  .map((device) => ({ ...device, freshness: 'preserved_source_failure', status: 'Current (source unavailable)' }));
+const deduped = addGapSignals(dedupeDevices([...liveDevices, ...preserved]));
+const previousByKey = new Map(previousDevices.map((device) => [identityKey(device), device]));
+const currentKeys = new Set(deduped.map(identityKey));
+let added = 0;
+let updated = 0;
+let unchanged = 0;
 for (const device of deduped) {
+  const previous = previousByKey.get(identityKey(device));
+  if (device.freshness === 'preserved_source_failure') {
+    unchanged += 1;
+  } else if (!previous) {
+    device.status = 'Added';
+    device.first_identified_at = new Date().toISOString();
+    added += 1;
+  } else if (deviceChanged(previous, device)) {
+    device.status = 'Updated';
+    device.first_identified_at = previous.first_identified_at || new Date().toISOString();
+    updated += 1;
+  } else {
+    device.status = 'Current';
+    device.first_identified_at = previous.first_identified_at || new Date().toISOString();
+    unchanged += 1;
+  }
+  device.freshness ||= 'live';
+  device.last_checked = new Date().toISOString();
   device.local_image_url = await saveDeviceImage(device.image_url);
+  if (!device.local_image_url && previous?.local_image_url) device.local_image_url = previous.local_image_url;
 }
+const removedRecords = previousDevices.filter((device) => !currentKeys.has(identityKey(device)));
 
 const payload = {
   generated_at: new Date().toISOString(),
@@ -311,7 +386,16 @@ const payload = {
   coverage,
   fetched_count: discovered.length,
   deduped_count: deduped.length,
+  mode: failedSources.length ? 'live_partial' : 'live',
+  fetch_warning: failedSources.length ? `${failedSources.length} device sources were partial or blocked; their previous records were preserved.` : '',
+  changes: {
+    added,
+    updated,
+    removed: removedRecords.length,
+    unchanged,
+    removed_records: removedRecords.map((device) => ({ id: device.id, provider: device.provider, name: device.name, product_url: device.product_url })),
+  },
   data: deduped,
 };
-await writeFile(dataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+await writeSnapshot(payload);
 console.log(JSON.stringify({ fetched: discovered.length, deduped: deduped.length, coverage }, null, 2));

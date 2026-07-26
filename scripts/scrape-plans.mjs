@@ -146,6 +146,8 @@ async function bannerFromImage({ provider, category, subCategory = '', title, te
     source_url: sourceUrl,
     source_method: sourceMethod,
     api_url: apiUrl,
+    freshness: 'live',
+    last_checked: new Date().toISOString(),
   };
 }
 
@@ -364,6 +366,9 @@ async function scrapeSource(browser, source) {
       source_url: source.url,
       detail_url: raw.href,
       captured_text: raw.text.slice(0, 1200),
+      status: 'Active',
+      freshness: 'live',
+      last_checked: new Date().toISOString(),
     });
   }
   await context.close();
@@ -389,9 +394,9 @@ try {
       const result = await scrapeSource(browser, source);
       const plans = result.plans || [];
       data.push(...plans);
-      coverage.push({ provider: source.provider, category: source.category, count: plans.length, status: plans.length ? 'ok' : 'No priced plan cards were exposed.' });
+      coverage.push({ provider: source.provider, category: source.category, sub_category: source.subCategory || '', source_url: source.url, count: plans.length, status: plans.length ? 'ok' : 'No priced plan cards were exposed.' });
     } catch (error) {
-      coverage.push({ provider: source.provider, category: source.category, count: 0, status: error.message });
+      coverage.push({ provider: source.provider, category: source.category, sub_category: source.subCategory || '', source_url: source.url, count: 0, status: error.message });
     }
   }
   bannerResult = await collectTargetedBanners(browser);
@@ -401,13 +406,29 @@ try {
 
 const deduped = new Map();
 for (const plan of data) deduped.set(plan.id, plan);
+const failedPlanSources = coverage.filter((item) => item.status !== 'ok');
+for (const plan of previousData) {
+  const failed = failedPlanSources.some((source) => source.provider === plan.provider
+    && source.category === plan.category
+    && (source.sub_category || '') === (plan.sub_category || ''));
+  if (failed && !deduped.has(plan.id)) deduped.set(plan.id, { ...plan, status: 'Active', freshness: 'preserved_source_failure' });
+}
 const currentData = [...deduped.values()];
-const currentBanners = bannerResult.banners;
+const bannerMap = new Map(bannerResult.banners.map((banner) => [banner.id, banner]));
+const failedBannerSources = bannerResult.coverage.filter((item) => item.status !== 'ok');
+for (const banner of previousBanners) {
+  const failed = failedBannerSources.some((source) => source.provider === banner.provider && source.category === banner.category);
+  if (failed && !bannerMap.has(banner.id)) bannerMap.set(banner.id, { ...banner, freshness: 'preserved_source_failure' });
+}
+const currentBanners = [...bannerMap.values()];
+const warnings = [];
+if (failedPlanSources.length) warnings.push(`${failedPlanSources.length} plan sources were partial or blocked; their previous records were preserved.`);
+if (failedBannerSources.length) warnings.push(`${failedBannerSources.length} banner sources were partial or blocked; their previous images were preserved.`);
 const payload = {
   generated_at: new Date().toISOString(),
   source: 'Live public telecom plan pages and targeted homepage banner sources',
-  mode: currentData.length ? 'live' : previousData.length ? 'empty_fetch_preserved_previous' : 'live_empty',
-  fetch_warning: currentData.length ? '' : previousData.length ? 'Live plan fetch returned no plans, so the previous saved plans were preserved.' : 'Live plan fetch returned no plans.',
+  mode: warnings.length ? 'live_partial' : 'live',
+  fetch_warning: warnings.join(' '),
   coverage,
   banner_coverage: bannerResult.coverage,
   data: currentData.length ? currentData : previousData,

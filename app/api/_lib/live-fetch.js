@@ -13,6 +13,8 @@ const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
 
 let socialFetchPromise = null;
 let adsFetchPromise = null;
+let plansFetchPromise = null;
+let devicesFetchPromise = null;
 let adsFetchJob = {
   state: 'idle',
   message: 'No live ad refresh is currently running.',
@@ -20,6 +22,9 @@ let adsFetchJob = {
   finished_at: '',
   count: 0,
 };
+const emptyComparisonJob = (message) => ({ state: 'idle', message, started_at: '', finished_at: '', count: 0 });
+let plansFetchJob = emptyComparisonJob('No plan or banner refresh is currently running.');
+let devicesFetchJob = emptyComparisonJob('No device refresh is currently running.');
 
 function isInRollingMonth(value, now = Date.now()) {
   const time = new Date(value).getTime();
@@ -184,6 +189,58 @@ export async function fetchDevices() {
   const payload = await readDevicesData();
   return { ok: true, payload, message: `Fetched ${payload.data?.length || 0} devices from the configured e-store pages.` };
 }
+
+function startComparisonJob(kind) {
+  const isPlans = kind === 'plans';
+  const running = isPlans ? plansFetchPromise : devicesFetchPromise;
+  if (running) return { accepted: false, job: { ...(isPlans ? plansFetchJob : devicesFetchJob) } };
+
+  const startedAt = new Date().toISOString();
+  const runningJob = {
+    state: 'running',
+    message: isPlans
+      ? 'Collecting active plans and homepage banners from all three competitors.'
+      : 'Collecting the complete current e-store device catalog from all three competitors.',
+    started_at: startedAt,
+    finished_at: '',
+    count: 0,
+  };
+  if (isPlans) plansFetchJob = runningJob;
+  else devicesFetchJob = runningJob;
+
+  const task = (isPlans ? fetchPlans() : fetchDevices())
+    .then((result) => {
+      const count = result.payload?.data?.length || 0;
+      const extra = isPlans ? ` and ${result.payload?.banners?.length || 0} homepage banners` : '';
+      const job = {
+        state: 'complete',
+        message: `Live refresh completed with ${count} ${isPlans ? 'active plans' : 'current devices'}${extra}.`,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        count,
+      };
+      if (isPlans) plansFetchJob = job;
+      else devicesFetchJob = job;
+    })
+    .catch((error) => {
+      const job = { state: 'error', message: error.message, started_at: startedAt, finished_at: new Date().toISOString(), count: 0 };
+      if (isPlans) plansFetchJob = job;
+      else devicesFetchJob = job;
+    })
+    .finally(() => {
+      if (isPlans) plansFetchPromise = null;
+      else devicesFetchPromise = null;
+    });
+
+  if (isPlans) plansFetchPromise = task;
+  else devicesFetchPromise = task;
+  return { accepted: true, job: { ...runningJob } };
+}
+
+export function startPlansFetchJob() { return startComparisonJob('plans'); }
+export function startDevicesFetchJob() { return startComparisonJob('devices'); }
+export function getPlansFetchJob() { return { ...plansFetchJob }; }
+export function getDevicesFetchJob() { return { ...devicesFetchJob }; }
 
 async function fetchSocialPostsNow() {
   const providerUrl = process.env.SOCIAL_POSTS_JSON_URL

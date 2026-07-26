@@ -110,6 +110,20 @@ function wait(milliseconds) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
+async function waitForComparisonJob(endpoint, label, onProgress) {
+  const deadline = Date.now() + 18 * 60 * 1000;
+  let job;
+  while (Date.now() < deadline) {
+    await wait(5000);
+    const response = await fetch(apiUrl(endpoint), { cache: 'no-store' });
+    const result = await responseJson(response, `${label} refresh status`);
+    job = result.job;
+    if (job?.state === 'complete' || job?.state === 'error') return job;
+    onProgress(job?.message || `${label} refresh is still running.`);
+  }
+  throw new Error(`${label} refresh did not finish within 18 minutes.`);
+}
+
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
 function imageOf(ad) {
   const image = ad.local_artwork_url || ad.artwork_url || '';
@@ -446,7 +460,7 @@ function InstagramPostScroller({ posts }) {
 
 function PlanComparison({ plans, fetchState, updatedAt, onFetchPlans }) {
   const [filters, setFilters] = useState({ search: '', provider: '', category: '', sort: '' });
-  const filtered = useMemo(() => plans.filter((plan) => {
+  const filtered = useMemo(() => plans.filter((plan) => plan.status !== 'Inactive').filter((plan) => {
     const haystack = `${plan.title || ''} ${plan.price || ''} ${plan.category || ''} ${plan.sub_category || ''} ${plan.provider_name || ''} ${planBenefits(plan).join(' ')}`.toLowerCase();
     if (filters.search && !haystack.includes(filters.search.toLowerCase())) return false;
     if (filters.provider && plan.provider !== filters.provider) return false;
@@ -460,8 +474,8 @@ function PlanComparison({ plans, fetchState, updatedAt, onFetchPlans }) {
   const counts = providers.map((provider) => ({ ...provider, count: filtered.filter((plan) => plan.provider === provider.key).length }));
   const visibleProviders = filters.provider ? providers.filter((provider) => provider.key === filters.provider) : providers;
   return <>
-    <section className="organic-status plan-status"><div><span><i /> Plan intelligence</span><h2>Plan comparison dashboard</h2><p>Compare prepaid, postpaid, internet, and roaming offers from stc, Ooredoo, and Zain.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching plans...' : 'Fetch live plans'}</button><div className="source-chip"><small>Plans loaded</small><b>{plans.length}</b></div></section>
-    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()}` : 'No plan fetch timestamp available'}</small></div>
+    <section className="organic-status plan-status"><div><span><i /> Live plan intelligence</span><h2>Active plan comparison</h2><p>All currently visible prepaid, postpaid, internet, and roaming plans across stc, Ooredoo, and Zain.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching plans...' : 'Fetch live plans'}</button><div className="source-chip"><small>Active plans</small><b>{plans.filter((plan) => plan.status !== 'Inactive').length}</b></div></section>
+    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-refresh every hour` : 'Auto-refresh every hour'}</small></div>
     <section className="organic-kpis">{counts.map((item) => <div key={item.key}><b>{item.count}</b><span>{item.name}</span></div>)}<div><b>{new Set(filtered.map((plan) => plan.category)).size}</b><span>Categories</span></div></section>
     <div className="feed-toolbar surface plan-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search plan title, benefits, or price" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All providers</option>{providers.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}><option value="">All categories</option>{planCategories.map((category) => <option key={category}>{category}</option>)}</select><select value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })} aria-label="Sort by price"><option value="">Sort by price</option><option value="price_asc">Price low to high</option><option value="price_desc">Price high to low</option></select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '', sort: '' })}><Filter size={16} /> Clear</button></div>
     {filtered.length ? <div className={`plan-comparison-columns ${visibleProviders.length === 1 ? 'single' : ''}`}>{visibleProviders.map((provider) => {
@@ -483,8 +497,8 @@ function BannerDashboard({ banners, bannerCoverage, fetchState, updatedAt, onFet
   const counts = providers.map((provider) => ({ ...provider, count: filtered.filter((banner) => banner.provider === provider.key).length }));
   const visibleProviders = filters.provider ? providers.filter((provider) => provider.key === filters.provider) : providers;
   return <>
-    <section className="organic-status plan-status"><div><span><i /> Banner intelligence</span><h2>Banner comparison dashboard</h2><p>Compare public website banners and visible campaign text from stc, Ooredoo, and Zain plan pages.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching banners...' : 'Fetch live banners'}</button><div className="source-chip"><small>Banners loaded</small><b>{banners.length}</b></div></section>
-    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()}` : 'No banner fetch timestamp available'}</small></div>
+    <section className="organic-status plan-status"><div><span><i /> Live banner intelligence</span><h2>Current homepage banners</h2><p>Every detected homepage hero, carousel, offer, and campaign image currently published by the three competitors.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching banners...' : 'Fetch live banners'}</button><div className="source-chip"><small>Current banners</small><b>{banners.length}</b></div></section>
+    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-refresh every hour` : 'Auto-refresh every hour'}</small></div>
     <section className="organic-kpis">{counts.map((item) => <div key={item.key}><b>{item.count}</b><span>{item.name}</span></div>)}<div><b>{new Set(filtered.map((banner) => banner.category)).size}</b><span>Categories</span></div></section>
     <div className="feed-toolbar surface banner-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search banner text or category" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All providers</option>{providers.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}><option value="">All banner categories</option>{bannerCategories.map((category) => <option key={category}>{category}</option>)}</select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '' })}><Filter size={16} /> Clear</button></div>
     <div className="banner-source-strip">{(bannerCoverage || []).map((item) => <a key={`${item.provider}-${item.category}`} href={item.api_url || '#'} target={item.api_url ? '_blank' : undefined} rel="noreferrer"><b>{item.category}</b><span>{item.source}</span><em className={item.status === 'ok' ? 'ok' : 'warn'}>{item.count} found</em></a>)}</div>
@@ -541,9 +555,11 @@ function DeviceComparison({ devices, payload, fetchState, onFetchDevices, onRelo
   const competitorMissing = devices.filter((device) => device.provider !== 'stc' && deviceKey(device) && !stcKeys.has(deviceKey(device)));
   const visibleProviders = filters.provider ? providers.filter((provider) => provider.key === filters.provider) : providers;
   const gapRows = filtered.filter((device) => device.provider !== 'stc' && device.missing_from_stc);
+  const changes = payload.changes || {};
   return <>
     <section className="organic-status plan-status"><div><span><i /> Device intelligence</span><h2>Device comparison dashboard</h2><p>Monitor devices, prices, installments, stock, offers, and stc gaps across stc, Ooredoo, and Zain.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchDevices}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching devices...' : 'Fetch live devices'}</button><div className="source-chip"><small>Devices loaded</small><b>{devices.length}</b></div></section>
-    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message || payload.source || 'Device monitoring snapshot ready.'}</span><small>{payload.generated_at ? `Last checked ${new Date(payload.generated_at).toLocaleString()}` : 'No device fetch timestamp available'}</small></div>
+    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message || payload.source || 'Device monitoring snapshot ready.'}</span><small>{payload.generated_at ? `Last checked ${new Date(payload.generated_at).toLocaleString()} · Auto-refresh every hour` : 'Auto-refresh every hour'}</small></div>
+    <section className="device-change-strip" aria-label="Changes detected in the latest device refresh"><div><b>{changes.added || 0}</b><span>Added</span></div><div><b>{changes.updated || 0}</b><span>Updated</span></div><div><b>{changes.removed || 0}</b><span>Removed</span></div><div><b>{changes.unchanged ?? devices.length}</b><span>Unchanged</span></div></section>
     <section className="organic-kpis device-kpis">{counts.map((item) => <div key={item.key}><b>{item.count}</b><span>{item.name}</span></div>)}<div><b>{competitorMissing.length}</b><span>Missing from stc</span></div></section>
     <div className="page-actions device-tab-actions"><div className="segmented device-tabs">{[['devices', 'All devices', filtered.length], ['gaps', 'stc gap analysis', gapRows.length]].map(([key, label, count]) => <button key={key} className={tab === key ? 'active' : ''} type="button" onClick={() => setTab(key)}>{label}<span>{count}</span></button>)}</div><button className="load-more" type="button" onClick={onReload}><RefreshCw size={14} /> Reload saved device snapshot</button></div>
     <div className="feed-toolbar surface device-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search device name, brand, storage, offer" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All operators</option>{providers.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}><option value="">All categories</option>{deviceCategories.map((category) => <option key={category}>{category}</option>)}</select><select value={filters.stock} onChange={(event) => setFilters({ ...filters, stock: event.target.value })}><option value="">All stock</option><option value="in">In stock</option><option value="out">Out of stock</option></select><select value={filters.gap} onChange={(event) => setFilters({ ...filters, gap: event.target.value })}><option value="">All gaps</option><option value="missing_stc">Missing from stc</option><option value="competitor_only">Competitor only</option></select><select value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })}><option value="">Newest checked</option><option value="price_asc">Price low to high</option><option value="price_desc">Price high to low</option><option value="installment_asc">Installment low to high</option></select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '', stock: '', gap: '', sort: '' })}><Filter size={16} /> Clear</button></div>
@@ -590,13 +606,21 @@ export default function Dashboard({ initialSection = 'overview' }) {
   }, [applyAdsPayload]);
   useEffect(() => { loadAds(); const timer = window.setInterval(loadAds, 30 * 1000); return () => window.clearInterval(timer); }, [loadAds]);
   const applyPlansPayload = useCallback((payload) => { setPlans(Array.isArray(payload) ? payload : payload.data || []); setBanners(Array.isArray(payload) ? [] : payload.banners || []); setBannerCoverage(Array.isArray(payload) ? [] : payload.banner_coverage || []); setPlansUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
-  useEffect(() => { fetch('/data/plans.json', { cache: 'no-store' }).then((response) => response.json()).then(applyPlansPayload).catch(() => { setPlans([]); setPlansFetchState({ state: 'error', message: 'The saved plan dataset could not be loaded yet. Click Fetch live plans.' }); }); }, [applyPlansPayload]);
+  const loadPlans = useCallback(async () => {
+    try {
+      let response;
+      try { response = await fetch(apiUrl('/api/plans'), { cache: 'no-store' }); if (!response.ok) throw new Error(); }
+      catch { response = await fetch('/data/plans.json', { cache: 'no-store' }); }
+      applyPlansPayload(await response.json());
+    } catch { setPlansFetchState({ state: 'error', message: 'The saved plan and banner dataset could not be loaded.' }); }
+  }, [applyPlansPayload]);
+  useEffect(() => { loadPlans(); const timer = window.setInterval(loadPlans, 60 * 1000); return () => window.clearInterval(timer); }, [loadPlans]);
   const applyDevicesPayload = useCallback((payload) => { setDevices(Array.isArray(payload) ? payload : payload.data || []); setDevicesPayload(Array.isArray(payload) ? {} : payload); }, []);
   const loadDevices = useCallback(() => {
     const controller = new AbortController(); const timer = window.setTimeout(() => controller.abort(), 1200);
     fetch(apiUrl('/api/devices'), { cache: 'no-store', signal: controller.signal }).catch(() => fetch('/data/devices.json', { cache: 'no-store' })).then((response) => response.json()).then(applyDevicesPayload).catch(() => { setDevices([]); setDevicesPayload({ source: 'Device snapshot could not be loaded.' }); }).finally(() => window.clearTimeout(timer));
   }, [applyDevicesPayload]);
-  useEffect(() => { loadDevices(); }, [loadDevices]);
+  useEffect(() => { loadDevices(); const timer = window.setInterval(loadDevices, 60 * 1000); return () => window.clearInterval(timer); }, [loadDevices]);
   const fetchLiveAds = useCallback(async () => {
     setAdsFetchState({ state: 'fetching', message: 'Fetching all live ads from stc, Ooredoo, and Zain. This may take a few minutes.' });
     try {
@@ -652,12 +676,15 @@ export default function Dashboard({ initialSection = 'overview' }) {
   const fetchPlans = useCallback(async () => {
     setPlansFetchState({ state: 'fetching', message: 'Fetching live plan pages from stc, Ooredoo, and Zain.' });
     try {
-      const response = await fetch(apiUrl('/api/fetch-plans'), { cache: 'no-store' });
-      const result = await response.json();
-      if (!response.ok || !result.ok || !result.payload) throw new Error(result.error || 'Plan fetch failed.');
-      applyPlansPayload(result.payload);
-      const failed = (result.payload.coverage || []).filter((item) => item.status !== 'ok');
-      setPlansFetchState({ state: failed.length || result.payload.fetch_warning ? 'error' : 'live', message: result.payload.fetch_warning || `${result.message}${failed.length ? ` ${failed.length} pages were partial or blocked.` : ''}` });
+      const response = await fetch(apiUrl('/api/fetch-plans'), { method: 'POST', cache: 'no-store' });
+      await responseJson(response, 'Plan and banner refresh');
+      const job = await waitForComparisonJob('/api/fetch-plans', 'Plan and banner', (message) => setPlansFetchState({ state: 'fetching', message }));
+      if (job.state === 'error') throw new Error(job.message || 'Plan and banner refresh failed.');
+      const dataResponse = await fetch(apiUrl('/api/plans'), { cache: 'no-store' });
+      const payload = await responseJson(dataResponse, 'Updated plan and banner data');
+      applyPlansPayload(payload);
+      const failed = [...(payload.coverage || []), ...(payload.banner_coverage || [])].filter((item) => item.status !== 'ok');
+      setPlansFetchState({ state: failed.length || payload.fetch_warning ? 'error' : 'live', message: payload.fetch_warning || `${job.message}${failed.length ? ` ${failed.length} sources are showing preserved data because the live page was partial or blocked.` : ''}` });
     } catch (error) {
       setPlansFetchState({ state: 'error', message: `Plan fetch failed: ${error.message}. The previous snapshot is still displayed.` });
     }
@@ -665,12 +692,15 @@ export default function Dashboard({ initialSection = 'overview' }) {
   const fetchDevices = useCallback(async () => {
     setDevicesFetchState({ state: 'fetching', message: 'Fetching live device listings from stc, Ooredoo, and Zain e-store pages.' });
     try {
-      const response = await fetch(apiUrl('/api/fetch-devices'), { cache: 'no-store' });
-      const result = await response.json();
-      if (!response.ok || !result.ok || !result.payload) throw new Error(result.error || 'Device fetch failed.');
-      applyDevicesPayload(result.payload);
-      const failed = (result.payload.coverage || []).filter((item) => item.status !== 'ok');
-      setDevicesFetchState({ state: failed.length ? 'error' : 'live', message: `${result.message}${failed.length ? ` ${failed.length} pages were partial or blocked.` : ''}` });
+      const response = await fetch(apiUrl('/api/fetch-devices'), { method: 'POST', cache: 'no-store' });
+      await responseJson(response, 'Device refresh');
+      const job = await waitForComparisonJob('/api/fetch-devices', 'Device', (message) => setDevicesFetchState({ state: 'fetching', message }));
+      if (job.state === 'error') throw new Error(job.message || 'Device refresh failed.');
+      const dataResponse = await fetch(apiUrl('/api/devices'), { cache: 'no-store' });
+      const payload = await responseJson(dataResponse, 'Updated device data');
+      applyDevicesPayload(payload);
+      const failed = (payload.coverage || []).filter((item) => item.status !== 'ok');
+      setDevicesFetchState({ state: failed.length ? 'error' : 'live', message: `${job.message}${failed.length ? ` ${failed.length} sources are showing preserved data because the live page was partial or blocked.` : ''}` });
     } catch (error) {
       setDevicesFetchState({ state: 'error', message: `Device fetch failed: ${error.message}. The previous snapshot is still displayed.` });
     }

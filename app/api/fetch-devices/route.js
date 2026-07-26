@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { fetchDevices } from '../_lib/live-fetch.js';
+import { getDevicesFetchJob, startDevicesFetchJob } from '../_lib/live-fetch.js';
 
 export async function GET() {
-  try {
-    return NextResponse.json(await fetchDevices());
-  } catch (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-  }
+  return NextResponse.json({ ok: true, job: getDevicesFetchJob() });
+}
+
+export async function POST() {
+  const result = startDevicesFetchJob();
+  return NextResponse.json({ ok: true, ...result }, { status: result.accepted ? 202 : 200 });
 }
