@@ -1,0 +1,62 @@
+name: Refresh organic posts
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-organic-posts
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/playwright-core/.local-browsers
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - run: node scripts/install-playwright.mjs
+
+      - name: Collect 30-day organic posts
+        run: node scripts/scrape-organic-posts.mjs
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: '0'
+          SOCIAL_FACEBOOK_EMAIL: ${{ secrets.SOCIAL_FACEBOOK_EMAIL }}
+          SOCIAL_FACEBOOK_PASSWORD: ${{ secrets.SOCIAL_FACEBOOK_PASSWORD }}
+          SOCIAL_INSTAGRAM_EMAIL: ${{ secrets.SOCIAL_INSTAGRAM_EMAIL }}
+          SOCIAL_INSTAGRAM_PASSWORD: ${{ secrets.SOCIAL_INSTAGRAM_PASSWORD }}
+          SOCIAL_X_EMAIL: ${{ secrets.SOCIAL_X_EMAIL }}
+          SOCIAL_X_PASSWORD: ${{ secrets.SOCIAL_X_PASSWORD }}
+          SOCIAL_TIKTOK_EMAIL: ${{ secrets.SOCIAL_TIKTOK_EMAIL }}
+          SOCIAL_TIKTOK_PASSWORD: ${{ secrets.SOCIAL_TIKTOK_PASSWORD }}
+
+      - name: Cache post thumbnails
+        run: node scripts/cache-social-thumbnails.mjs
+
+      - name: Commit refreshed snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/social-posts.json public/social-thumbnails
+          git diff --cached --quiet && exit 0
+          git commit -m "Refresh organic posts snapshot"
+          git pull --rebase
+          git push

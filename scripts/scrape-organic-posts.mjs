@@ -12,6 +12,10 @@ const email = process.env.SOCIAL_FACEBOOK_EMAIL || '';
 const password = process.env.SOCIAL_FACEBOOK_PASSWORD || '';
 const instagramEmail = process.env.SOCIAL_INSTAGRAM_EMAIL || email;
 const instagramPassword = process.env.SOCIAL_INSTAGRAM_PASSWORD || password;
+const xEmail = process.env.SOCIAL_X_EMAIL || '';
+const xPassword = process.env.SOCIAL_X_PASSWORD || '';
+const tiktokEmail = process.env.SOCIAL_TIKTOK_EMAIL || '';
+const tiktokPassword = process.env.SOCIAL_TIKTOK_PASSWORD || '';
 const authProfileDir = process.env.SOCIAL_BROWSER_PROFILE_DIR || path.join(root, '.auth', 'social-browser');
 const instagramDetailLimit = Math.max(0, Number(process.env.INSTAGRAM_DETAIL_LIMIT || 18));
 const browserOptions = {
@@ -30,6 +34,16 @@ const instagramTargets = [
   { company: 'stc Kuwait', handle: 'stc_kwt', url: 'https://www.instagram.com/stc_kwt/' },
   { company: 'Ooredoo Kuwait', handle: 'ooredookuwait', url: 'https://www.instagram.com/ooredookuwait/' },
   { company: 'Zain Kuwait', handle: 'zainkuwait', url: 'https://www.instagram.com/zainkuwait/' },
+];
+const xTargets = [
+  { company: 'stc Kuwait', handle: 'stc_kwt', url: 'https://x.com/stc_kwt' },
+  { company: 'Ooredoo Kuwait', handle: 'OoredooKuwait', url: 'https://x.com/OoredooKuwait' },
+  { company: 'Zain Kuwait', handle: 'ZainKuwait', url: 'https://x.com/ZainKuwait' },
+];
+const tiktokTargets = [
+  { company: 'stc Kuwait', handle: 'stc_kwt', url: 'https://www.tiktok.com/@stc_kwt?lang=en' },
+  { company: 'Ooredoo Kuwait', handle: 'ooredookuwait', url: 'https://www.tiktok.com/@ooredookuwait?lang=en' },
+  { company: 'Zain Kuwait', handle: 'zainkuwait', url: 'https://www.tiktok.com/@zainkuwait?lang=en' },
 ];
 const instagramHandleCompanies = new Map(instagramTargets.map((target) => [target.handle.toLowerCase(), target.company]));
 const instagramDirectPostUrls = [
@@ -61,6 +75,40 @@ function stableId(value) {
 
 function clean(value) {
   return String(value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
+
+function metricNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const normalized = clean(value).toLowerCase().replace(/,/g, '');
+  const match = normalized.match(/([0-9]+(?:\.[0-9]+)?)\s*([kmb])?/i);
+  if (!match) return null;
+  const multiplier = match[2] === 'k' ? 1e3 : match[2] === 'm' ? 1e6 : match[2] === 'b' ? 1e9 : 1;
+  return Math.round(Number(match[1]) * multiplier);
+}
+
+function relativeDate(label, now = Date.now()) {
+  const value = clean(label).toLowerCase();
+  if (!value) return '';
+  if (/just now/.test(value)) return new Date(now).toISOString();
+  if (/yesterday/.test(value)) return new Date(now - 24 * 60 * 60 * 1000).toISOString();
+  const match = value.match(/(\d+)\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|mo|month|months|y|year|years)\b/);
+  if (!match) return '';
+  const amount = Number(match[1]);
+  const unit = match[2];
+  const ms = unit.startsWith('m') && !unit.startsWith('mo') ? 60000
+    : unit.startsWith('h') ? 3600000
+      : unit === 'd' || unit.startsWith('day') ? 86400000
+        : unit === 'w' || unit.startsWith('week') ? 7 * 86400000
+          : unit.startsWith('mo') ? 30 * 86400000
+            : 365 * 86400000;
+  return new Date(now - amount * ms).toISOString();
+}
+
+function isRecent(post, now = Date.now()) {
+  const time = new Date(post.published_at || '').getTime();
+  return Number.isFinite(time) && time >= now - rollingMonthMs && time <= now + 86400000;
 }
 
 async function startBrowserSession() {
@@ -140,6 +188,39 @@ async function loginInstagram(page) {
   }
 }
 
+async function loginX(page) {
+  if (!xEmail || !xPassword) throw new Error('X email and password are required.');
+  await page.goto('https://x.com/i/flow/login', { waitUntil: 'domcontentloaded', timeout: 90000 });
+  await page.waitForTimeout(2500);
+  if (!/login|flow/i.test(page.url())) return;
+  const user = page.locator('input[autocomplete="username"], input[name="text"]').first();
+  if (!(await user.count())) throw new Error('X login form was unavailable.');
+  await user.fill(xEmail);
+  await user.press('Enter');
+  await page.waitForTimeout(1800);
+  const passwordField = page.locator('input[name="password"], input[type="password"]').first();
+  if (!(await passwordField.count())) throw new Error('X login requires an interactive username or security check.');
+  await passwordField.fill(xPassword);
+  await passwordField.press('Enter');
+  await page.waitForTimeout(5500);
+  if (/login|challenge|account\/access/i.test(page.url())) throw new Error('X login requires an interactive security check.');
+}
+
+async function loginTikTok(page) {
+  if (!tiktokEmail || !tiktokPassword) throw new Error('TikTok email and password are required.');
+  await page.goto('https://www.tiktok.com/login/phone-or-email/email', { waitUntil: 'domcontentloaded', timeout: 90000 });
+  await page.waitForTimeout(2500);
+  if (!/\/login/i.test(page.url())) return;
+  const user = page.locator('input[name="username"], input[type="text"]').first();
+  const passwordField = page.locator('input[type="password"]').first();
+  if (!(await user.count()) || !(await passwordField.count())) throw new Error('TikTok login form was unavailable or requires an interactive check.');
+  await user.fill(tiktokEmail);
+  await passwordField.fill(tiktokPassword);
+  await passwordField.press('Enter');
+  await page.waitForTimeout(6000);
+  if (/\/login|captcha|verify/i.test(page.url())) throw new Error('TikTok login requires an interactive security check.');
+}
+
 async function visibleFacebookPosts(page, target) {
   return page.evaluate((arg) => {
     const clean = (value) => (value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
@@ -155,11 +236,17 @@ async function visibleFacebookPosts(page, target) {
       const images = [...new Set([...card.querySelectorAll('img')].filter((image) => (image.currentSrc || image.src) && !(image.currentSrc || image.src).startsWith('data:') && image.naturalWidth >= 180).map((image) => image.currentSrc || image.src))];
       const hrefs = [...new Set([...card.querySelectorAll('a[href]')].map((anchor) => anchor.href))];
       const publishedLabel = [...new Set([...card.querySelectorAll('a,span,abbr')].map((element) => clean(element.innerText || element.getAttribute('aria-label') || element.getAttribute('title') || '')).filter((text) => /^(Just now|Yesterday|\d+\s*(?:m|h|d|w|mo|y)\b|\d+\s+(?:min|mins|hr|hrs|hour|hours|day|days|week|weeks|month|months|year|years)\b)/i.test(text)))][0] || '';
+      const dateNode = card.querySelector('[data-utime], time[datetime], abbr[title]');
+      const unixTime = Number(dateNode?.getAttribute('data-utime') || 0);
+      const publishedAt = unixTime ? new Date(unixTime * 1000).toISOString() : dateNode?.getAttribute('datetime') || '';
       let url = hrefs.find((href) => /facebook\.com\/photo\/\?fbid=/.test(href)) || hrefs.find((href) => /facebook\.com\/.+\/(?:posts|videos|reel)\//.test(href)) || '';
       if (url.includes('/photo/')) { try { const parsed = new URL(url); url = `${parsed.origin}${parsed.pathname}?fbid=${parsed.searchParams.get('fbid')}${parsed.searchParams.get('set') ? `&set=${parsed.searchParams.get('set')}` : ''}`; } catch {} }
       const id = (url.match(/set=pcb\.(\d+)/) || url.match(/fbid=(\d+)/) || url.match(/\/(\d{8,})\/?/) || [])[1] || '';
       if (!caption || (!url && !images.length)) return null;
-      return { id, caption, thumbnail: images[0] || '', post_type: images.length > 1 ? 'Carousel' : images.length === 1 ? 'Image' : 'Post', url: url || arg.url, index, published_label: publishedLabel };
+      const cardText = clean(card.innerText);
+      const metric = (pattern) => clean((cardText.match(pattern) || [])[1] || '');
+      return { id, caption, thumbnail: images[0] || '', post_type: images.length > 1 ? 'Carousel' : images.length === 1 ? 'Image' : 'Post', url: url || arg.url, index, published_label: publishedLabel, published_at: publishedAt,
+        likes_label: metric(/([\d,.]+\s*[KMB]?)\s+(?:likes?|reactions?)/i), comments_label: metric(/([\d,.]+\s*[KMB]?)\s+comments?/i), views_label: metric(/([\d,.]+\s*[KMB]?)\s+views?/i) };
     }).filter(Boolean);
   }, target);
 }
@@ -171,7 +258,7 @@ async function scrapeFacebook(page, target) {
   for (let scroll = 0; scroll <= maxScrolls; scroll += 1) {
     for (const post of await visibleFacebookPosts(page, target)) {
       const id = post.id || stableId(`${target.company}|${post.url}|${post.caption}`);
-      found.set(`facebook-${id}`, { ...post, id: `facebook-${id}`, company: target.company, platform: 'Facebook', published_at: '', status: 'New' });
+      found.set(`facebook-${id}`, { ...post, id: `facebook-${id}`, company: target.company, platform: 'Facebook', published_at: post.published_at || relativeDate(post.published_label), likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), views: metricNumber(post.views_label), status: 'New' });
     }
     if (scroll < maxScrolls) { await page.mouse.wheel(0, 2400); await page.waitForTimeout(1400); }
   }
@@ -206,7 +293,7 @@ async function enrichInstagramPost(page, post) {
   try {
     await detailPage.goto(post.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
     await detailPage.waitForTimeout(2500);
-    return await detailPage.evaluate((input) => {
+    const enriched = await detailPage.evaluate((input) => {
       const clean = (value) => (value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
       const timeElement = document.querySelector('time[datetime]');
       const ogDescription = document.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
@@ -224,8 +311,12 @@ async function enrichInstagramPost(page, post) {
         thumbnail: input.thumbnail || ogImage,
         published_at: timeElement?.getAttribute('datetime') || input.published_at || '',
         published_label: relativeLabel,
+        likes_label: (ogDescription.match(/([\d,.]+\s*[KMB]?)\s+likes?/i) || [])[1] || '',
+        comments_label: (ogDescription.match(/([\d,.]+\s*[KMB]?)\s+comments?/i) || [])[1] || '',
+        views_label: (ogDescription.match(/([\d,.]+\s*[KMB]?)\s+views?/i) || [])[1] || '',
       };
     }, post);
+    return { ...enriched, likes: metricNumber(enriched.likes_label), comments: metricNumber(enriched.comments_label), views: metricNumber(enriched.views_label) };
   } catch {
     return post;
   } finally {
@@ -324,6 +415,9 @@ async function instagramApiPosts(request, target) {
     post_type: node.is_video ? 'Reel' : node.__typename === 'GraphSidecar' ? 'Carousel' : 'Image',
     url: `https://www.instagram.com/${node.is_video ? 'reel' : 'p'}/${node.shortcode}/`,
     status: 'New',
+    likes: Number.isFinite(node.edge_liked_by?.count) ? node.edge_liked_by.count : Number.isFinite(node.edge_media_preview_like?.count) ? node.edge_media_preview_like.count : null,
+    comments: Number.isFinite(node.edge_media_to_comment?.count) ? node.edge_media_to_comment.count : null,
+    views: Number.isFinite(node.video_view_count) ? node.video_view_count : Number.isFinite(node.video_play_count) ? node.video_play_count : null,
   })).filter((post) => post.id !== 'instagram-undefined' && post.thumbnail && post.url);
 }
 
@@ -354,22 +448,84 @@ async function scrapeInstagram(page, request, target, { renderProfile = true } =
   return [...enriched, ...posts.slice(instagramDetailLimit)];
 }
 
+async function scrapeX(page, target) {
+  await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+  await page.waitForTimeout(3500);
+  const found = new Map();
+  for (let scroll = 0; scroll <= maxScrolls; scroll += 1) {
+    const rows = await page.evaluate((arg) => [...document.querySelectorAll('article[data-testid="tweet"]')].map((article) => {
+      const cleanText = (value) => (value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+      const time = article.querySelector('time[datetime]');
+      const anchor = time?.closest('a[href*="/status/"]') || article.querySelector('a[href*="/status/"]');
+      const href = anchor?.href || '';
+      const id = (href.match(/\/status\/(\d+)/) || [])[1] || '';
+      const caption = cleanText(article.querySelector('[data-testid="tweetText"]')?.innerText || '');
+      const image = [...article.querySelectorAll('img')].find((node) => /pbs\.twimg\.com\/media/.test(node.currentSrc || node.src));
+      const metricLabel = (testId) => cleanText(article.querySelector(`[data-testid="${testId}"]`)?.getAttribute('aria-label') || article.querySelector(`[data-testid="${testId}"]`)?.innerText || '');
+      const viewsLabel = cleanText([...article.querySelectorAll('a[href*="/analytics"], [aria-label*="views" i]')][0]?.getAttribute('aria-label') || [...article.querySelectorAll('a[href*="/analytics"]')][0]?.innerText || '');
+      return { id: `x-${id}`, company: arg.company, platform: 'X', published_at: time?.getAttribute('datetime') || '', thumbnail: image?.currentSrc || image?.src || '', caption, post_type: image ? 'Image' : 'Post', url: href, likes_label: metricLabel('like'), comments_label: metricLabel('reply'), views_label: viewsLabel, status: 'New' };
+    }).filter((post) => post.id !== 'x-' && post.url), target);
+    for (const post of rows) found.set(post.id, { ...post, likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), views: metricNumber(post.views_label) });
+    if (scroll < maxScrolls) { await page.mouse.wheel(0, 2200); await page.waitForTimeout(1200); }
+  }
+  return [...found.values()];
+}
+
+function tiktokDateFromId(id) {
+  try {
+    const seconds = Number(BigInt(id) >> 32n);
+    const time = seconds * 1000;
+    return Number.isFinite(time) && time > 1262304000000 ? new Date(time).toISOString() : '';
+  } catch { return ''; }
+}
+
+async function enrichTikTokPost(page, post) {
+  const detail = await page.context().newPage();
+  try {
+    await detail.goto(post.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await detail.waitForTimeout(1800);
+    const raw = await detail.evaluate(() => {
+      const cleanText = (value) => (value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+      const body = cleanText(document.body.innerText);
+      const meta = document.querySelector('meta[name="description"]')?.content || document.querySelector('meta[property="og:description"]')?.content || '';
+      const matchMetric = (name) => (body.match(new RegExp(`([\\d,.]+\\s*[KMB]?)\\s+${name}`, 'i')) || [])[1] || '';
+      return { caption: document.querySelector('meta[property="og:description"]')?.content || '', thumbnail: document.querySelector('meta[property="og:image"]')?.content || '', likes_label: matchMetric('likes?'), comments_label: matchMetric('comments?'), views_label: matchMetric('views?'), meta };
+    });
+    return { ...post, caption: raw.caption || post.caption, thumbnail: raw.thumbnail || post.thumbnail, likes: metricNumber(raw.likes_label), comments: metricNumber(raw.comments_label), views: metricNumber(raw.views_label) ?? post.views };
+  } catch { return post; } finally { await detail.close(); }
+}
+
+async function scrapeTikTok(page, target) {
+  await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+  await page.waitForTimeout(4000);
+  const found = new Map();
+  for (let scroll = 0; scroll <= maxScrolls; scroll += 1) {
+    const rows = await page.evaluate((arg) => [...document.querySelectorAll('a[href*="/video/"]')].map((anchor) => {
+      const href = anchor.href || '';
+      const id = (href.match(/\/video\/(\d+)/) || [])[1] || '';
+      const image = anchor.querySelector('img') || anchor.closest('div')?.querySelector('img');
+      const caption = image?.alt || anchor.getAttribute('aria-label') || '';
+      const viewsLabel = anchor.querySelector('strong')?.innerText || anchor.closest('[data-e2e]')?.querySelector('strong')?.innerText || '';
+      return { id: `tiktok-${id}`, company: arg.company, platform: 'TikTok', thumbnail: image?.currentSrc || image?.src || '', caption, post_type: 'Video', url: href, views_label: viewsLabel, status: 'New' };
+    }).filter((post) => post.id !== 'tiktok-' && post.url), target);
+    for (const post of rows) found.set(post.id, { ...post, published_at: tiktokDateFromId(post.id.replace('tiktok-', '')), likes: null, comments: null, views: metricNumber(post.views_label) });
+    if (scroll < maxScrolls) { await page.mouse.wheel(0, 2400); await page.waitForTimeout(1200); }
+  }
+  const recent = [...found.values()].filter(isRecent).slice(0, 24);
+  const enriched = [];
+  for (const post of recent) enriched.push(await enrichTikTokPost(page, post));
+  return enriched;
+}
+
 const { context, page } = await startBrowserSession();
 const discovered = [];
 const coverage = [];
 
 try {
   try {
-    const posts = await scrapeInstagramDirectPosts();
-    discovered.push(...posts);
-    coverage.push({ company: 'Seeded Instagram URLs', platform: 'Instagram', count: posts.length, status: posts.length ? 'ok' : 'No seeded Instagram post URLs were exposed.' });
-  } catch (error) {
-    coverage.push({ company: 'Seeded Instagram URLs', platform: 'Instagram', count: 0, status: error.message });
-  }
-  try {
     await loginFacebook(page);
     for (const target of facebookTargets) {
-      try { const posts = await scrapeFacebook(page, target); discovered.push(...posts); coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: 'ok' }); }
+      try { const posts = (await scrapeFacebook(page, target)).filter(isRecent); discovered.push(...posts); coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: posts.length ? 'ok' : 'No Facebook posts with a verifiable date in the last 30 days were exposed.' }); }
       catch (error) { coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: error.message }); }
     }
   } catch (error) {
@@ -383,11 +539,29 @@ try {
   }
   for (const target of instagramTargets) {
     try {
-      const posts = await scrapeInstagram(page, context.request, target, { renderProfile: instagramLoginStatus === 'ok' });
+      const posts = (await scrapeInstagram(page, context.request, target, { renderProfile: instagramLoginStatus === 'ok' })).filter(isRecent);
       discovered.push(...posts);
       coverage.push({ company: target.company, platform: 'Instagram', count: posts.length, status: posts.length ? instagramLoginStatus === 'ok' ? 'ok' : `public API ok; profile page skipped: ${instagramLoginStatus}` : instagramLoginStatus === 'ok' ? 'No Instagram posts were exposed to the collector.' : instagramLoginStatus });
     }
     catch (error) { coverage.push({ company: target.company, platform: 'Instagram', count: 0, status: error.message }); }
+  }
+  try {
+    await loginX(page);
+    for (const target of xTargets) {
+      try { const posts = (await scrapeX(page, target)).filter(isRecent); discovered.push(...posts); coverage.push({ company: target.company, platform: 'X', count: posts.length, status: posts.length ? 'ok' : 'No X posts with a verifiable date in the last 30 days were exposed.' }); }
+      catch (error) { coverage.push({ company: target.company, platform: 'X', count: 0, status: error.message }); }
+    }
+  } catch (error) {
+    xTargets.forEach((target) => coverage.push({ company: target.company, platform: 'X', count: 0, status: error.message }));
+  }
+  try {
+    await loginTikTok(page);
+    for (const target of tiktokTargets) {
+      try { const posts = await scrapeTikTok(page, target); discovered.push(...posts); coverage.push({ company: target.company, platform: 'TikTok', count: posts.length, status: posts.length ? 'ok' : 'No TikTok posts were exposed to the collector.' }); }
+      catch (error) { coverage.push({ company: target.company, platform: 'TikTok', count: 0, status: error.message }); }
+    }
+  } catch (error) {
+    tiktokTargets.forEach((target) => coverage.push({ company: target.company, platform: 'TikTok', count: 0, status: error.message }));
   }
 } finally {
   await context.close();
@@ -399,22 +573,24 @@ try {
   const previous = JSON.parse(await readFile(dataPath, 'utf8'));
   previousData = Array.isArray(previous.data) ? previous.data : [];
 } catch {}
-for (const post of previousData) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
-for (const post of discovered) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
-const emptyFetch = !discovered.length && coverage.length;
-const blockedCoverage = coverage.filter((item) => item.status !== 'ok' && item.company !== 'Seeded Instagram URLs');
+const recentDiscovered = discovered.filter(isRecent);
+for (const post of previousData.filter(isRecent)) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
+for (const post of recentDiscovered) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
+const emptyFetch = !recentDiscovered.length && coverage.length;
+const blockedCoverage = coverage.filter((item) => item.status !== 'ok');
 const blockedWarning = blockedCoverage.length
   ? `Live organic refresh was partial: ${blockedCoverage.map((item) => `${item.company} ${item.platform}`).join(', ')} need login, are rate-limited, or were blocked by the platform.`
   : '';
 
 const payload = {
   generated_at: new Date().toISOString(),
-  source: 'Live organic collector: authenticated Facebook pages and public Instagram profiles',
+  source: 'Authenticated 30-day organic monitor for Facebook, Instagram, X, and TikTok',
   coverage,
-  fetched_count: discovered.length,
+  fetched_count: recentDiscovered.length,
   mode: emptyFetch && previousData.length ? 'empty_fetch_preserved_previous' : 'live_merged',
   fetch_warning: emptyFetch && previousData.length ? 'Live organic fetch returned no posts, so the previous saved posts were preserved.' : blockedWarning,
-  data: [...merged.values()],
+  window_days: 30,
+  data: [...merged.values()].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()),
 };
 await writeFile(dataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-console.log(JSON.stringify({ fetched: discovered.length, total: payload.data.length, coverage }, null, 2));
+console.log(JSON.stringify({ fetched: recentDiscovered.length, total: payload.data.length, coverage }, null, 2));

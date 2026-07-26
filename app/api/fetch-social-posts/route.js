@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { fetchSocialPosts } from '../_lib/live-fetch.js';
 
-export async function POST(request) {
+export async function POST() {
   try {
-    const credentials = await request.json().catch(() => ({}));
-    return NextResponse.json(await fetchSocialPosts(credentials));
+    return NextResponse.json(await fetchSocialPosts());
   } catch (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }

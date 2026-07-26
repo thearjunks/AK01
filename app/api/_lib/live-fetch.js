@@ -185,15 +185,19 @@ export async function fetchDevices() {
   return { ok: true, payload, message: `Fetched ${payload.data?.length || 0} devices from the configured e-store pages.` };
 }
 
-async function fetchSocialPostsNow(credentials = {}) {
+async function fetchSocialPostsNow() {
   const providerUrl = process.env.SOCIAL_POSTS_JSON_URL
     || (process.env.NODE_ENV === 'production' ? `${repositoryDataUrl}/social-posts.json` : '');
   if (!providerUrl) {
     await runScript('scrape-organic-posts.mjs', {
-      SOCIAL_FACEBOOK_EMAIL: credentials.facebook?.email || process.env.SOCIAL_FACEBOOK_EMAIL || '',
-      SOCIAL_FACEBOOK_PASSWORD: credentials.facebook?.password || process.env.SOCIAL_FACEBOOK_PASSWORD || '',
-      SOCIAL_INSTAGRAM_EMAIL: credentials.instagram?.email || credentials.facebook?.email || process.env.SOCIAL_INSTAGRAM_EMAIL || '',
-      SOCIAL_INSTAGRAM_PASSWORD: credentials.instagram?.password || credentials.facebook?.password || process.env.SOCIAL_INSTAGRAM_PASSWORD || '',
+      SOCIAL_FACEBOOK_EMAIL: process.env.SOCIAL_FACEBOOK_EMAIL || '',
+      SOCIAL_FACEBOOK_PASSWORD: process.env.SOCIAL_FACEBOOK_PASSWORD || '',
+      SOCIAL_INSTAGRAM_EMAIL: process.env.SOCIAL_INSTAGRAM_EMAIL || '',
+      SOCIAL_INSTAGRAM_PASSWORD: process.env.SOCIAL_INSTAGRAM_PASSWORD || '',
+      SOCIAL_X_EMAIL: process.env.SOCIAL_X_EMAIL || '',
+      SOCIAL_X_PASSWORD: process.env.SOCIAL_X_PASSWORD || '',
+      SOCIAL_TIKTOK_EMAIL: process.env.SOCIAL_TIKTOK_EMAIL || '',
+      SOCIAL_TIKTOK_PASSWORD: process.env.SOCIAL_TIKTOK_PASSWORD || '',
     });
     await runScript('cache-social-thumbnails.mjs');
     const payload = normalizeSocialPayload(await readSocialData());
@@ -209,9 +213,9 @@ async function fetchSocialPostsNow(credentials = {}) {
   return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
 }
 
-export function fetchSocialPosts(credentials = {}) {
+export function fetchSocialPosts() {
   if (socialFetchPromise) return socialFetchPromise;
-  socialFetchPromise = fetchSocialPostsNow(credentials).finally(() => { socialFetchPromise = null; });
+  socialFetchPromise = fetchSocialPostsNow().finally(() => { socialFetchPromise = null; });
   return socialFetchPromise;
 }
 

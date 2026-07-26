@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowUpRight, BarChart3, Bell, ChevronRight, CircleAlert,
   Camera, Download, Eye, Filter, Grid2X2, LayoutDashboard,
-  MessageCircle, Menu, RefreshCw, Search, Smartphone,
+  Heart, MessageCircle, Menu, RefreshCw, Search, Smartphone,
   Sparkles, Target, TrendingUp, X,
 } from 'lucide-react';
 
@@ -49,6 +49,9 @@ const socialAccounts = [
   ['stc Kuwait', 'TikTok', 'https://www.tiktok.com/@stc_kwt'],
   ['Ooredoo Kuwait', 'TikTok', 'https://www.tiktok.com/@ooredookuwait'],
   ['Zain Kuwait', 'TikTok', 'https://www.tiktok.com/@zainkuwait'],
+  ['stc Kuwait', 'X', 'https://x.com/stc_kwt'],
+  ['Ooredoo Kuwait', 'X', 'https://x.com/OoredooKuwait'],
+  ['Zain Kuwait', 'X', 'https://x.com/ZainKuwait'],
 ];
 const offerCategories = [
   ['eSIM & digital activation', ['esim', 'digital sim']],
@@ -163,6 +166,13 @@ function organicDateLabel(post) {
 }
 function organicRelativeLabel(post) {
   return organicPublishedLabel(post) || (organicPublishedAt(post) ? relativeTime(organicPublishedAt(post)) : 'Publication time unavailable');
+}
+
+function engagementValue(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  const count = Number(value);
+  if (!Number.isFinite(count)) return String(value);
+  return new Intl.NumberFormat('en', { notation: count >= 1000 ? 'compact' : 'standard', maximumFractionDigits: 1 }).format(count);
 }
 
 function organicLink(post) {
@@ -327,7 +337,7 @@ function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
   return <><div className="page-actions"><div className="segmented">{[['campaigns', 'Campaign library'], ['compare', 'Competitor view'], ['opportunities', 'Offer gaps']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{filtered.length}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{filtered.length}</b> campaigns across all available dates</span><span><i /> Active and inactive ads from all tracked Meta URLs</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <CompetitorColumns rows={filtered} /> : <OpportunityMatrix rows={filtered} />}</>;
 }
 
-function Organic({ posts, source, onRefresh, onFetchLive, fetchState, updatedAt }) {
+function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, updatedAt }) {
   const [filters, setFilters] = useState({ search: '', company: '', platform: '', recent: 'all' });
   const recentPlatform = filters.recent === 'all' ? '' : filters.recent;
   const filtered = posts.filter((post) => {
@@ -341,14 +351,14 @@ function Organic({ posts, source, onRefresh, onFetchLive, fetchState, updatedAt 
   return <>
     <section className="organic-status"><div><span><i /> Live monitoring</span><h2>Organic publishing watch</h2><p>Only posts published during the last 30 days are displayed.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching posts...' : 'Fetch live organic posts'}</button><div className="source-chip"><small>Data source</small><b>{source}</b></div></section>
     <div className={`live-fetch-status organic-live-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last fetched ${new Date(updatedAt).toLocaleString()}` : 'No live fetch timestamp available'}</small></div>
-    <section className="organic-kpis"><div><b>{socialAccounts.length}</b><span>Accounts</span></div><div><b>{posts.length}</b><span>Live posts loaded</span></div><div><b>{posts.filter((post) => !post.viewed).length}</b><span>New posts</span></div><div><b>10m</b><span>Auto live fetch</span></div></section>
+    <section className="organic-kpis"><div><b>{socialAccounts.length}</b><span>Accounts</span></div><div><b>{posts.length}</b><span>Posts · last 30 days</span></div><div><b>{coverage.filter((item) => item.status === 'ok').length}/{socialAccounts.length}</b><span>Account sources live</span></div><div><b>10m</b><span>Background refresh</span></div></section>
     <div className="organic-layout">
-      <aside className="organic-accounts"><div className="section-heading"><div><span>Watchlist</span><h2>Tracked accounts</h2></div></div>{['Facebook', 'Instagram', 'TikTok'].map((platform) => <div className="platform-group" key={platform}><b>{platform === 'Facebook' ? <MessageCircle /> : platform === 'Instagram' ? <Camera /> : <Activity />}{platform}</b>{socialAccounts.filter((account) => account[1] === platform).map((account) => <a key={account[2]} href={account[2]} target="_blank" rel="noreferrer"><span>{account[0]}</span><ArrowUpRight /></a>)}</div>)}</aside>
+      <aside className="organic-accounts"><div className="section-heading"><div><span>Watchlist</span><h2>Tracked accounts</h2></div></div>{['Facebook', 'Instagram', 'TikTok', 'X'].map((platform) => <div className="platform-group" key={platform}><b>{platform === 'Facebook' ? <MessageCircle /> : platform === 'Instagram' ? <Camera /> : <Activity />}{platform}</b>{socialAccounts.filter((account) => account[1] === platform).map((account) => <a key={account[2]} href={account[2]} target="_blank" rel="noreferrer"><span>{account[0]}</span><ArrowUpRight /></a>)}</div>)}</aside>
       <section className="organic-feed-main">
-        <div className="feed-toolbar surface"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search post captions or descriptions" /></label><select value={filters.company} onChange={(event) => setFilters({ ...filters, company: event.target.value })}><option value="">All companies</option><option value="stc">stc</option><option value="ooredoo">Ooredoo</option><option value="zain">Zain</option></select><select value={filters.platform} onChange={(event) => setFilters({ ...filters, platform: event.target.value })}><option value="">All platforms</option><option>Facebook</option><option>Instagram</option><option>TikTok</option></select><select value={filters.recent} onChange={(event) => setFilters({ ...filters, recent: event.target.value })} aria-label="Recent posts"><option value="all">All most recent</option><option value="Instagram">Most recent Instagram</option><option value="Facebook">Most recent Facebook</option><option value="TikTok">Most recent TikTok</option></select></div>
+        <div className="feed-toolbar surface"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search post captions or descriptions" /></label><select value={filters.company} onChange={(event) => setFilters({ ...filters, company: event.target.value })}><option value="">All companies</option><option value="stc">stc</option><option value="ooredoo">Ooredoo</option><option value="zain">Zain</option></select><select value={filters.platform} onChange={(event) => setFilters({ ...filters, platform: event.target.value })}><option value="">All platforms</option><option>Facebook</option><option>Instagram</option><option>TikTok</option><option>X</option></select><select value={filters.recent} onChange={(event) => setFilters({ ...filters, recent: event.target.value })} aria-label="Recent posts"><option value="all">All most recent</option><option value="Instagram">Most recent Instagram</option><option value="Facebook">Most recent Facebook</option><option value="TikTok">Most recent TikTok</option><option value="X">Most recent X</option></select></div>
         {filtered.length ? <><div className="organic-results"><span><b>{filtered.length}</b> organic posts</span><span><i /> Images and descriptions from the connected source</span></div><div className="campaign-grid organic-campaign-grid">{filtered.map((post) => {
           const company = organicCompany(post); const published = organicPublishedAt(post); const caption = organicCaption(post); const link = organicLink(post);
-          return <article className="campaign-card-new organic-card" key={post.id || link}><div className="campaign-image">{organicImage(post) ? <img src={organicImage(post)} alt={`${company.name} ${post.platform || ''} post`} /> : <EmptyArtwork label={post.platform || 'Post'} />}<span>{post.post_type || post.type || (post.viewed ? 'Viewed' : 'New')}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={company.id} /><span><b>{company.name}</b><small>{post.platform || 'Social'} · {organicDateLabel(post)}</small></span></div><h3>{post.title || `${company.name} ${post.platform || 'social'} post`}</h3><p>{caption || 'No description was supplied by the connected social-data source.'}</p><div><span>{organicRelativeLabel(post)}</span>{link ? <a href={link} target="_blank" rel="noreferrer">Open post <ArrowUpRight size={14} /></a> : <span>Link unavailable</span>}</div></div></article>;
+          return <article className="campaign-card-new organic-card" key={post.id || link}><div className="campaign-image">{organicImage(post) ? <img src={organicImage(post)} alt={`${company.name} ${post.platform || ''} post`} /> : <EmptyArtwork label={post.platform || 'Post'} />}<span>{post.post_type || post.type || (post.viewed ? 'Viewed' : 'New')}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={company.id} /><span><b>{company.name}</b><small>{post.platform || 'Social'} · {organicDateLabel(post)}</small></span></div><h3>{post.title || `${company.name} ${post.platform || 'social'} post`}</h3><p>{caption || 'No description was supplied by the connected social-data source.'}</p><div className="organic-engagement"><span title="Likes"><Heart />{engagementValue(post.likes)}</span><span title="Views"><Eye />{engagementValue(post.views)}</span><span title="Comments"><MessageCircle />{engagementValue(post.comments)}</span></div><div className="organic-card-footer"><span>{organicRelativeLabel(post)}</span>{link ? <a href={link} target="_blank" rel="noreferrer">Open post <ArrowUpRight size={14} /></a> : <span>Link unavailable</span>}</div></div></article>;
         })}</div></> : <div className="organic-empty surface"><div><Bell /></div><b>Your organic feed is ready</b><p>Connect an approved social-data provider to display post images and descriptions in the same card format as Boosted Ads.</p><button type="button" onClick={onRefresh}><RefreshCw /> Check connection</button></div>}
       </section>
     </div>
@@ -481,6 +491,7 @@ export default function Dashboard() {
   const [devicesFetchState, setDevicesFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved device snapshot.' });
   const [source, setSource] = useState('Checking connection');
   const [socialUpdatedAt, setSocialUpdatedAt] = useState('');
+  const [socialCoverage, setSocialCoverage] = useState([]);
   const [socialFetchState, setSocialFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved Organic snapshot.' });
   const [plansUpdatedAt, setPlansUpdatedAt] = useState('');
   const [plansFetchState, setPlansFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved plan snapshot.' });
@@ -535,7 +546,7 @@ export default function Dashboard() {
       setAdsFetchState({ state: 'error', message: `Live fetch failed: ${error.message}. The previous snapshot is still displayed.` });
     }
   }, [applyAdsPayload]);
-  const applySocialPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setPosts(recentSocialPosts(records)); setSource(Array.isArray(payload) ? 'Saved organic data' : payload.source || 'Connected provider'); setSocialUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
+  const applySocialPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setPosts(recentSocialPosts(records)); setSource(Array.isArray(payload) ? 'Saved organic data' : payload.source || 'Connected provider'); setSocialUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); setSocialCoverage(Array.isArray(payload) ? [] : payload.coverage || []); }, []);
   const loadPosts = useCallback(async () => {
     const controller = new AbortController(); const timer = window.setTimeout(() => controller.abort(), 1200);
     try {
@@ -546,9 +557,9 @@ export default function Dashboard() {
     } catch { setSource('Not connected'); } finally { window.clearTimeout(timer); }
   }, [applySocialPayload]);
   const fetchLiveOrganic = useCallback(async () => {
-    setSocialFetchState({ state: 'fetching', message: 'Fetching Facebook and Instagram posts from all six configured accounts. This may take a few minutes.' });
+    setSocialFetchState({ state: 'fetching', message: 'Loading the latest monitored Facebook, Instagram, X, and TikTok posts.' });
     try {
-      const response = await fetch(apiUrl('/api/fetch-social-posts'), { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' }, body: JSON.stringify({}) });
+      const response = await fetch(apiUrl('/api/fetch-social-posts'), { method: 'POST', cache: 'no-store' });
       const result = await response.json();
       if (!response.ok || !result.ok || !result.payload) throw new Error(result.error || 'Organic fetch failed.');
       applySocialPayload(result.payload);
@@ -592,5 +603,5 @@ export default function Dashboard() {
     return () => window.clearInterval(timer);
   }, [active, fetchLiveOrganic]);
   const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organic: ['Organic monitoring', 'Track new posts from configured competitor accounts.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
-  return <div className="app-shell"><Sidebar active={active} onChange={setActive} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={setActive} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} source={source} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
+  return <div className="app-shell"><Sidebar active={active} onChange={setActive} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={setActive} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
 }
