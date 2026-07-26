@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postinstall": "node scripts/install-playwright.mjs",
     "start": "node server.js"
   },
   "dependencies": {

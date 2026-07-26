@@ -4,8 +4,6 @@ const nextConfig = {
     '/api/fetch-live': [
       './scripts/scrape-meta-ads.mjs',
       './src/data/pages.js',
-      './node_modules/playwright/**/*',
-      './node_modules/playwright-core/**/*',
     ],
     '/api/fetch-social-posts': [
       './scripts/scrape-organic-posts.mjs',

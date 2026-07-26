@@ -1,13 +1,14 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
 
 const root = process.cwd();
 const dataPath = join(root, 'public', 'data', 'ads.json');
 const socialDataPath = join(root, 'public', 'data', 'social-posts.json');
 const plansDataPath = join(root, 'public', 'data', 'plans.json');
 const devicesDataPath = join(root, 'public', 'data', 'devices.json');
+const repositoryDataUrl = process.env.REPOSITORY_DATA_URL
+  || 'https://raw.githubusercontent.com/thearjunks/AK01/main/public/data';
 const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
 
 let socialFetchPromise = null;
@@ -116,7 +117,8 @@ async function fetchFromMetaPages() {
 }
 
 export async function fetchFromProvider() {
-  const providerUrl = process.env.LIVE_ADS_JSON_URL;
+  const providerUrl = process.env.LIVE_ADS_JSON_URL
+    || (process.env.NODE_ENV === 'production' ? `${repositoryDataUrl}/ads.json` : '');
   if (!providerUrl) return fetchFromMetaPages();
 
   const response = await fetch(providerUrl, {
@@ -188,7 +190,8 @@ export async function fetchDevices() {
 }
 
 async function fetchSocialPostsNow(credentials = {}) {
-  const providerUrl = process.env.SOCIAL_POSTS_JSON_URL;
+  const providerUrl = process.env.SOCIAL_POSTS_JSON_URL
+    || (process.env.NODE_ENV === 'production' ? `${repositoryDataUrl}/social-posts.json` : '');
   if (!providerUrl) {
     await runScript('scrape-organic-posts.mjs', {
       SOCIAL_FACEBOOK_EMAIL: credentials.facebook?.email || process.env.SOCIAL_FACEBOOK_EMAIL || '',

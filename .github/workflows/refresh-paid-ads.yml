@@ -1,0 +1,50 @@
+name: Refresh paid ads
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-paid-ads
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/playwright-core/.local-browsers
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - run: node scripts/install-playwright.mjs
+
+      - name: Scrape Meta Ads Library
+        run: node scripts/scrape-meta-ads.mjs
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: '0'
+
+      - name: Commit refreshed snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/ads.json public/artwork
+          git diff --cached --quiet && exit 0
+          git commit -m "Refresh paid ads snapshot"
+          git push
