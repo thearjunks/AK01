@@ -522,14 +522,18 @@ const discovered = [];
 const coverage = [];
 
 try {
+  let facebookLoginStatus = 'ok';
   try {
     await loginFacebook(page);
-    for (const target of facebookTargets) {
-      try { const posts = (await scrapeFacebook(page, target)).filter(isRecent); discovered.push(...posts); coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: posts.length ? 'ok' : 'No Facebook posts with a verifiable date in the last 30 days were exposed.' }); }
-      catch (error) { coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: error.message }); }
-    }
   } catch (error) {
-    facebookTargets.forEach((target) => coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: error.message }));
+    facebookLoginStatus = error.message;
+  }
+  for (const target of facebookTargets) {
+    try {
+      const posts = (await scrapeFacebook(page, target)).filter(isRecent);
+      discovered.push(...posts);
+      coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: posts.length ? facebookLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${facebookLoginStatus}` : facebookLoginStatus });
+    } catch (error) { coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: `${facebookLoginStatus} ${error.message}` }); }
   }
   let instagramLoginStatus = 'ok';
   try {
@@ -545,23 +549,23 @@ try {
     }
     catch (error) { coverage.push({ company: target.company, platform: 'Instagram', count: 0, status: error.message }); }
   }
-  try {
-    await loginX(page);
-    for (const target of xTargets) {
-      try { const posts = (await scrapeX(page, target)).filter(isRecent); discovered.push(...posts); coverage.push({ company: target.company, platform: 'X', count: posts.length, status: posts.length ? 'ok' : 'No X posts with a verifiable date in the last 30 days were exposed.' }); }
-      catch (error) { coverage.push({ company: target.company, platform: 'X', count: 0, status: error.message }); }
-    }
-  } catch (error) {
-    xTargets.forEach((target) => coverage.push({ company: target.company, platform: 'X', count: 0, status: error.message }));
+  let xLoginStatus = 'ok';
+  try { await loginX(page); } catch (error) { xLoginStatus = error.message; }
+  for (const target of xTargets) {
+    try {
+      const posts = (await scrapeX(page, target)).filter(isRecent);
+      discovered.push(...posts);
+      coverage.push({ company: target.company, platform: 'X', count: posts.length, status: posts.length ? xLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${xLoginStatus}` : xLoginStatus });
+    } catch (error) { coverage.push({ company: target.company, platform: 'X', count: 0, status: `${xLoginStatus} ${error.message}` }); }
   }
-  try {
-    await loginTikTok(page);
-    for (const target of tiktokTargets) {
-      try { const posts = await scrapeTikTok(page, target); discovered.push(...posts); coverage.push({ company: target.company, platform: 'TikTok', count: posts.length, status: posts.length ? 'ok' : 'No TikTok posts were exposed to the collector.' }); }
-      catch (error) { coverage.push({ company: target.company, platform: 'TikTok', count: 0, status: error.message }); }
-    }
-  } catch (error) {
-    tiktokTargets.forEach((target) => coverage.push({ company: target.company, platform: 'TikTok', count: 0, status: error.message }));
+  let tiktokLoginStatus = 'ok';
+  try { await loginTikTok(page); } catch (error) { tiktokLoginStatus = error.message; }
+  for (const target of tiktokTargets) {
+    try {
+      const posts = await scrapeTikTok(page, target);
+      discovered.push(...posts);
+      coverage.push({ company: target.company, platform: 'TikTok', count: posts.length, status: posts.length ? tiktokLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${tiktokLoginStatus}` : tiktokLoginStatus });
+    } catch (error) { coverage.push({ company: target.company, platform: 'TikTok', count: 0, status: `${tiktokLoginStatus} ${error.message}` }); }
   }
 } finally {
   await context.close();
@@ -574,7 +578,8 @@ try {
   previousData = Array.isArray(previous.data) ? previous.data : [];
 } catch {}
 const recentDiscovered = discovered.filter(isRecent);
-for (const post of previousData.filter(isRecent)) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
+const previousToKeep = recentDiscovered.length ? previousData.filter(isRecent) : previousData;
+for (const post of previousToKeep) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
 for (const post of recentDiscovered) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
 const emptyFetch = !recentDiscovered.length && coverage.length;
 const blockedCoverage = coverage.filter((item) => item.status !== 'ok');
