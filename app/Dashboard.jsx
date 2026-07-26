@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Activity, ArrowUpRight, BarChart3, Bell, ChevronRight, CircleAlert,
@@ -54,6 +54,11 @@ const socialAccounts = [
   ['Ooredoo Kuwait', 'X', 'https://x.com/OoredooKuwait'],
   ['Zain Kuwait', 'X', 'https://x.com/ZainKuwait'],
 ];
+const socialEmbedAccounts = {
+  stc: { name: 'stc Kuwait', facebook: 'https://www.facebook.com/stc.kwt/', instagram: 'stc_kwt', tiktok: 'stc_kwt', x: 'stc_kwt' },
+  ooredoo: { name: 'Ooredoo Kuwait', facebook: 'https://www.facebook.com/OoredooKuwait', instagram: 'ooredookuwait', tiktok: 'ooredookuwait', x: 'OoredooKuwait' },
+  zain: { name: 'Zain Kuwait', facebook: 'https://www.facebook.com/zainkuwait', instagram: 'zainkuwait', tiktok: 'zainkuwait', x: 'ZainKuwait' },
+};
 const offerCategories = [
   ['eSIM & digital activation', ['esim', 'digital sim']],
   ['Roaming & travel', ['roaming', 'travel', 'تجوال']],
@@ -374,10 +379,46 @@ function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, 
         {filtered.length ? <><div className="organic-results"><span><b>{filtered.length}</b> organic posts</span><span><i /> Images and descriptions from the connected source</span></div><div className="campaign-grid organic-campaign-grid">{filtered.map((post) => {
           const company = organicCompany(post); const published = organicPublishedAt(post); const caption = organicCaption(post); const link = organicLink(post);
           return <article className="campaign-card-new organic-card" key={post.id || link}><div className="campaign-image">{organicImage(post) ? <img src={organicImage(post)} alt={`${company.name} ${post.platform || ''} post`} /> : <EmptyArtwork label={post.platform || 'Post'} />}<span>{post.post_type || post.type || (post.viewed ? 'Viewed' : 'New')}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={company.id} /><span><b>{company.name}</b><small>{post.platform || 'Social'} · {organicDateLabel(post)}</small></span></div><h3>{post.title || `${company.name} ${post.platform || 'social'} post`}</h3><p>{caption || 'No description was supplied by the connected social-data source.'}</p><div className="organic-engagement"><span title="Likes"><Heart />{engagementValue(post.likes)}</span><span title="Views"><Eye />{engagementValue(post.views)}</span><span title="Comments"><MessageCircle />{engagementValue(post.comments)}</span></div><div className="organic-card-footer"><span>{organicRelativeLabel(post)}</span>{link ? <a href={link} target="_blank" rel="noreferrer">Open post <ArrowUpRight size={14} /></a> : <span>Link unavailable</span>}</div></div></article>;
-        })}</div></> : <div className="organic-empty surface"><div><Bell /></div><b>Your organic feed is ready</b><p>Connect an approved social-data provider to display post images and descriptions in the same card format as Boosted Ads.</p><button type="button" onClick={onRefresh}><RefreshCw /> Check connection</button></div>}
+        })}</div></> : !filters.search && (filters.platform || recentPlatform) ? <OfficialLiveFeed companyKey={filters.company} platform={filters.platform || recentPlatform} /> : <div className="organic-empty surface"><div><Bell /></div><b>No posts match these filters</b><p>Clear the search or choose a platform to open its latest official live feed.</p><button type="button" onClick={onRefresh}><RefreshCw /> Refresh saved posts</button></div>}
       </section>
     </div>
   </>;
+}
+
+function OfficialLiveFeed({ companyKey, platform }) {
+  const containerRef = useRef(null);
+  const accounts = companyKey ? [socialEmbedAccounts[companyKey]].filter(Boolean) : Object.values(socialEmbedAccounts);
+
+  useEffect(() => {
+    const addScript = (id, src, onReady, reload = false) => {
+      let script = document.getElementById(id);
+      if (reload && script) { script.remove(); script = null; }
+      if (script) { onReady?.(); return; }
+      script = document.createElement('script');
+      script.id = id;
+      script.src = src;
+      script.async = true;
+      script.onload = () => onReady?.();
+      document.body.appendChild(script);
+    };
+
+    if (platform === 'X') addScript('x-widgets-script', 'https://platform.twitter.com/widgets.js', () => window.twttr?.widgets?.load(containerRef.current));
+    if (platform === 'TikTok') addScript('tiktok-embed-script', 'https://www.tiktok.com/embed.js', null, true);
+    if (platform === 'Instagram') addScript('instagram-embed-script', 'https://www.instagram.com/embed.js', () => window.instgrm?.Embeds?.process());
+  }, [companyKey, platform]);
+
+  return <section className="official-live-feed surface" ref={containerRef}>
+    <header><div><span>Official live source</span><h3>Latest {platform} posts</h3><p>Rendered directly by {platform}; refresh the page to request the newest public posts.</p></div><span className="official-live-badge"><i /> Live</span></header>
+    <div className={`official-embed-grid ${accounts.length === 1 ? 'single' : ''}`}>{accounts.map((account) => {
+      if (platform === 'Facebook') {
+        const src = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(account.facebook)}&tabs=timeline&width=500&height=700&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`;
+        return <article key={account.name}><h4>{account.name}</h4><iframe src={src} width="500" height="700" title={`${account.name} Facebook timeline`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" /></article>;
+      }
+      if (platform === 'TikTok') return <article key={account.name}><h4>{account.name}</h4><blockquote className="tiktok-embed" cite={`https://www.tiktok.com/@${account.tiktok}`} data-unique-id={account.tiktok} data-embed-type="creator"><section><a target="_blank" rel="noreferrer" href={`https://www.tiktok.com/@${account.tiktok}`}>@{account.tiktok}</a></section></blockquote></article>;
+      if (platform === 'X') return <article key={account.name}><h4>{account.name}</h4><a className="twitter-timeline" data-height="700" data-dnt="true" href={`https://x.com/${account.x}`}>Latest posts from @{account.x}</a></article>;
+      return <article key={account.name}><h4>{account.name}</h4><blockquote className="instagram-media" data-instgrm-permalink={`https://www.instagram.com/${account.instagram}/`} data-instgrm-version="14"><a href={`https://www.instagram.com/${account.instagram}/`} target="_blank" rel="noreferrer">Latest posts from @{account.instagram}</a></blockquote></article>;
+    })}</div>
+  </section>;
 }
 
 function PlanComparison({ plans, fetchState, updatedAt, onFetchPlans }) {
