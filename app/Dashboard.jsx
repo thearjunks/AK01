@@ -352,7 +352,7 @@ function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
 }
 
 function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, updatedAt }) {
-  const [filters, setFilters] = useState({ search: '', company: '', platform: '', recent: 'all' });
+  const [filters, setFilters] = useState({ search: '', company: '', platform: 'Instagram', recent: 'all' });
   const recentPlatform = filters.recent === 'all' ? '' : filters.recent;
   const filtered = posts.filter((post) => {
     if (filters.search && !`${post.title || ''} ${organicCaption(post)}`.toLowerCase().includes(filters.search.toLowerCase())) return false;
@@ -378,7 +378,7 @@ function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, 
       <aside className="organic-accounts"><div className="section-heading"><div><span>Watchlist</span><h2>Tracked accounts</h2></div></div>{['Facebook', 'Instagram', 'TikTok', 'X'].map((platform) => <div className="platform-group" key={platform}><b>{platform === 'Facebook' ? <MessageCircle /> : platform === 'Instagram' ? <Camera /> : <Activity />}{platform}</b>{socialAccounts.filter((account) => account[1] === platform).map((account) => <a key={account[2]} href={account[2]} target="_blank" rel="noreferrer"><span>{account[0]}</span><ArrowUpRight /></a>)}</div>)}</aside>
       <section className="organic-feed-main">
         <div className="feed-toolbar surface"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search post captions or descriptions" /></label><select value={filters.company} onChange={(event) => setFilters({ ...filters, company: event.target.value })}><option value="">All companies</option><option value="stc">stc</option><option value="ooredoo">Ooredoo</option><option value="zain">Zain</option></select><select value={filters.platform} onChange={(event) => setFilters({ ...filters, platform: event.target.value })}><option value="">All platforms</option><option>Facebook</option><option>Instagram</option><option>TikTok</option><option>X</option></select><select value={filters.recent} onChange={(event) => setFilters({ ...filters, recent: event.target.value })} aria-label="Recent posts"><option value="all">All most recent</option><option value="Instagram">Most recent Instagram</option><option value="Facebook">Most recent Facebook</option><option value="TikTok">Most recent TikTok</option><option value="X">Most recent X</option></select></div>
-        {showOfficialFeed ? <OfficialLiveFeed companyKey={filters.company} platform={selectedPlatform} /> : filtered.length ? <><div className="organic-results"><span><b>{filtered.length}</b> organic posts</span><span><i /> Images and descriptions from the connected source</span></div><div className="campaign-grid organic-campaign-grid">{filtered.map((post) => {
+        {showOfficialFeed ? <OfficialLiveFeed companyKey={filters.company} platform={selectedPlatform} posts={filtered} /> : filtered.length ? <><div className="organic-results"><span><b>{filtered.length}</b> organic posts</span><span><i /> Images and descriptions from the connected source</span></div><div className="campaign-grid organic-campaign-grid">{filtered.map((post) => {
           const company = organicCompany(post); const published = organicPublishedAt(post); const caption = organicCaption(post); const link = organicLink(post);
           return <article className="campaign-card-new organic-card" key={post.id || link}><div className="campaign-image">{organicImage(post) ? <img src={organicImage(post)} alt={`${company.name} ${post.platform || ''} post`} /> : <EmptyArtwork label={post.platform || 'Post'} />}<span>{post.post_type || post.type || (post.viewed ? 'Viewed' : 'New')}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={company.id} /><span><b>{company.name}</b><small>{post.platform || 'Social'} · {organicDateLabel(post)}</small></span></div><h3>{post.title || `${company.name} ${post.platform || 'social'} post`}</h3><p>{caption || 'No description was supplied by the connected social-data source.'}</p><div className="organic-engagement"><span title="Likes"><Heart />{engagementValue(post.likes)}</span><span title="Views"><Eye />{engagementValue(post.views)}</span><span title="Comments"><MessageCircle />{engagementValue(post.comments)}</span></div><div className="organic-card-footer"><span>{organicRelativeLabel(post)}</span>{link ? <a href={link} target="_blank" rel="noreferrer">Open post <ArrowUpRight size={14} /></a> : <span>Link unavailable</span>}</div></div></article>;
         })}</div></> : <div className="organic-empty surface"><div><Bell /></div><b>No posts match these filters</b><p>Clear the search or choose a platform to open its latest official live feed.</p><button type="button" onClick={onRefresh}><RefreshCw /> Refresh saved posts</button></div>}
@@ -387,7 +387,7 @@ function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, 
   </>;
 }
 
-function OfficialLiveFeed({ companyKey, platform }) {
+function OfficialLiveFeed({ companyKey, platform, posts = [] }) {
   const containerRef = useRef(null);
   const accounts = companyKey ? [socialEmbedAccounts[companyKey]].filter(Boolean) : Object.values(socialEmbedAccounts);
 
@@ -419,6 +419,21 @@ function OfficialLiveFeed({ companyKey, platform }) {
       if (platform === 'TikTok') return <article key={account.name}><h4>{account.name}</h4><blockquote className="tiktok-embed" cite={`https://www.tiktok.com/@${account.tiktok}`} data-unique-id={account.tiktok} data-embed-type="creator"><section><a target="_blank" rel="noreferrer" href={`https://www.tiktok.com/@${account.tiktok}`}>@{account.tiktok}</a></section></blockquote></article>;
       if (platform === 'X') return <article key={account.name}><h4>{account.name}</h4><a className="twitter-timeline" data-height="700" data-dnt="true" href={`https://x.com/${account.x}`}>Latest posts from @{account.x}</a></article>;
       return <article key={account.name}><h4>{account.name}</h4><blockquote className="instagram-media" data-instgrm-permalink={`https://www.instagram.com/${account.instagram}/`} data-instgrm-version="14"><a href={`https://www.instagram.com/${account.instagram}/`} target="_blank" rel="noreferrer">Latest posts from @{account.instagram}</a></blockquote></article>;
+    })}</div>
+    {platform === 'Instagram' && posts.length ? <InstagramPostScroller posts={posts} /> : null}
+  </section>;
+}
+
+function InstagramPostScroller({ posts }) {
+  return <section className="instagram-post-scroller" aria-label="Instagram post-by-post viewer">
+    <header><div><span>Mobile-style viewer</span><h3>Scroll posts one by one</h3><p>{posts.length} saved posts from the last 30 days · scroll inside the phone-style feed</p></div><span>Scroll ↓</span></header>
+    <div className="instagram-snap-viewport">{posts.map((post) => {
+      const company = organicCompany(post); const link = organicLink(post); const caption = organicCaption(post);
+      return <article className="instagram-snap-card" key={`snap-${post.id || link}`}>
+        <header><BrandMark pageId={company.id} /><span><b>{company.name}</b><small>Instagram · {organicDateLabel(post)}</small></span></header>
+        <div className="instagram-snap-image">{organicImage(post) ? <img src={organicImage(post)} alt={`${company.name} Instagram post`} /> : <EmptyArtwork label="Instagram" />}</div>
+        <div className="instagram-snap-copy"><p>{caption || 'No description was supplied by the connected Instagram source.'}</p><div className="organic-engagement"><span title="Likes"><Heart />{engagementValue(post.likes)}</span><span title="Views"><Eye />{engagementValue(post.views)}</span><span title="Comments"><MessageCircle />{engagementValue(post.comments)}</span></div><footer><span>{organicRelativeLabel(post)}</span>{link ? <a href={link} target="_blank" rel="noreferrer">Open post <ArrowUpRight size={14} /></a> : null}</footer></div>
+      </article>;
     })}</div>
   </section>;
 }
