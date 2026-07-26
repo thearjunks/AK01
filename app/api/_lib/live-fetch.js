@@ -204,10 +204,18 @@ async function fetchSocialPostsNow() {
     await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
     return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
   }
-  const response = await fetch(providerUrl, { headers: { accept: 'application/json', 'user-agent': 'kuwait-social-monitor/1.0' } });
+  const liveProviderUrl = `${providerUrl}${providerUrl.includes('?') ? '&' : '?'}refresh=${Date.now()}`;
+  const response = await fetch(liveProviderUrl, { cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache', 'user-agent': 'kuwait-social-monitor/1.0' } });
   if (!response.ok) throw new Error(`Social provider returned HTTP ${response.status}.`);
   const input = await response.json();
   const payload = normalizeSocialPayload(input);
+  if (!payload.data.length) {
+    const saved = await readSocialData();
+    const savedRecords = Array.isArray(saved) ? saved : saved.data || [];
+    if (savedRecords.length) {
+      return { ok: true, payload: saved, message: `Live organic provider returned no posts, so ${savedRecords.length} saved posts from the last 30 days were preserved.` };
+    }
+  }
   await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
   await runScript('cache-social-thumbnails.mjs');
   return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
