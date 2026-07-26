@@ -17,7 +17,7 @@ const trackedPageIds = new Set(pageIdFilter);
 const trackedPages = pageIdFilter.length
   ? pagesModule.pages.filter((page) => trackedPageIds.has(page.pageId))
   : pagesModule.pages;
-const activeStatus = process.env.META_ADS_ACTIVE_STATUS || 'active';
+const activeStatus = process.env.META_ADS_ACTIVE_STATUS || 'all';
 // ponytail: a page that previously had this many ads or more suddenly returning 0 is
 // almost always a transient scrape/bot-block failure, not every campaign ending at once.
 // Raise this if a real "operator paused everything" event ever needs to clear the snapshot.
@@ -69,17 +69,27 @@ function dateFromText(text) {
 }
 
 function platformsFromText(text) {
-  return ['Facebook', 'Instagram', 'Messenger', 'Threads'].filter((platform) => text.includes(platform));
+  return ['Facebook', 'Instagram', 'Messenger', 'Threads', 'Audience Network']
+    .filter((platform) => new RegExp(platform, 'i').test(text));
 }
 
 function stopTimeFromText(text) {
   return /\bInactive\b/i.test(text) ? 'Ended' : '';
 }
 
+function languageFromText(text) {
+  const hasArabic = /[\u0600-\u06ff]/.test(text);
+  const hasEnglish = /[A-Za-z]/.test(text);
+  if (hasArabic && hasEnglish) return 'mixed';
+  if (hasArabic) return 'ar';
+  if (hasEnglish) return 'en';
+  return 'unknown';
+}
+
 function cleanCreativeText(text) {
   return text
     .replace(/\u200B/g, '')
-    .replace(/Active\s*/gi, '')
+    .replace(/^\s*(Active|Inactive)\s*$/gim, '')
     .replace(/Library ID:\s*\d+/gi, '')
     .replace(/Started running on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4}|\d{1,2}\s+[A-Za-z]+\s+\d{4})/gi, '')
     .replace(/Platforms\s*(Facebook|Instagram|Messenger|Threads|\s)+/gi, '')
@@ -222,6 +232,7 @@ async function scrapePage(browser, trackedPage) {
         text,
         labels,
         images,
+        hasVideo: Boolean(card.querySelector('video')) || /\d{1,2}:\d{2}\s*\/\s*\d{1,2}:\d{2}/.test(text),
       });
     }
 
@@ -233,14 +244,18 @@ async function scrapePage(browser, trackedPage) {
     const artworkUrl = rawAd.images.sort((a, b) => imageScore(b) - imageScore(a))[0] || '';
     const localArtworkUrl = artworkUrl ? await saveArtwork(imageResponses.get(artworkUrl), artworkUrl) : '';
     const searchableMeta = `${rawAd.text}\n${rawAd.labels.join('\n')}`;
+    const creativeText = cleanCreativeText(rawAd.text);
     ads.push({
       page_id: trackedPage.pageId,
       page_name: trackedPage.name,
       ad_archive_id: rawAd.id,
-      ad_creative_body: cleanCreativeText(rawAd.text),
+      ad_creative_body: creativeText,
       ad_delivery_start_time: dateFromText(searchableMeta),
       ad_delivery_stop_time: stopTimeFromText(searchableMeta),
       publisher_platforms: platformsFromText(searchableMeta),
+      language: languageFromText(creativeText),
+      media_type: rawAd.hasVideo ? 'video' : artworkUrl ? 'image' : 'unknown',
+      ad_status: stopTimeFromText(searchableMeta) ? 'inactive' : 'active',
       ad_snapshot_url: `${libraryUrl}&q=${rawAd.id}`,
       artwork_url: artworkUrl,
       local_artwork_url: localArtworkUrl,

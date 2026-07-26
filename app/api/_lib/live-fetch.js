@@ -26,10 +26,6 @@ function isInRollingMonth(value, now = Date.now()) {
   return Number.isFinite(time) && time >= now - rollingMonthMs && time <= now + 24 * 60 * 60 * 1000;
 }
 
-function recentAds(records, now = Date.now()) {
-  return records.filter((record) => isInRollingMonth(record.ad_delivery_start_time || record.start_date || record.created_time, now));
-}
-
 function recentSocialPosts(records, now = Date.now()) {
   return records.filter((record) => isInRollingMonth(record.published_at || record.publishedAt || record.created_time || record.timestamp, now));
 }
@@ -43,7 +39,7 @@ function normalizePayload(payload) {
     ...payload,
     generated_at: new Date().toISOString(),
     source: payload.source || 'Live fetch provider',
-    data: recentAds(records),
+    data: records,
   };
 }
 
@@ -79,8 +75,8 @@ function runScript(scriptName, extraEnv = {}) {
 
 export async function readCurrentData() {
   const payload = JSON.parse(await readFile(dataPath, 'utf8'));
-  if (Array.isArray(payload)) return recentAds(payload);
-  return { ...payload, data: recentAds(payload.data || payload.ads || []) };
+  if (Array.isArray(payload)) return payload;
+  return { ...payload, data: payload.data || payload.ads || [] };
 }
 
 export async function readSocialData() {
@@ -110,7 +106,7 @@ async function fetchFromMetaPages() {
   await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
   return {
     ok: true,
-    message: `Fetched ${payload.data.length} ads from the last 30 days.`,
+    message: `Fetched ${payload.data.length} ads across all available dates and statuses.`,
     payload,
     log: scrape.stdout,
   };
@@ -142,7 +138,7 @@ export function startAdsFetchJob() {
 
   adsFetchJob = {
     state: 'running',
-    message: 'Fetching live ads from the configured Meta Ads Library pages for the last 30 days.',
+    message: 'Loading the complete saved Meta Ads Library history across active and inactive ads.',
     started_at: new Date().toISOString(),
     finished_at: '',
     count: 0,

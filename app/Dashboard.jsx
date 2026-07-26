@@ -67,11 +67,6 @@ function isInRollingMonth(value, now = Date.now()) {
   return Number.isFinite(time) && time >= now - rollingMonthMs && time <= now + 24 * 60 * 60 * 1000;
 }
 
-function recentAds(records) {
-  const now = Date.now();
-  return records.filter((record) => isInRollingMonth(record.ad_delivery_start_time || record.start_date || record.created_time, now));
-}
-
 function recentSocialPosts(records) {
   const now = Date.now();
   return records.filter((record) => isInRollingMonth(record.published_at || record.publishedAt || record.created_time || record.timestamp, now));
@@ -102,6 +97,29 @@ function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
 function imageOf(ad) { return ad.local_artwork_url || ad.artwork_url || ''; }
 function dateOf(ad) { return String(ad.ad_delivery_start_time || '').slice(0, 10); }
 function sourceOrderOf(ad) { return Number.isFinite(ad._source_index) ? ad._source_index : Number.MAX_SAFE_INTEGER; }
+function languageOf(ad) {
+  const explicit = String(ad.language || ad.languages || '').toLowerCase();
+  if (explicit.includes('mixed')) return 'mixed';
+  if (explicit.includes('arab') || explicit === 'ar') return 'ar';
+  if (explicit.includes('english') || explicit === 'en') return 'en';
+  const body = textOf(ad);
+  const hasArabic = /[\u0600-\u06ff]/.test(body);
+  const hasEnglish = /[A-Za-z]/.test(body);
+  return hasArabic && hasEnglish ? 'mixed' : hasArabic ? 'ar' : hasEnglish ? 'en' : 'unknown';
+}
+function platformsOf(ad) {
+  const value = ad.publisher_platforms || ad.platforms || ad.platform || [];
+  const values = Array.isArray(value) ? value : String(value).split(/[,|]/);
+  return values.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
+}
+function mediaTypeOf(ad) {
+  const explicit = String(ad.media_type || ad.mediaType || '').toLowerCase();
+  if (explicit.includes('video')) return 'video';
+  if (explicit.includes('image') || explicit.includes('photo')) return 'image';
+  if (/\d{1,2}:\d{2}\s*\/\s*\d{1,2}:\d{2}/.test(textOf(ad))) return 'video';
+  return imageOf(ad) ? 'image' : 'unknown';
+}
+function statusOf(ad) { return ad.ad_status === 'inactive' || ad.ad_delivery_stop_time ? 'inactive' : 'active'; }
 function titleOf(ad) {
   return textOf(ad).split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !/see ad details/i.test(line))[1]
     || textOf(ad).split(/\r?\n/).find((line) => line.trim()) || `Campaign ${ad.ad_archive_id}`;
@@ -238,19 +256,32 @@ function Overview({ ads, onNavigate }) {
 }
 
 function Filters({ filters, setFilters }) {
-  return <div className="filter-bar"><label><Search size={17} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search campaign copy or ID" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All competitors</option>{adProviders.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input aria-label="Start date" type="date" value={filters.start} onChange={(event) => setFilters({ ...filters, start: event.target.value })} /><select aria-label="Sort boosted ads" value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })}><option value="recent">Sort by: Most recent</option><option value="impressions">Impressions: high to low</option></select><button type="button" onClick={() => setFilters({ search: '', provider: '', start: '', sort: 'recent' })}><Filter size={16} /> Clear</button></div>;
+  const reset = { search: '', provider: '', language: '', platform: '', mediaType: '', status: '', dateMode: 'range', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' };
+  return <section className="boosted-filter-panel surface"><div className="boosted-filter-heading"><div><span>Filters</span><b>Refine the complete paid-ad archive</b></div><small>Date controls use the delivery dates available in Meta results.</small></div><div className="filter-bar boosted-filter-grid">
+    <label className="filter-search"><Search size={17} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search campaign copy or ID" /></label>
+    <label className="filter-field"><span>Competitor</span><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All competitors</option>{adProviders.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+    <label className="filter-field"><span>Language</span><select value={filters.language} onChange={(event) => setFilters({ ...filters, language: event.target.value })}><option value="">All languages</option><option value="en">English</option><option value="ar">Arabic</option><option value="mixed">Arabic and English</option><option value="unknown">Unknown</option></select></label>
+    <label className="filter-field"><span>Platform</span><select value={filters.platform} onChange={(event) => setFilters({ ...filters, platform: event.target.value })}><option value="">All platforms</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="messenger">Messenger</option><option value="threads">Threads</option><option value="audience network">Audience Network</option><option value="unknown">Unknown</option></select></label>
+    <label className="filter-field"><span>Media type</span><select value={filters.mediaType} onChange={(event) => setFilters({ ...filters, mediaType: event.target.value })}><option value="">All media types</option><option value="image">Images</option><option value="video">Videos</option><option value="unknown">Unknown</option></select></label>
+    <label className="filter-field"><span>Active status</span><select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">Active and inactive</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+    <label className="filter-field"><span>Impressions by date</span><select value={filters.dateMode} onChange={(event) => setFilters({ ...filters, dateMode: event.target.value })}><option value="all">All dates</option><option value="exact">Exact date</option><option value="range">Date range</option></select></label>
+    {filters.dateMode === 'exact' ? <label className="filter-field"><span>Exact date</span><input aria-label="Exact date picker" type="date" value={filters.exactDate} onChange={(event) => setFilters({ ...filters, exactDate: event.target.value })} /></label> : null}
+    {filters.dateMode === 'range' ? <div className="date-filter-group"><label className="filter-field"><span>From</span><input aria-label="Start date picker" type="date" value={filters.from} onChange={(event) => setFilters({ ...filters, from: event.target.value })} /></label><label className="filter-field"><span>To</span><input aria-label="End date picker" type="date" value={filters.to} onChange={(event) => setFilters({ ...filters, to: event.target.value })} /></label></div> : null}
+    <label className="filter-field"><span>Sort</span><select aria-label="Sort boosted ads" value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })}><option value="recent">Most recent</option><option value="impressions">Meta result order</option></select></label>
+    <button type="button" onClick={() => setFilters(reset)}><Filter size={16} /> Clear filters</button>
+  </div></section>;
 }
 
 function exportAds(rows) {
-  const lines = [['Company', 'Library ID', 'Creative', 'Started', 'Status', 'Link'].map(csvCell).join(',')];
-  rows.forEach((ad) => lines.push([ad.page_name, ad.ad_archive_id, textOf(ad), dateOf(ad), ad.ad_delivery_stop_time ? 'Ended' : 'Live', ad.ad_snapshot_url].map(csvCell).join(',')));
+  const lines = [['Company', 'Library ID', 'Creative', 'Started', 'Status', 'Language', 'Platforms', 'Media type', 'Link'].map(csvCell).join(',')];
+  rows.forEach((ad) => lines.push([ad.page_name, ad.ad_archive_id, textOf(ad), dateOf(ad), statusOf(ad), languageOf(ad), platformsOf(ad).join(' | '), mediaTypeOf(ad), ad.ad_snapshot_url].map(csvCell).join(',')));
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'stc-boosted-ads.csv'; anchor.click(); URL.revokeObjectURL(url);
 }
 
 function CampaignGrid({ rows }) {
   if (!rows.length) return <div className="empty-state"><CircleAlert /><b>No campaigns match these filters</b><span>Try removing a filter or searching for a different keyword.</span></div>;
-  return <div className="campaign-grid">{rows.map((ad) => <article className="campaign-card-new" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="campaign-image">{imageOf(ad) ? <img src={imageOf(ad)} alt="Campaign creative" /> : <EmptyArtwork />}<span>{ad.ad_delivery_stop_time ? 'Ended' : 'Live'}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={ad.page_id} name={ad.page_name} /><span><b>{ad.page_name}</b><small>{dateOf(ad)}</small></span></div><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><div><span>ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open ad <ArrowUpRight size={14} /></a></div></div></article>)}</div>;
+  return <div className="campaign-grid">{rows.map((ad) => <article className="campaign-card-new" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="campaign-image">{imageOf(ad) ? <img src={imageOf(ad)} alt="Campaign creative" /> : <EmptyArtwork />}<span>{statusOf(ad) === 'inactive' ? 'Inactive' : 'Active'}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={ad.page_id} name={ad.page_name} /><span><b>{ad.page_name}</b><small>{dateOf(ad)}</small></span></div><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><div><span>ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open ad <ArrowUpRight size={14} /></a></div></div></article>)}</div>;
 }
 
 function CompetitorColumns({ rows }) {
@@ -272,17 +303,25 @@ function BannerComparison({ banners, visibleProviders }) {
 
 function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
   const [tab, setTab] = useState('campaigns');
-  const [filters, setFilters] = useState({ search: '', provider: '', start: '', sort: 'recent' });
+  const [filters, setFilters] = useState({ search: '', provider: '', language: '', platform: '', mediaType: '', status: '', dateMode: 'range', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' });
   const filtered = useMemo(() => ads.filter((ad) => adProviders.some((provider) => provider.id === String(ad.page_id))).filter((ad) => {
     if (filters.search && !`${textOf(ad)} ${ad.ad_archive_id}`.toLowerCase().includes(filters.search.toLowerCase())) return false;
     if (filters.provider && String(ad.page_id) !== filters.provider) return false;
-    if (filters.start && dateOf(ad) < filters.start) return false;
+    if (filters.language && languageOf(ad) !== filters.language) return false;
+    const adPlatforms = platformsOf(ad);
+    if (filters.platform === 'unknown' && adPlatforms.length) return false;
+    if (filters.platform && filters.platform !== 'unknown' && !adPlatforms.includes(filters.platform)) return false;
+    if (filters.mediaType && mediaTypeOf(ad) !== filters.mediaType) return false;
+    if (filters.status && statusOf(ad) !== filters.status) return false;
+    if (filters.dateMode === 'exact' && filters.exactDate && dateOf(ad) !== filters.exactDate) return false;
+    if (filters.dateMode === 'range' && filters.from && dateOf(ad) < filters.from) return false;
+    if (filters.dateMode === 'range' && filters.to && dateOf(ad) > filters.to) return false;
     return true;
   }).sort((a, b) => {
     if (filters.sort === 'impressions') return sourceOrderOf(a) - sourceOrderOf(b);
     return String(dateOf(b)).localeCompare(String(dateOf(a))) || sourceOrderOf(a) - sourceOrderOf(b);
   }), [ads, filters]);
-  return <><div className="page-actions"><div className="segmented">{[['campaigns', 'Campaign library'], ['compare', 'Competitor view'], ['opportunities', 'Offer gaps']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{filtered.length}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{filtered.length}</b> campaigns from the last 30 days</span><span><i /> All tracked Meta Ads Library URLs</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <CompetitorColumns rows={filtered} /> : <OpportunityMatrix rows={filtered} />}</>;
+  return <><div className="page-actions"><div className="segmented">{[['campaigns', 'Campaign library'], ['compare', 'Competitor view'], ['opportunities', 'Offer gaps']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{filtered.length}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{filtered.length}</b> campaigns across all available dates</span><span><i /> Active and inactive ads from all tracked Meta URLs</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <CompetitorColumns rows={filtered} /> : <OpportunityMatrix rows={filtered} />}</>;
 }
 
 function Organic({ posts, source, onRefresh, onFetchLive, fetchState, updatedAt }) {
@@ -443,7 +482,7 @@ export default function Dashboard() {
   const [plansUpdatedAt, setPlansUpdatedAt] = useState('');
   const [plansFetchState, setPlansFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved plan snapshot.' });
   const [menuOpen, setMenuOpen] = useState(false);
-  const applyAdsPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setAds(recentAds(records).map((ad, index) => ({ ...ad, _source_index: Number.isFinite(ad._source_index) ? ad._source_index : index }))); setAdsUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
+  const applyAdsPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setAds(records.map((ad, index) => ({ ...ad, _source_index: Number.isFinite(ad._source_index) ? ad._source_index : index }))); setAdsUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
   const loadAds = useCallback(async () => {
     try {
       let response;
