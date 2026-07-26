@@ -347,11 +347,17 @@ function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, 
     if (recentPlatform && post.platform !== recentPlatform) return false;
     return true;
   }).sort((a, b) => organicPublishedTime(b) - organicPublishedTime(a));
+  const platformCoverage = ['Facebook', 'Instagram', 'TikTok', 'X'].map((platform) => ({
+    platform,
+    posts: posts.filter((post) => post.platform === platform).length,
+    accounts: new Set(posts.filter((post) => post.platform === platform).map((post) => organicCompany(post).key)).size,
+  }));
 
   return <>
     <section className="organic-status"><div><span><i /> Live monitoring</span><h2>Organic publishing watch</h2><p>Only posts published during the last 30 days are displayed.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching posts...' : 'Fetch live organic posts'}</button><div className="source-chip"><small>Data source</small><b>{source}</b></div></section>
     <div className={`live-fetch-status organic-live-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last fetched ${new Date(updatedAt).toLocaleString()}` : 'No live fetch timestamp available'}</small></div>
-    <section className="organic-kpis"><div><b>{socialAccounts.length}</b><span>Accounts</span></div><div><b>{posts.length}</b><span>Posts · last 30 days</span></div><div><b>{coverage.filter((item) => Number(item.count) > 0).length}/{socialAccounts.length}</b><span>Account sources returning posts</span></div><div><b>10m</b><span>Background refresh</span></div></section>
+    <section className="organic-kpis"><div><b>{socialAccounts.length}</b><span>Accounts</span></div><div><b>{posts.length}</b><span>Posts · last 30 days</span></div><div><b>{coverage.filter((item) => Number(item.count) > 0).length}/{socialAccounts.length}</b><span>Account sources returning posts</span></div><div><b>1h</b><span>Background refresh</span></div></section>
+    <section className="organic-platform-coverage" aria-label="Organic platform coverage">{platformCoverage.map((item) => <div className={item.posts ? 'available' : 'blocked'} key={item.platform}><span>{item.platform}</span><b>{item.posts} posts</b><small>{item.posts ? `${item.accounts} tracked ${item.accounts === 1 ? 'account' : 'accounts'} represented` : 'No verified posts returned by source'}</small></div>)}</section>
     <div className="organic-layout">
       <aside className="organic-accounts"><div className="section-heading"><div><span>Watchlist</span><h2>Tracked accounts</h2></div></div>{['Facebook', 'Instagram', 'TikTok', 'X'].map((platform) => <div className="platform-group" key={platform}><b>{platform === 'Facebook' ? <MessageCircle /> : platform === 'Instagram' ? <Camera /> : <Activity />}{platform}</b>{socialAccounts.filter((account) => account[1] === platform).map((account) => <a key={account[2]} href={account[2]} target="_blank" rel="noreferrer"><span>{account[0]}</span><ArrowUpRight /></a>)}</div>)}</aside>
       <section className="organic-feed-main">
@@ -599,7 +605,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (active !== 'organic') return undefined;
     fetchLiveOrganic();
-    const timer = window.setInterval(fetchLiveOrganic, 10 * 60 * 1000);
+    const timer = window.setInterval(fetchLiveOrganic, 60 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [active, fetchLiveOrganic]);
   const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organic: ['Organic monitoring', 'Track new posts from configured competitor accounts.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
