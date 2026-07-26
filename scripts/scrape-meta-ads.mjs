@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -122,6 +122,9 @@ async function launchBrowser() {
   try {
     return await chromium.launch({ channel: 'chrome', headless });
   } catch {
+    if (process.platform !== 'win32') {
+      await chmod(chromium.executablePath(), 0o755);
+    }
     return await chromium.launch({ headless });
   }
 }
