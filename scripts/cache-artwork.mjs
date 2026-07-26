@@ -42,9 +42,10 @@ async function exists(filePath) {
 async function fetchImage(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const requestUrl = url.replace(/s60x60/g, 's600x600');
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(requestUrl, {
       signal: controller.signal,
       headers: {
         'accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
