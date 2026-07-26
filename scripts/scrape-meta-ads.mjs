@@ -25,6 +25,16 @@ const ZERO_RESULT_FALLBACK_MIN_PREVIOUS = 3;
 
 const maxScrolls = Number(process.env.META_ADS_MAX_SCROLLS || 120);
 const headless = process.env.META_ADS_HEADLESS !== '0';
+const browserArgs = process.platform === 'linux'
+  ? [
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-software-rasterizer',
+      '--no-zygote',
+      '--single-process',
+      '--renderer-process-limit=1',
+    ]
+  : [];
 
 function libraryUrlFor(trackedPage) {
   const url = new URL(trackedPage.libraryUrl);
@@ -120,7 +130,7 @@ async function saveArtwork(response, src) {
 
 async function launchBrowser() {
   try {
-    return await chromium.launch({ channel: 'chrome', headless });
+    return await chromium.launch({ channel: 'chrome', headless, args: browserArgs });
   } catch {
     if (process.platform !== 'win32') {
       const localBrowsersDir = path.resolve(chromium.executablePath(), '..', '..', '..');
@@ -129,7 +139,7 @@ async function launchBrowser() {
       if (!executable) throw new Error(`Playwright headless shell was not found in ${localBrowsersDir}.`);
       await chmod(path.join(localBrowsersDir, executable), 0o755);
     }
-    return await chromium.launch({ headless });
+    return await chromium.launch({ headless, args: browserArgs });
   }
 }
 
