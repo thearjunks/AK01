@@ -96,8 +96,7 @@ function wait(milliseconds) {
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
 function imageOf(ad) {
   const image = ad.local_artwork_url || ad.artwork_url || '';
-  if (!image || image.startsWith('/')) return image;
-  return image.replace(/s60x60/g, 's600x600');
+  return image;
 }
 function dateOf(ad) { return String(ad.ad_delivery_start_time || '').slice(0, 10); }
 function sourceOrderOf(ad) { return Number.isFinite(ad._source_index) ? ad._source_index : Number.MAX_SAFE_INTEGER; }

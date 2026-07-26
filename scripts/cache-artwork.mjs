@@ -45,13 +45,15 @@ async function fetchImage(url) {
   const requestUrl = url.replace(/s60x60/g, 's600x600');
 
   try {
-    const response = await fetch(requestUrl, {
+    const options = {
       signal: controller.signal,
       headers: {
         'accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
         'user-agent': 'Mozilla/5.0 Meta Ads Dashboard Artwork Cache',
       },
-    });
+    };
+    let response = await fetch(requestUrl, options);
+    if (!response.ok && requestUrl !== url) response = await fetch(url, options);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
