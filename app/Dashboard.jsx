@@ -60,6 +60,22 @@ const offerCategories = [
   ['Gift cards & vouchers', ['itunes', 'voucher', 'gift card', 'playstation']],
   ['Rewards & loyalty', ['qitaf', 'rewards', 'loyalty', 'مكافآت']],
 ];
+const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
+
+function isInRollingMonth(value, now = Date.now()) {
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) && time >= now - rollingMonthMs && time <= now + 24 * 60 * 60 * 1000;
+}
+
+function recentAds(records) {
+  const now = Date.now();
+  return records.filter((record) => isInRollingMonth(record.ad_delivery_start_time || record.start_date || record.created_time, now));
+}
+
+function recentSocialPosts(records) {
+  const now = Date.now();
+  return records.filter((record) => isInRollingMonth(record.published_at || record.publishedAt || record.created_time || record.timestamp, now));
+}
 
 function apiUrl(path) {
   return path;
@@ -266,7 +282,7 @@ function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
     if (filters.sort === 'impressions') return sourceOrderOf(a) - sourceOrderOf(b);
     return String(dateOf(b)).localeCompare(String(dateOf(a))) || sourceOrderOf(a) - sourceOrderOf(b);
   }), [ads, filters]);
-  return <><div className="page-actions"><div className="segmented">{[['campaigns', 'Campaign library'], ['compare', 'Competitor view'], ['opportunities', 'Offer gaps']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{filtered.length}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()}` : 'No fetch timestamp available'}</small></div><div className="results-summary"><span><b>{filtered.length}</b> campaigns in this view</span><span><i /> All tracked Meta Ads Library URLs</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <CompetitorColumns rows={filtered} /> : <OpportunityMatrix rows={filtered} />}</>;
+  return <><div className="page-actions"><div className="segmented">{[['campaigns', 'Campaign library'], ['compare', 'Competitor view'], ['opportunities', 'Offer gaps']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{filtered.length}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{filtered.length}</b> campaigns from the last 30 days</span><span><i /> All tracked Meta Ads Library URLs</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <CompetitorColumns rows={filtered} /> : <OpportunityMatrix rows={filtered} />}</>;
 }
 
 function Organic({ posts, source, onRefresh, onFetchLive, fetchState, updatedAt }) {
@@ -281,7 +297,7 @@ function Organic({ posts, source, onRefresh, onFetchLive, fetchState, updatedAt 
   }).sort((a, b) => organicPublishedTime(b) - organicPublishedTime(a));
 
   return <>
-    <section className="organic-status"><div><span><i /> Live monitoring</span><h2>Organic publishing watch</h2><p>New posts appear here as soon as the connected provider makes them available.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching posts...' : 'Fetch live organic posts'}</button><div className="source-chip"><small>Data source</small><b>{source}</b></div></section>
+    <section className="organic-status"><div><span><i /> Live monitoring</span><h2>Organic publishing watch</h2><p>Only posts published during the last 30 days are displayed.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching posts...' : 'Fetch live organic posts'}</button><div className="source-chip"><small>Data source</small><b>{source}</b></div></section>
     <div className={`live-fetch-status organic-live-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last fetched ${new Date(updatedAt).toLocaleString()}` : 'No live fetch timestamp available'}</small></div>
     <section className="organic-kpis"><div><b>{socialAccounts.length}</b><span>Accounts</span></div><div><b>{posts.length}</b><span>Live posts loaded</span></div><div><b>{posts.filter((post) => !post.viewed).length}</b><span>New posts</span></div><div><b>10m</b><span>Auto live fetch</span></div></section>
     <div className="organic-layout">
@@ -427,8 +443,18 @@ export default function Dashboard() {
   const [plansUpdatedAt, setPlansUpdatedAt] = useState('');
   const [plansFetchState, setPlansFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved plan snapshot.' });
   const [menuOpen, setMenuOpen] = useState(false);
-  const applyAdsPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setAds(records.map((ad, index) => ({ ...ad, _source_index: Number.isFinite(ad._source_index) ? ad._source_index : index }))); setAdsUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
-  useEffect(() => { fetch('/data/ads.json', { cache: 'no-store' }).then((response) => response.json()).then(applyAdsPayload).catch(() => { setAds([]); setAdsFetchState({ state: 'error', message: 'The saved ads dataset could not be loaded.' }); }); }, [applyAdsPayload]);
+  const applyAdsPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setAds(recentAds(records).map((ad, index) => ({ ...ad, _source_index: Number.isFinite(ad._source_index) ? ad._source_index : index }))); setAdsUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
+  const loadAds = useCallback(async () => {
+    try {
+      let response;
+      try { response = await fetch(apiUrl('/api/current-data'), { cache: 'no-store' }); if (!response.ok) throw new Error(); }
+      catch { response = await fetch('/data/ads.json', { cache: 'no-store' }); }
+      applyAdsPayload(await response.json());
+    } catch {
+      setAdsFetchState({ state: 'error', message: 'The saved ads dataset could not be loaded.' });
+    }
+  }, [applyAdsPayload]);
+  useEffect(() => { loadAds(); const timer = window.setInterval(loadAds, 30 * 1000); return () => window.clearInterval(timer); }, [loadAds]);
   const applyPlansPayload = useCallback((payload) => { setPlans(Array.isArray(payload) ? payload : payload.data || []); setBanners(Array.isArray(payload) ? [] : payload.banners || []); setBannerCoverage(Array.isArray(payload) ? [] : payload.banner_coverage || []); setPlansUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
   useEffect(() => { fetch('/data/plans.json', { cache: 'no-store' }).then((response) => response.json()).then(applyPlansPayload).catch(() => { setPlans([]); setPlansFetchState({ state: 'error', message: 'The saved plan dataset could not be loaded yet. Click Fetch live plans.' }); }); }, [applyPlansPayload]);
   const applyDevicesPayload = useCallback((payload) => { setDevices(Array.isArray(payload) ? payload : payload.data || []); setDevicesPayload(Array.isArray(payload) ? {} : payload); }, []);
@@ -466,7 +492,7 @@ export default function Dashboard() {
       setAdsFetchState({ state: 'error', message: `Live fetch failed: ${error.message}. The previous snapshot is still displayed.` });
     }
   }, [applyAdsPayload]);
-  const applySocialPayload = useCallback((payload) => { setPosts(Array.isArray(payload) ? payload : payload.data || []); setSource(Array.isArray(payload) ? 'Saved organic data' : payload.source || 'Connected provider'); setSocialUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
+  const applySocialPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setPosts(recentSocialPosts(records)); setSource(Array.isArray(payload) ? 'Saved organic data' : payload.source || 'Connected provider'); setSocialUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
   const loadPosts = useCallback(async () => {
     const controller = new AbortController(); const timer = window.setTimeout(() => controller.abort(), 1200);
     try {

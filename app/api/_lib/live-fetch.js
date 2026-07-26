@@ -1,12 +1,14 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
+import { chromium } from 'playwright';
 
 const root = process.cwd();
 const dataPath = join(root, 'public', 'data', 'ads.json');
 const socialDataPath = join(root, 'public', 'data', 'social-posts.json');
 const plansDataPath = join(root, 'public', 'data', 'plans.json');
 const devicesDataPath = join(root, 'public', 'data', 'devices.json');
+const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
 
 let socialFetchPromise = null;
 let adsFetchPromise = null;
@@ -18,6 +20,19 @@ let adsFetchJob = {
   count: 0,
 };
 
+function isInRollingMonth(value, now = Date.now()) {
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) && time >= now - rollingMonthMs && time <= now + 24 * 60 * 60 * 1000;
+}
+
+function recentAds(records, now = Date.now()) {
+  return records.filter((record) => isInRollingMonth(record.ad_delivery_start_time || record.start_date || record.created_time, now));
+}
+
+function recentSocialPosts(records, now = Date.now()) {
+  return records.filter((record) => isInRollingMonth(record.published_at || record.publishedAt || record.created_time || record.timestamp, now));
+}
+
 function normalizePayload(payload) {
   const records = Array.isArray(payload) ? payload : payload.data || payload.ads || [];
   if (!Array.isArray(records)) {
@@ -27,7 +42,18 @@ function normalizePayload(payload) {
     ...payload,
     generated_at: new Date().toISOString(),
     source: payload.source || 'Live fetch provider',
-    data: records,
+    data: recentAds(records),
+  };
+}
+
+function normalizeSocialPayload(payload) {
+  const records = Array.isArray(payload) ? payload : payload.data || payload.posts || [];
+  if (!Array.isArray(records)) throw new Error('Social provider must return an array or { data: [...] }.');
+  return {
+    ...payload,
+    generated_at: new Date().toISOString(),
+    source: payload.source || 'Live social provider',
+    data: recentSocialPosts(records),
   };
 }
 
@@ -35,7 +61,7 @@ function runScript(scriptName, extraEnv = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [join(root, 'scripts', scriptName)], {
       cwd: root,
-      env: { ...process.env, ...extraEnv },
+      env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: '0', ...extraEnv },
       windowsHide: true,
     });
     let stdout = '';
@@ -51,11 +77,15 @@ function runScript(scriptName, extraEnv = {}) {
 }
 
 export async function readCurrentData() {
-  return JSON.parse(await readFile(dataPath, 'utf8'));
+  const payload = JSON.parse(await readFile(dataPath, 'utf8'));
+  if (Array.isArray(payload)) return recentAds(payload);
+  return { ...payload, data: recentAds(payload.data || payload.ads || []) };
 }
 
 export async function readSocialData() {
-  return JSON.parse(await readFile(socialDataPath, 'utf8'));
+  const payload = JSON.parse(await readFile(socialDataPath, 'utf8'));
+  if (Array.isArray(payload)) return recentSocialPosts(payload);
+  return { ...payload, data: recentSocialPosts(payload.data || payload.posts || []) };
 }
 
 export async function readPlansData() {
@@ -67,6 +97,11 @@ export async function readDevicesData() {
 }
 
 async function fetchFromMetaPages() {
+  try {
+    await import('node:fs/promises').then(({ access }) => access(chromium.executablePath()));
+  } catch {
+    throw new Error('Playwright Chromium is not installed. Redeploy after the postinstall browser setup completes.');
+  }
   let scrape;
   try {
     scrape = await runScript('scrape-meta-ads.mjs');
@@ -76,9 +111,10 @@ async function fetchFromMetaPages() {
   }
   if (scrape.stderr) console.error(`[fetch-live] scrape-meta-ads.mjs stderr:\n${scrape.stderr}`);
   const payload = normalizePayload(await readCurrentData());
+  await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
   return {
     ok: true,
-    message: `Fetched ${payload.data.length} ads from the configured Meta Ads Library pages.`,
+    message: `Fetched ${payload.data.length} ads from the last 30 days.`,
     payload,
     log: scrape.stdout,
   };
@@ -109,7 +145,7 @@ export function startAdsFetchJob() {
 
   adsFetchJob = {
     state: 'running',
-    message: 'Fetching live ads from the configured Meta Ads Library pages.',
+    message: 'Fetching live ads from the configured Meta Ads Library pages for the last 30 days.',
     started_at: new Date().toISOString(),
     finished_at: '',
     count: 0,
@@ -166,18 +202,17 @@ async function fetchSocialPostsNow(credentials = {}) {
       SOCIAL_INSTAGRAM_PASSWORD: credentials.instagram?.password || credentials.facebook?.password || process.env.SOCIAL_INSTAGRAM_PASSWORD || '',
     });
     await runScript('cache-social-thumbnails.mjs');
-    const payload = await readSocialData();
-    return { ok: true, payload, message: `Fetched ${payload.fetched_count || 0} live organic posts; ${payload.data?.length || 0} total saved posts.` };
+    const payload = normalizeSocialPayload(await readSocialData());
+    await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
+    return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
   }
   const response = await fetch(providerUrl, { headers: { accept: 'application/json', 'user-agent': 'kuwait-social-monitor/1.0' } });
   if (!response.ok) throw new Error(`Social provider returned HTTP ${response.status}.`);
   const input = await response.json();
-  const records = Array.isArray(input) ? input : input.data || input.posts || [];
-  if (!Array.isArray(records)) throw new Error('Social provider must return an array or { data: [...] }.');
-  const payload = { generated_at: new Date().toISOString(), source: input.source || 'Live social provider', data: records };
+  const payload = normalizeSocialPayload(input);
   await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
   await runScript('cache-social-thumbnails.mjs');
-  return { ok: true, payload, message: `Fetched ${records.length} social posts.` };
+  return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
 }
 
 export function fetchSocialPosts(credentials = {}) {
