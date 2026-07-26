@@ -140,6 +140,7 @@ function mediaTypeOf(ad) {
   return imageOf(ad) ? 'image' : 'unknown';
 }
 function statusOf(ad) { return ad.ad_status === 'inactive' || ad.ad_delivery_stop_time ? 'inactive' : 'active'; }
+function impressionsOf(ad) { return ad.impressions || ad.impressions_text || ad.impression_range || ad.estimated_impressions || 'Not provided by source'; }
 function titleOf(ad) {
   return textOf(ad).split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !/see ad details/i.test(line))[1]
     || textOf(ad).split(/\r?\n/).find((line) => line.trim()) || `Campaign ${ad.ad_archive_id}`;
@@ -283,7 +284,7 @@ function Overview({ ads, onNavigate }) {
 }
 
 function Filters({ filters, setFilters }) {
-  const reset = { search: '', provider: '', language: '', platform: '', mediaType: '', status: '', dateMode: 'range', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' };
+  const reset = { search: '', provider: '', language: '', platform: '', mediaType: '', status: 'active', dateMode: 'all', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' };
   return <section className="boosted-filter-panel surface"><div className="boosted-filter-heading"><div><span>Filters</span><b>Refine the complete paid-ad archive</b></div><small>Date controls use the delivery dates available in Meta results.</small></div><div className="filter-bar boosted-filter-grid">
     <label className="filter-search"><Search size={17} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search campaign copy or ID" /></label>
     <label className="filter-field"><span>Competitor</span><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All competitors</option>{adProviders.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
@@ -311,8 +312,11 @@ function CampaignGrid({ rows }) {
   return <div className="campaign-grid boosted-campaign-grid">{rows.map((ad) => <article className="campaign-card-new" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="campaign-image">{imageOf(ad) ? <img src={imageOf(ad)} alt="Campaign creative" loading="lazy" decoding="async" onLoad={(event) => { if (event.currentTarget.naturalWidth <= 120 && event.currentTarget.naturalHeight <= 120) event.currentTarget.classList.add('low-resolution'); }} /> : <EmptyArtwork />}<span>{statusOf(ad) === 'inactive' ? 'Inactive' : 'Active'}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={ad.page_id} name={ad.page_name} /><span><b>{ad.page_name}</b><small>{dateOf(ad)}</small></span></div><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><div><span>ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open ad <ArrowUpRight size={14} /></a></div></div></article>)}</div>;
 }
 
-function CompetitorColumns({ rows }) {
-  return <div className="competitor-columns">{adProviders.map((provider) => { const providerRows = rows.filter((ad) => String(ad.page_id) === provider.id); return <section key={provider.id}><header style={{ '--brand': provider.color }}><span><BrandMark pageId={provider.id} /><b>{provider.name}</b></span><em>{providerRows.length} ads</em></header><div>{providerRows.map((ad) => <CampaignMini key={`${ad.page_id}-${ad.ad_archive_id}`} ad={ad} />)}{!providerRows.length ? <p className="column-empty">No matching campaigns</p> : null}</div></section>; })}</div>;
+function ActiveOfferRows({ rows }) {
+  return <div className="active-offer-rows">{providers.map((provider, index) => {
+    const providerRows = rows.filter((ad) => String(ad.page_id) === provider.id);
+    return <section className="active-offer-row surface" key={provider.id} style={{ '--brand': provider.color }}><header><div><BrandMark pageId={provider.id} /><span><small>Row {index + 1}</small><b>{provider.name}</b></span></div><div><strong>{providerRows.length}</strong><span>active offers</span></div></header><div className="offer-scroll-frame" role="list" aria-label={`${provider.name} active offers`}>{providerRows.length ? providerRows.map((ad) => <article className="active-offer-card" role="listitem" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="active-offer-creative">{imageOf(ad) ? <img src={imageOf(ad)} alt={`${provider.name} offer creative`} loading="lazy" decoding="async" /> : <EmptyArtwork label="Offer" />}<span>Active</span></div><div className="active-offer-copy"><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><dl><div><dt>Impressions</dt><dd>{impressionsOf(ad)}</dd></div><div><dt>Started</dt><dd>{dateOf(ad) || 'Unavailable'}</dd></div><div><dt>Platform</dt><dd>{platformsOf(ad).join(', ') || 'Not provided'}</dd></div><div><dt>Media</dt><dd>{mediaTypeOf(ad)}</dd></div></dl><footer><span>Library ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open offer <ArrowUpRight size={14} /></a></footer></div></article>) : <p className="column-empty">No active offers match the current filters.</p>}</div></section>;
+  })}</div>;
 }
 
 function OpportunityMatrix({ rows }) {
@@ -329,8 +333,8 @@ function BannerComparison({ banners, visibleProviders }) {
 }
 
 function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
-  const [tab, setTab] = useState('campaigns');
-  const [filters, setFilters] = useState({ search: '', provider: '', language: '', platform: '', mediaType: '', status: '', dateMode: 'range', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' });
+  const [tab, setTab] = useState('compare');
+  const [filters, setFilters] = useState({ search: '', provider: '', language: '', platform: '', mediaType: '', status: 'active', dateMode: 'all', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' });
   const filtered = useMemo(() => ads.filter((ad) => adProviders.some((provider) => provider.id === String(ad.page_id))).filter((ad) => {
     if (filters.search && !`${textOf(ad)} ${ad.ad_archive_id}`.toLowerCase().includes(filters.search.toLowerCase())) return false;
     if (filters.provider && String(ad.page_id) !== filters.provider) return false;
@@ -348,7 +352,9 @@ function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
     if (filters.sort === 'impressions') return sourceOrderOf(a) - sourceOrderOf(b);
     return String(dateOf(b)).localeCompare(String(dateOf(a))) || sourceOrderOf(a) - sourceOrderOf(b);
   }), [ads, filters]);
-  return <><div className="page-actions"><div className="segmented">{[['campaigns', 'Campaign library'], ['compare', 'Competitor view'], ['opportunities', 'Offer gaps']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{filtered.length}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{filtered.length}</b> campaigns across all available dates</span><span><i /> Active and inactive ads from all tracked Meta URLs</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <CompetitorColumns rows={filtered} /> : <OpportunityMatrix rows={filtered} />}</>;
+  const activeOffers = filtered.filter((ad) => statusOf(ad) === 'active' && providers.some((provider) => provider.id === String(ad.page_id)));
+  const tabs = [['campaigns', 'Campaign library', filtered.length], ['compare', 'Active offers', activeOffers.length], ['opportunities', 'Offer gaps', filtered.length]];
+  return <><div className="page-actions"><div className="segmented">{tabs.map(([key, label, count]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{count}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(tab === 'compare' ? activeOffers : filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{tab === 'compare' ? activeOffers.length : filtered.length}</b> {tab === 'compare' ? 'active competitor offers' : 'campaigns across all available dates'}</span><span><i /> {tab === 'compare' ? 'Three scrollable rows: stc, Ooredoo, then Zain' : 'Ads from the tracked Meta URLs'}</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <ActiveOfferRows rows={activeOffers} /> : <OpportunityMatrix rows={filtered} />}</>;
 }
 
 function Organic({ posts, source, coverage, onRefresh, onFetchLive, fetchState, updatedAt }) {
