@@ -1,8 +1,7 @@
 name: Refresh plans banners and devices
 
 on:
-  schedule:
-    - cron: '30 * * * *'
+  # Automatic runs paused at the user's request. Keep manual execution available.
   workflow_dispatch:
 
 permissions:

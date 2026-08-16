@@ -1,9 +1,7 @@
 name: Refresh organic posts
 
 on:
-  schedule:
-    # Daily backup refresh at 03:00 UTC (06:00 Kuwait time).
-    - cron: '0 3 * * *'
+  # Automatic runs paused at the user's request. Keep manual execution available.
   workflow_dispatch:
 
 permissions:

@@ -1,8 +1,7 @@
 name: Refresh paid ads
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'
+  # Automatic runs paused at the user's request. Keep manual execution available.
   workflow_dispatch:
 
 permissions:
