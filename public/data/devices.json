@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T10:01:47.794Z",
+  "generated_at": "2026-08-16T11:00:03.907Z",
   "source": "Live device collector: public stc, Ooredoo, and Zain Kuwait e-store pages",
   "coverage": [
     {
@@ -70,19 +70,26 @@
       "category": "Tablet Search",
       "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
       "status": "ok",
-      "count": 1
+      "count": 13
     }
   ],
-  "fetched_count": 274,
-  "deduped_count": 262,
+  "fetched_count": 286,
+  "deduped_count": 274,
   "mode": "live_partial",
   "fetch_warning": "1 device sources were partial or blocked; their previous records were preserved.",
   "changes": {
-    "added": 0,
+    "added": 1,
     "updated": 49,
-    "removed": 0,
-    "unchanged": 213,
-    "removed_records": []
+    "removed": 1,
+    "unchanged": 224,
+    "removed_records": [
+      {
+        "id": "251a596a777702211f",
+        "provider": "zain",
+        "name": "Matepad 11.5 (2026)",
+        "product_url": "https://www.kw.zain.com/en/shop/matepad-11.5"
+      }
+    ]
   },
   "data": [
     {
@@ -108,7 +115,7 @@
       "product_url": "https://www.kw.zain.com/en/web/consumer/devices",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.787Z",
-      "last_checked": "2026-08-16T10:00:45.258Z",
+      "last_checked": "2026-08-16T10:58:51.121Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -142,7 +149,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/iphone-17",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.787Z",
-      "last_checked": "2026-08-16T10:00:46.700Z",
+      "last_checked": "2026-08-16T10:58:52.795Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -176,7 +183,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/iphone-16",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.787Z",
-      "last_checked": "2026-08-16T10:00:47.162Z",
+      "last_checked": "2026-08-16T10:58:53.275Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -210,7 +217,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/iphone-16e",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.787Z",
-      "last_checked": "2026-08-16T10:00:47.623Z",
+      "last_checked": "2026-08-16T10:58:53.757Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -244,7 +251,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/iphone-17e",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.787Z",
-      "last_checked": "2026-08-16T10:00:48.329Z",
+      "last_checked": "2026-08-16T10:58:55.249Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -264,21 +271,55 @@
       "name": "Filters",
       "brand": "Filters",
       "category": "Devices",
-      "description": "237 Results APPLE Beats iPhone 17 Pro Max Rugged Case with... Cash Deals KD 18.9 BUY NOW Add to compare On Sale PlayStation VR2 Cash Deals KD 149.9 BUY NOW Add to compare HONOR Pad X8b Kids Edition Zain Plus KD 2.19/Month BUY NOW Add to compare New Galaxy AI Galaxy Z Flip 8 Zain Plus KD 10.9/Month BUY NOW Add to compare New Galaxy AI Galaxy Z Fold 8 Ultra Zain Plus KD 18.9/Month BUY NOW Add to compare New Galaxy AI G",
+      "description": "237 Results New APPLE MacBook Air 15\" M5 Zain Plus KD 16.19/Month BUY NOW Add to compare APPLE Beats iPhone 17 Pro Max Rugged Case with... Cash Deals KD 18.9 BUY NOW Add to compare On Sale PlayStation VR2 Cash Deals KD 149.9 BUY NOW Add to compare HONOR Pad X8b Kids Edition Zain Plus KD 2.19/Month BUY NOW Add to compare New Galaxy AI Galaxy Z Flip 8 Zain Plus KD 10.9/Month BUY NOW Add to compare New Galaxy AI Galaxy ",
       "storage": "",
       "colors": "",
-      "price": "KD 18.9",
-      "monthly_installment": "KD 2.19/",
+      "price": "KD 16.19",
+      "monthly_installment": "KD 16.19/",
       "contract_duration": "",
       "associated_plan": "5G Zain Plus KD 3.19/Month BUY NOW Add to compare New HUAWEI Watch Kids",
       "offer": "",
       "stock_status": "In stock",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/83689383?download=false",
       "local_image_url": "/device-images/d6f351ecbd97ef33fa.png",
       "product_url": "https://www.kw.zain.com/en/web/consumer/devices",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-05T12:33:13.269Z",
-      "last_checked": "2026-08-16T10:00:49.761Z",
+      "last_checked": "2026-08-16T10:58:56.595Z",
       "status": "Updated",
+      "source_categories": [
+        "Devices"
+      ],
+      "source_urls": [
+        "https://www.kw.zain.com/en/shop/devices"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "222b2b5dfc829f8514",
+      "provider": "zain",
+      "provider_name": "Zain Kuwait",
+      "logo": "https://www.kw.zain.com/o/zain-theme/images/zain_logo.svg",
+      "color": "#00a651",
+      "name": "MacBook Air 15\" M5",
+      "brand": "MacBook",
+      "category": "Laptops",
+      "description": "New APPLE MacBook Air 15\" M5 Zain Plus KD 16.19/Month BUY NOW Add to compare",
+      "storage": "",
+      "colors": "",
+      "price": "KD 16.19",
+      "monthly_installment": "KD 16.19/",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "In stock",
+      "local_image_url": "",
+      "product_url": "https://www.kw.zain.com/en/shop/macbook-air-15-m5",
+      "source_url": "https://www.kw.zain.com/en/shop/devices",
+      "first_identified_at": "2026-08-16T10:58:58.040Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
+      "status": "Added",
       "source_categories": [
         "Devices"
       ],
@@ -310,7 +351,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/beats-iphone-17-pro-max-rugged-case-with-magsafe-and-camera-control-sierra-orange",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T15:32:25.180Z",
-      "last_checked": "2026-08-16T10:00:49.761Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -343,7 +384,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/playstation-vr2",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-11T11:28:55.322Z",
-      "last_checked": "2026-08-16T10:00:49.761Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -376,7 +417,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/playstation-vr2",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-11T11:28:55.322Z",
-      "last_checked": "2026-08-16T10:00:49.761Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -409,7 +450,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/pad-x8b",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-10T05:15:40.909Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -442,7 +483,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/galaxy-z-flip-8",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T23:58:13.605Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -475,7 +516,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/galaxy-z-fold-8-ultra-",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T23:58:13.605Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -508,7 +549,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/galaxy-fold-8",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T23:58:13.605Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -541,7 +582,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/pura-90s-pro",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T23:58:13.605Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -574,7 +615,7 @@
       "product_url": "https://www.kw.zain.com/en/shop/pura-90s-pro-max",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T15:32:25.181Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:58.040Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -603,12 +644,13 @@
       "associated_plan": "5G New SAMSUNG Galaxy A27 5G Zain Plus KD 3.19/Month BUY NOW Add to comp",
       "offer": "",
       "stock_status": "In stock",
-      "local_image_url": "",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/85152497?download=false",
+      "local_image_url": "/device-images/06b28f311c5ef60dff.png",
       "product_url": "https://www.kw.zain.com/en/shop/galaxy-a27-5g",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-14T15:32:25.181Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
-      "status": "Current",
+      "last_checked": "2026-08-16T10:58:58.040Z",
+      "status": "Updated",
       "source_categories": [
         "Devices"
       ],
@@ -636,11 +678,12 @@
       "associated_plan": "",
       "offer": "",
       "stock_status": "In stock",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/84893789?download=false",
       "local_image_url": "/device-images/ae052d3cc15f06b064.png",
       "product_url": "https://www.kw.zain.com/en/shop/watch-kids-x1",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-08T22:05:55.811Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:58:59.344Z",
       "status": "Updated",
       "source_categories": [
         "Devices"
@@ -669,11 +712,12 @@
       "associated_plan": "",
       "offer": "",
       "stock_status": "In stock",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/84559673?download=false",
       "local_image_url": "/device-images/61ad410d88c7f4d1ae.png",
       "product_url": "https://www.kw.zain.com/en/shop/7-pro-1-pack",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-30T18:05:58.135Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:59:01.258Z",
       "status": "Updated",
       "source_categories": [
         "Devices"
@@ -702,11 +746,12 @@
       "associated_plan": "",
       "offer": "",
       "stock_status": "In stock",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/84559780?download=false",
       "local_image_url": "/device-images/6a977dd3dd0fa23c29.png",
       "product_url": "https://www.kw.zain.com/en/shop/eero-7-pro-3-pack-1",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-01T22:37:16.617Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:59:02.755Z",
       "status": "Updated",
       "source_categories": [
         "Devices"
@@ -735,11 +780,12 @@
       "associated_plan": "",
       "offer": "",
       "stock_status": "In stock",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/83689383?download=false",
       "local_image_url": "/device-images/d6f351ecbd97ef33fa.png",
       "product_url": "https://www.kw.zain.com/en/shop/matepad-mini",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-10T00:09:37.406Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:59:03.739Z",
       "status": "Updated",
       "source_categories": [
         "Devices"
@@ -768,44 +814,12 @@
       "associated_plan": "",
       "offer": "",
       "stock_status": "In stock",
+      "image_url": "https://www.kw.zain.com/o/commerce-media/accounts/-1/images/83688486?download=false",
       "local_image_url": "/device-images/f093b3f199c25afefe.png",
       "product_url": "https://www.kw.zain.com/en/shop/freebuds-pro-5-",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-08-10T17:35:09.720Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
-      "status": "Updated",
-      "source_categories": [
-        "Devices"
-      ],
-      "source_urls": [
-        "https://www.kw.zain.com/en/shop/devices"
-      ],
-      "missing_from_stc": true,
-      "freshness": "live"
-    },
-    {
-      "id": "251a596a777702211f",
-      "provider": "zain",
-      "provider_name": "Zain Kuwait",
-      "logo": "https://www.kw.zain.com/o/zain-theme/images/zain_logo.svg",
-      "color": "#00a651",
-      "name": "Matepad 11.5 (2026)",
-      "brand": "Matepad",
-      "category": "Devices",
-      "description": "New HUAWEI Matepad 11.5 (2026) Zain Plus KD 2.9/Month BUY NOW Add to compare",
-      "storage": "",
-      "colors": "",
-      "price": "KD 2.9",
-      "monthly_installment": "KD 2.9/",
-      "contract_duration": "",
-      "associated_plan": "",
-      "offer": "",
-      "stock_status": "In stock",
-      "local_image_url": "/device-images/f7c46340a5f58367a7.png",
-      "product_url": "https://www.kw.zain.com/en/shop/matepad-11.5",
-      "source_url": "https://www.kw.zain.com/en/shop/devices",
-      "first_identified_at": "2026-07-30T18:05:59.367Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:59:05.230Z",
       "status": "Updated",
       "source_categories": [
         "Devices"
@@ -839,7 +853,7 @@
       "product_url": "https://www.kw.zain.com/shop/privacy-policy",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.790Z",
-      "last_checked": "2026-08-16T10:00:49.762Z",
+      "last_checked": "2026-08-16T10:59:07.386Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -873,7 +887,7 @@
       "product_url": "https://www.kw.zain.com/shop/terms-conditions",
       "source_url": "https://www.kw.zain.com/en/shop/devices",
       "first_identified_at": "2026-07-23T06:42:46.790Z",
-      "last_checked": "2026-08-16T10:00:50.012Z",
+      "last_checked": "2026-08-16T10:59:07.660Z",
       "status": "Current",
       "source_categories": [
         "Devices"
@@ -907,7 +921,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.573Z",
-      "last_checked": "2026-08-16T10:00:50.258Z",
+      "last_checked": "2026-08-16T10:59:07.913Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -941,7 +955,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices/fiber-plus.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:57.139Z",
+      "last_checked": "2026-08-16T10:59:10.071Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -975,7 +989,7 @@
       "product_url": "https://store.ooredoo.com.kw/zte-router-u60-pro.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:57.387Z",
+      "last_checked": "2026-08-16T10:59:10.335Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1009,7 +1023,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-5g-mifi-router-pro-5-e6888.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:00:57.635Z",
+      "last_checked": "2026-08-16T10:59:10.601Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices"
@@ -1043,7 +1057,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:57.881Z",
+      "last_checked": "2026-08-16T10:59:10.864Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1077,7 +1091,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices/fixed.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:58.128Z",
+      "last_checked": "2026-08-16T10:59:11.129Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1111,7 +1125,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-5g-cpe-ultra-6-router.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:58.375Z",
+      "last_checked": "2026-08-16T10:59:11.394Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices"
@@ -1145,7 +1159,7 @@
       "product_url": "https://store.ooredoo.com.kw/cpe-pro6-5g-customized-version.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:58.622Z",
+      "last_checked": "2026-08-16T10:59:11.658Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices"
@@ -1179,7 +1193,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-5g-cpe-5-h155383-51060-lds.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:58.871Z",
+      "last_checked": "2026-08-16T10:59:11.924Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices"
@@ -1213,7 +1227,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices/mega-home-setup.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:59.118Z",
+      "last_checked": "2026-08-16T10:59:12.190Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1247,7 +1261,7 @@
       "product_url": "https://store.ooredoo.com.kw/cpe-pro6-5g-customized-version.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:59.366Z",
+      "last_checked": "2026-08-16T10:59:12.456Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1281,7 +1295,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-5g-cpe-ultra-6-router.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:59.613Z",
+      "last_checked": "2026-08-16T10:59:12.722Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1315,7 +1329,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-5g-cpe-5-h155383-51060-lds.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:00:59.860Z",
+      "last_checked": "2026-08-16T10:59:12.986Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1349,7 +1363,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.574Z",
-      "last_checked": "2026-08-16T10:01:00.108Z",
+      "last_checked": "2026-08-16T10:59:13.252Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1383,7 +1397,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming/playstation-5.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.575Z",
-      "last_checked": "2026-08-16T10:01:00.353Z",
+      "last_checked": "2026-08-16T10:59:13.516Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices",
@@ -1419,7 +1433,7 @@
       "product_url": "https://store.ooredoo.com.kw/nintendo-switch-2-console.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:44:13.088Z",
-      "last_checked": "2026-08-16T10:01:00.599Z",
+      "last_checked": "2026-08-16T10:59:13.779Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices"
@@ -1453,7 +1467,7 @@
       "product_url": "https://store.ooredoo.com.kw/sony-playstation-ps5-slim.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-08-11T22:21:59.040Z",
-      "last_checked": "2026-08-16T10:01:00.844Z",
+      "last_checked": "2026-08-16T10:59:14.043Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices"
@@ -1487,7 +1501,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.575Z",
-      "last_checked": "2026-08-16T10:01:01.090Z",
+      "last_checked": "2026-08-16T10:59:14.306Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1521,7 +1535,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops/tablets/latest-ipads.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.575Z",
-      "last_checked": "2026-08-16T10:01:01.336Z",
+      "last_checked": "2026-08-16T10:59:14.571Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices",
@@ -1557,7 +1571,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-11inch-wi-fi-standard-glass.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-08-12T22:20:43.206Z",
-      "last_checked": "2026-08-16T10:01:01.581Z",
+      "last_checked": "2026-08-16T10:59:14.834Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1593,7 +1607,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-13inch-wi-fi-standard-glass.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:21.968Z",
-      "last_checked": "2026-08-16T10:01:01.827Z",
+      "last_checked": "2026-08-16T10:59:15.098Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1629,7 +1643,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-13inch-wi-fi-cellular-standard-glass.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.121Z",
-      "last_checked": "2026-08-16T10:01:02.073Z",
+      "last_checked": "2026-08-16T10:59:15.362Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1665,7 +1679,7 @@
       "product_url": "https://store.ooredoo.com.kw/ipad-11inch-wifi-2025.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:21.925Z",
-      "last_checked": "2026-08-16T10:01:02.320Z",
+      "last_checked": "2026-08-16T10:59:15.626Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1701,7 +1715,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.575Z",
-      "last_checked": "2026-08-16T10:01:02.567Z",
+      "last_checked": "2026-08-16T10:59:15.891Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1735,7 +1749,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops/laptops/macbooks.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.576Z",
-      "last_checked": "2026-08-16T10:01:02.814Z",
+      "last_checked": "2026-08-16T10:59:16.158Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices",
@@ -1771,7 +1785,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-macbook-air-13inch-m5.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.305Z",
-      "last_checked": "2026-08-16T10:01:03.063Z",
+      "last_checked": "2026-08-16T10:59:16.424Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1807,7 +1821,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-macbook-air-15inch-m5.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.343Z",
-      "last_checked": "2026-08-16T10:01:03.312Z",
+      "last_checked": "2026-08-16T10:59:16.689Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1843,7 +1857,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-macbook-neo-13inch-a18.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.272Z",
-      "last_checked": "2026-08-16T10:01:03.560Z",
+      "last_checked": "2026-08-16T10:59:16.955Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1879,7 +1893,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-28T19:03:20.270Z",
-      "last_checked": "2026-08-16T10:01:03.807Z",
+      "last_checked": "2026-08-16T10:59:17.221Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -1913,7 +1927,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops/more-laptops-and-tablets.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-28T19:03:20.484Z",
-      "last_checked": "2026-08-16T10:01:04.055Z",
+      "last_checked": "2026-08-16T10:59:17.487Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices",
@@ -1949,7 +1963,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-matepad-papermatte-mini.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.024Z",
-      "last_checked": "2026-08-16T10:01:04.304Z",
+      "last_checked": "2026-08-16T10:59:17.753Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -1985,7 +1999,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-pad-10-wifi-8gb-ram.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.194Z",
-      "last_checked": "2026-08-16T10:01:04.552Z",
+      "last_checked": "2026-08-16T10:59:18.019Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -2021,7 +2035,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-pad-x9a-wifi-8gb-ram.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-26T12:42:22.225Z",
-      "last_checked": "2026-08-16T10:01:04.797Z",
+      "last_checked": "2026-08-16T10:59:18.284Z",
       "status": "Updated",
       "source_categories": [
         "Internet Devices",
@@ -2057,7 +2071,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-28T19:03:21.337Z",
-      "last_checked": "2026-08-16T10:01:05.045Z",
+      "last_checked": "2026-08-16T10:59:18.549Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices"
@@ -2091,7 +2105,7 @@
       "product_url": "https://store.ooredoo.com.kw/vouchers-streaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/internet-devices.html",
       "first_identified_at": "2026-07-23T06:43:36.576Z",
-      "last_checked": "2026-08-16T10:01:05.537Z",
+      "last_checked": "2026-08-16T10:59:19.081Z",
       "status": "Current",
       "source_categories": [
         "Internet Devices",
@@ -2139,7 +2153,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-galaxy-tab-s10-plus-wifi-256gb.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-07-28T19:03:21.988Z",
-      "last_checked": "2026-08-16T10:01:05.783Z",
+      "last_checked": "2026-08-16T10:59:19.345Z",
       "status": "Current",
       "source_categories": [
         "Tablets"
@@ -2173,7 +2187,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-07-23T06:43:54.750Z",
-      "last_checked": "2026-08-16T10:01:06.033Z",
+      "last_checked": "2026-08-16T10:59:19.616Z",
       "status": "Current",
       "source_categories": [
         "Tablets"
@@ -2207,7 +2221,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-08-05T22:44:43.168Z",
-      "last_checked": "2026-08-16T10:01:06.279Z",
+      "last_checked": "2026-08-16T10:59:19.880Z",
       "status": "Current",
       "source_categories": [
         "Tablets"
@@ -2241,7 +2255,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops/tablets/samsung-tablets.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-08-05T22:44:43.355Z",
-      "last_checked": "2026-08-16T10:01:06.525Z",
+      "last_checked": "2026-08-16T10:59:20.143Z",
       "status": "Current",
       "source_categories": [
         "Tablets"
@@ -2275,7 +2289,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-a56-8gb-ram-5g.html?list_id=Device_Products_Listing_0&payment=payinstallment",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-08-05T22:45:05.669Z",
-      "last_checked": "2026-08-16T10:01:06.770Z",
+      "last_checked": "2026-08-16T10:59:20.407Z",
       "status": "Updated",
       "source_categories": [
         "Tablets"
@@ -2309,7 +2323,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-07-23T06:43:54.751Z",
-      "last_checked": "2026-08-16T10:01:07.015Z",
+      "last_checked": "2026-08-16T10:59:20.671Z",
       "status": "Current",
       "source_categories": [
         "Tablets"
@@ -2343,7 +2357,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/tablets-laptops.html",
       "first_identified_at": "2026-07-28T19:03:22.848Z",
-      "last_checked": "2026-08-16T10:01:07.263Z",
+      "last_checked": "2026-08-16T10:59:20.937Z",
       "status": "Current",
       "source_categories": [
         "Tablets"
@@ -2377,7 +2391,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.088Z",
-      "last_checked": "2026-08-16T10:01:07.510Z",
+      "last_checked": "2026-08-16T10:59:21.204Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2411,7 +2425,7 @@
       "product_url": "https://store.ooredoo.com.kw/nintendo-switch-2-console.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.088Z",
-      "last_checked": "2026-08-16T10:01:07.755Z",
+      "last_checked": "2026-08-16T10:59:21.468Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2445,7 +2459,7 @@
       "product_url": "https://store.ooredoo.com.kw/sony-playstation-ps5-slim.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-08-11T22:21:59.040Z",
-      "last_checked": "2026-08-16T10:01:08.001Z",
+      "last_checked": "2026-08-16T10:59:21.731Z",
       "status": "Updated",
       "source_categories": [
         "Gaming"
@@ -2479,7 +2493,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.089Z",
-      "last_checked": "2026-08-16T10:01:08.246Z",
+      "last_checked": "2026-08-16T10:59:21.996Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2513,7 +2527,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.089Z",
-      "last_checked": "2026-08-16T10:01:08.735Z",
+      "last_checked": "2026-08-16T10:59:22.521Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2547,7 +2561,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.089Z",
-      "last_checked": "2026-08-16T10:01:08.981Z",
+      "last_checked": "2026-08-16T10:59:22.785Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2581,7 +2595,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming/portable-monitors.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.089Z",
-      "last_checked": "2026-08-16T10:01:09.226Z",
+      "last_checked": "2026-08-16T10:59:23.049Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2615,7 +2629,7 @@
       "product_url": "https://store.ooredoo.com.kw/ps5-poga-lux-portable-gaming-monitor-red.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.089Z",
-      "last_checked": "2026-08-16T10:01:09.473Z",
+      "last_checked": "2026-08-16T10:59:23.312Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2649,7 +2663,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.090Z",
-      "last_checked": "2026-08-16T10:01:09.724Z",
+      "last_checked": "2026-08-16T10:59:23.576Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2683,7 +2697,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/gaming/gaming-tvs.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.090Z",
-      "last_checked": "2026-08-16T10:01:09.971Z",
+      "last_checked": "2026-08-16T10:59:23.842Z",
       "status": "Current",
       "source_categories": [
         "Gaming"
@@ -2717,7 +2731,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-s-pro-mini-led-65-2026.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-27T21:48:45.935Z",
-      "last_checked": "2026-08-16T10:01:10.219Z",
+      "last_checked": "2026-08-16T10:59:24.107Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2753,7 +2767,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-s-pro-mini-led-55-2026.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-27T21:48:46.314Z",
-      "last_checked": "2026-08-16T10:01:10.468Z",
+      "last_checked": "2026-08-16T10:59:24.373Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2789,7 +2803,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-tv-75inch-uhd-4k-ua75u8000fuxzn.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.090Z",
-      "last_checked": "2026-08-16T10:01:10.715Z",
+      "last_checked": "2026-08-16T10:59:24.638Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2825,7 +2839,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-tv-55inch-uhd-4k.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.090Z",
-      "last_checked": "2026-08-16T10:01:10.964Z",
+      "last_checked": "2026-08-16T10:59:24.903Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2861,7 +2875,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-a-pro-65-2026-ela5844gl.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-27T21:48:46.873Z",
-      "last_checked": "2026-08-16T10:01:11.212Z",
+      "last_checked": "2026-08-16T10:59:25.169Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2897,7 +2911,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-a-pro-75-2026-ela5836gl.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-27T21:48:47.061Z",
-      "last_checked": "2026-08-16T10:01:11.460Z",
+      "last_checked": "2026-08-16T10:59:25.435Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2933,7 +2947,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-max-100-l100ma-maxme-2025.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.090Z",
-      "last_checked": "2026-08-16T10:01:11.706Z",
+      "last_checked": "2026-08-16T10:59:25.699Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -2969,7 +2983,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-max-85-l85ma-maxme-2025.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/gaming.html",
       "first_identified_at": "2026-07-23T06:44:13.090Z",
-      "last_checked": "2026-08-16T10:01:11.955Z",
+      "last_checked": "2026-08-16T10:59:25.965Z",
       "status": "Current",
       "source_categories": [
         "Gaming",
@@ -3005,7 +3019,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.257Z",
-      "last_checked": "2026-08-16T10:01:12.203Z",
+      "last_checked": "2026-08-16T10:59:26.232Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3039,7 +3053,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:12.449Z",
+      "last_checked": "2026-08-16T10:59:26.496Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3073,7 +3087,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/home-lifestyle.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:12.697Z",
+      "last_checked": "2026-08-16T10:59:26.762Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3107,7 +3121,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-robot-vacuum-5-uk.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:12.943Z",
+      "last_checked": "2026-08-16T10:59:27.027Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3141,7 +3155,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-ultra-thin-magnetic-power-bank-5000-15w.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:13.191Z",
+      "last_checked": "2026-08-16T10:59:27.290Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3175,7 +3189,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-electric-scooter-6-gl.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:13.438Z",
+      "last_checked": "2026-08-16T10:59:27.556Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3209,7 +3223,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-smart-camera-c500-gb.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:13.696Z",
+      "last_checked": "2026-08-16T10:59:27.819Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3243,7 +3257,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-smart-camera-c500-dual-uk.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:13.953Z",
+      "last_checked": "2026-08-16T10:59:28.084Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3277,7 +3291,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-smart-air-purifier-4-compact-eu.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.258Z",
-      "last_checked": "2026-08-16T10:01:14.211Z",
+      "last_checked": "2026-08-16T10:59:28.347Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3311,7 +3325,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-smart-air-purifier-elite-uk.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:14.458Z",
+      "last_checked": "2026-08-16T10:59:28.614Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3345,7 +3359,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-smart-doorbell-3s.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:14.706Z",
+      "last_checked": "2026-08-16T10:59:28.880Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3379,7 +3393,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:14.958Z",
+      "last_checked": "2026-08-16T10:59:29.144Z",
       "status": "Current",
       "source_categories": [
         "Accessories",
@@ -3415,7 +3429,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/smartwatches/apple-smartwatches.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:15.204Z",
+      "last_checked": "2026-08-16T10:59:29.408Z",
       "status": "Current",
       "source_categories": [
         "Accessories",
@@ -3451,7 +3465,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-ultra-3-gps-cell-black-titanium-case-with-black-alpine-loop.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:15.449Z",
+      "last_checked": "2026-08-16T10:59:29.672Z",
       "status": "Updated",
       "source_categories": [
         "Accessories",
@@ -3487,7 +3501,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-series-11-gps-cell-jet-black-aluminium-case-with-black-sport-band.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:15.694Z",
+      "last_checked": "2026-08-16T10:59:29.936Z",
       "status": "Updated",
       "source_categories": [
         "Accessories",
@@ -3523,7 +3537,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-series-11-gps-cell-space-grey-aluminium-case-with-black-sport-band.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:15.940Z",
+      "last_checked": "2026-08-16T10:59:30.200Z",
       "status": "Updated",
       "source_categories": [
         "Accessories",
@@ -3559,7 +3573,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-series-11-gps-cell-42mm-gold-titanium-case-with-gold-milanese-loop.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:16.186Z",
+      "last_checked": "2026-08-16T10:59:30.464Z",
       "status": "Updated",
       "source_categories": [
         "Accessories",
@@ -3595,7 +3609,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-se-3-gps-cell-midnight-aluminium-case-with-midnight-sport-band.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-27T23:45:28.808Z",
-      "last_checked": "2026-08-16T10:01:16.431Z",
+      "last_checked": "2026-08-16T10:59:30.728Z",
       "status": "Current",
       "source_categories": [
         "Accessories",
@@ -3631,7 +3645,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:16.676Z",
+      "last_checked": "2026-08-16T10:59:30.991Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3665,7 +3679,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/smartwatches/other-smartwatches.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:16.923Z",
+      "last_checked": "2026-08-16T10:59:31.256Z",
       "status": "Current",
       "source_categories": [
         "Accessories",
@@ -3701,7 +3715,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-choice-watch-2-pro.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:17.170Z",
+      "last_checked": "2026-08-16T10:59:31.520Z",
       "status": "Current",
       "source_categories": [
         "Accessories",
@@ -3737,7 +3751,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-watch-6-40mm.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.259Z",
-      "last_checked": "2026-08-16T10:01:17.418Z",
+      "last_checked": "2026-08-16T10:59:31.785Z",
       "status": "Current",
       "source_categories": [
         "Accessories",
@@ -3773,7 +3787,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/anker.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.260Z",
-      "last_checked": "2026-08-16T10:01:17.666Z",
+      "last_checked": "2026-08-16T10:59:32.050Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3807,7 +3821,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.260Z",
-      "last_checked": "2026-08-16T10:01:17.926Z",
+      "last_checked": "2026-08-16T10:59:32.322Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3841,7 +3855,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/anker.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.260Z",
-      "last_checked": "2026-08-16T10:01:18.173Z",
+      "last_checked": "2026-08-16T10:59:32.586Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3875,7 +3889,7 @@
       "product_url": "https://store.ooredoo.com.kw/anker-511-charger-nano-3-30w.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.260Z",
-      "last_checked": "2026-08-16T10:01:18.423Z",
+      "last_checked": "2026-08-16T10:59:32.850Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3909,7 +3923,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/audio-accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:18.669Z",
+      "last_checked": "2026-08-16T10:59:33.115Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3943,7 +3957,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-choice-clip-2.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:18.916Z",
+      "last_checked": "2026-08-16T10:59:33.381Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -3977,7 +3991,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-choice-earbuds-s7.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:19.162Z",
+      "last_checked": "2026-08-16T10:59:33.647Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4011,7 +4025,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-freeclip-2.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:19.410Z",
+      "last_checked": "2026-08-16T10:59:33.913Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4045,7 +4059,7 @@
       "product_url": "https://store.ooredoo.com.kw/airpods-pro-3.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:19.658Z",
+      "last_checked": "2026-08-16T10:59:34.179Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4079,7 +4093,7 @@
       "product_url": "https://store.ooredoo.com.kw/airpods-4-with-active-noise-cancellation.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:19.903Z",
+      "last_checked": "2026-08-16T10:59:34.442Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4113,7 +4127,7 @@
       "product_url": "https://store.ooredoo.com.kw/bang-and-olufsen-beosound.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:20.149Z",
+      "last_checked": "2026-08-16T10:59:34.708Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4147,7 +4161,7 @@
       "product_url": "https://store.ooredoo.com.kw/bang-and-olufsen-beosound-a1-2nd-gen.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:20.397Z",
+      "last_checked": "2026-08-16T10:59:34.974Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4181,7 +4195,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:20.644Z",
+      "last_checked": "2026-08-16T10:59:35.240Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4215,7 +4229,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/for-your-mobile.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:20.889Z",
+      "last_checked": "2026-08-16T10:59:35.503Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4249,7 +4263,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-silicone-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:21.134Z",
+      "last_checked": "2026-08-16T10:59:35.767Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4283,7 +4297,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-techwoven-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.261Z",
-      "last_checked": "2026-08-16T10:01:21.380Z",
+      "last_checked": "2026-08-16T10:59:36.031Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4317,7 +4331,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-silicone-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:21.625Z",
+      "last_checked": "2026-08-16T10:59:36.294Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4351,7 +4365,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-techwoven-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:21.870Z",
+      "last_checked": "2026-08-16T10:59:36.559Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4385,7 +4399,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-silicone-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:22.115Z",
+      "last_checked": "2026-08-16T10:59:36.822Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4419,7 +4433,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-clear-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:22.360Z",
+      "last_checked": "2026-08-16T10:59:37.085Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4453,7 +4467,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-clear-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:22.606Z",
+      "last_checked": "2026-08-16T10:59:37.349Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4487,7 +4501,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-clear-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:22.851Z",
+      "last_checked": "2026-08-16T10:59:37.612Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4521,7 +4535,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-rugged-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:23.096Z",
+      "last_checked": "2026-08-16T10:59:37.876Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4555,7 +4569,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-rugged-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:23.341Z",
+      "last_checked": "2026-08-16T10:59:38.139Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4589,7 +4603,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-kickstand-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:23.586Z",
+      "last_checked": "2026-08-16T10:59:38.404Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4623,7 +4637,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:23.832Z",
+      "last_checked": "2026-08-16T10:59:38.667Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4657,7 +4671,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.364Z",
-      "last_checked": "2026-08-16T10:01:24.077Z",
+      "last_checked": "2026-08-16T10:59:38.931Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4691,7 +4705,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-kickstand-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:44:34.263Z",
-      "last_checked": "2026-08-16T10:01:24.322Z",
+      "last_checked": "2026-08-16T10:59:39.195Z",
       "status": "Current",
       "source_categories": [
         "Accessories"
@@ -4725,7 +4739,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-case.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:24.567Z",
+      "last_checked": "2026-08-16T10:59:39.458Z",
       "status": "Updated",
       "source_categories": [
         "Accessories"
@@ -4759,7 +4773,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html",
       "first_identified_at": "2026-07-23T06:44:51.804Z",
-      "last_checked": "2026-08-16T10:01:24.813Z",
+      "last_checked": "2026-08-16T10:59:39.728Z",
       "status": "Current",
       "source_categories": [
         "Smartwatches"
@@ -4793,7 +4807,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html",
       "source_url": "https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html",
       "first_identified_at": "2026-07-23T06:44:51.805Z",
-      "last_checked": "2026-08-16T10:01:25.058Z",
+      "last_checked": "2026-08-16T10:59:39.992Z",
       "status": "Current",
       "source_categories": [
         "Smartwatches"
@@ -4827,7 +4841,7 @@
       "product_url": "https://store.ooredoo.com.kw/getooredooadd.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:25.305Z",
+      "last_checked": "2026-08-16T10:59:40.258Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -4861,7 +4875,7 @@
       "product_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:25.563Z",
+      "last_checked": "2026-08-16T10:59:40.538Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -4895,7 +4909,7 @@
       "product_url": "https://store.ooredoo.com.kw/getooredooadd/tv/samsung-tvs.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:25.810Z",
+      "last_checked": "2026-08-16T10:59:40.804Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -4929,7 +4943,7 @@
       "product_url": "https://store.ooredoo.com.kw/xiaomi-tv-s-pro-mini-led-75-2026.html?list_id=Device_Products_Listing_0&payment=ooredooadd",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-27T21:48:46.121Z",
-      "last_checked": "2026-08-16T10:01:26.056Z",
+      "last_checked": "2026-08-16T10:59:41.070Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -4963,7 +4977,7 @@
       "product_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:26.305Z",
+      "last_checked": "2026-08-16T10:59:41.336Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -4997,7 +5011,7 @@
       "product_url": "https://store.ooredoo.com.kw/getooredooadd/tv/xiaomi-tvs.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:26.553Z",
+      "last_checked": "2026-08-16T10:59:41.602Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -5031,7 +5045,7 @@
       "product_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:26.800Z",
+      "last_checked": "2026-08-16T10:59:41.866Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -5065,7 +5079,7 @@
       "product_url": "https://store.ooredoo.com.kw/streaming.html",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:27.046Z",
+      "last_checked": "2026-08-16T10:59:42.131Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -5099,7 +5113,7 @@
       "product_url": "https://store.ooredoo.com.kw/voucher-fifty-one.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:27.291Z",
+      "last_checked": "2026-08-16T10:59:42.395Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -5133,7 +5147,7 @@
       "product_url": "https://store.ooredoo.com.kw/voucher-fifty-one-plus-annual.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/getooredooadd/tv.html",
       "first_identified_at": "2026-07-23T06:45:08.469Z",
-      "last_checked": "2026-08-16T10:01:27.537Z",
+      "last_checked": "2026-08-16T10:59:42.662Z",
       "status": "Current",
       "source_categories": [
         "TV"
@@ -5167,7 +5181,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.360Z",
-      "last_checked": "2026-08-16T10:01:27.783Z",
+      "last_checked": "2026-08-16T10:59:42.926Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5201,7 +5215,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.360Z",
-      "last_checked": "2026-08-16T10:01:28.028Z",
+      "last_checked": "2026-08-16T10:59:43.190Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5235,7 +5249,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.360Z",
-      "last_checked": "2026-08-16T10:01:28.274Z",
+      "last_checked": "2026-08-16T10:59:43.454Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5269,7 +5283,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.360Z",
-      "last_checked": "2026-08-16T10:01:28.519Z",
+      "last_checked": "2026-08-16T10:59:43.718Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5303,7 +5317,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.361Z",
-      "last_checked": "2026-08-16T10:01:28.765Z",
+      "last_checked": "2026-08-16T10:59:43.982Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5337,7 +5351,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash/cash-deals.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:29.011Z",
+      "last_checked": "2026-08-16T10:59:44.246Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5371,7 +5385,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-a57.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:29.256Z",
+      "last_checked": "2026-08-16T10:59:44.509Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5405,7 +5419,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-a37.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:29.501Z",
+      "last_checked": "2026-08-16T10:59:44.773Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5439,7 +5453,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-s26-ultra.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:29.746Z",
+      "last_checked": "2026-08-16T10:59:45.037Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5473,7 +5487,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-s26-plus.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:29.991Z",
+      "last_checked": "2026-08-16T10:59:45.301Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5507,7 +5521,7 @@
       "product_url": "https://store.ooredoo.com.kw/airpods-pro-3.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:30.236Z",
+      "last_checked": "2026-08-16T10:59:45.565Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5541,7 +5555,7 @@
       "product_url": "https://store.ooredoo.com.kw/airpods-4-with-active-noise-cancellation.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:30.483Z",
+      "last_checked": "2026-08-16T10:59:45.830Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5575,7 +5589,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-ultra-3-gps-cell-black-titanium-case-with-black-alpine-loop.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:30.731Z",
+      "last_checked": "2026-08-16T10:59:46.096Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5609,7 +5623,7 @@
       "product_url": "https://store.ooredoo.com.kw/sony-playstation-ps5-slim.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-11T22:21:59.040Z",
-      "last_checked": "2026-08-16T10:01:30.976Z",
+      "last_checked": "2026-08-16T10:59:46.360Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5643,7 +5657,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-5g-mifi-router-pro-5-e6888.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:31.222Z",
+      "last_checked": "2026-08-16T10:59:46.624Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5677,7 +5691,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.362Z",
-      "last_checked": "2026-08-16T10:01:31.467Z",
+      "last_checked": "2026-08-16T10:59:46.888Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5711,7 +5725,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash/apple-smartphones-cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:31.712Z",
+      "last_checked": "2026-08-16T10:59:47.151Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5745,7 +5759,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:31.957Z",
+      "last_checked": "2026-08-16T10:59:47.415Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5779,7 +5793,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-30T13:16:27.347Z",
-      "last_checked": "2026-08-16T10:01:32.202Z",
+      "last_checked": "2026-08-16T10:59:47.678Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5813,7 +5827,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-air.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:32.449Z",
+      "last_checked": "2026-08-16T10:59:47.942Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5847,7 +5861,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-05T22:45:04.913Z",
-      "last_checked": "2026-08-16T10:01:32.694Z",
+      "last_checked": "2026-08-16T10:59:48.206Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5881,7 +5895,7 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets/smartphones/samsung/samsung-ai.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-05T22:45:05.103Z",
-      "last_checked": "2026-08-16T10:01:32.940Z",
+      "last_checked": "2026-08-16T10:59:48.471Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5915,7 +5929,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-z-fold8.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-10T22:20:40.120Z",
-      "last_checked": "2026-08-16T10:01:33.187Z",
+      "last_checked": "2026-08-16T10:59:48.737Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5949,7 +5963,7 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-z-flip8.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-03T04:16:15.909Z",
-      "last_checked": "2026-08-16T10:01:33.436Z",
+      "last_checked": "2026-08-16T10:59:49.003Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -5983,8 +5997,8 @@
       "product_url": "https://store.ooredoo.com.kw/samsung-a56-8gb-ram-5g.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-05T22:45:05.669Z",
-      "last_checked": "2026-08-16T10:01:33.683Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:49.272Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6017,7 +6031,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:33.929Z",
+      "last_checked": "2026-08-16T10:59:49.536Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6051,7 +6065,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash/affordable-smartphones.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:34.174Z",
+      "last_checked": "2026-08-16T10:59:49.800Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6085,7 +6099,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-600.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:34.421Z",
+      "last_checked": "2026-08-16T10:59:50.063Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6119,7 +6133,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-x9d.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:34.666Z",
+      "last_checked": "2026-08-16T10:59:50.327Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6153,7 +6167,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-400-lite-8gb-ram.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:34.912Z",
+      "last_checked": "2026-08-16T10:59:50.590Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6187,7 +6201,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:35.157Z",
+      "last_checked": "2026-08-16T10:59:50.854Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6221,7 +6235,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash/accessories.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:35.405Z",
+      "last_checked": "2026-08-16T10:59:51.123Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6255,7 +6269,7 @@
       "product_url": "https://store.ooredoo.com.kw/buy-google-fitbit-air.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:35.655Z",
+      "last_checked": "2026-08-16T10:59:51.390Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6289,7 +6303,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-silicone-case.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:35.902Z",
+      "last_checked": "2026-08-16T10:59:51.655Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6323,7 +6337,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-clear-case.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:36.148Z",
+      "last_checked": "2026-08-16T10:59:51.918Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6357,7 +6371,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-max-techwoven-case.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:36.393Z",
+      "last_checked": "2026-08-16T10:59:52.183Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6391,7 +6405,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-silicone-case.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:36.638Z",
+      "last_checked": "2026-08-16T10:59:52.446Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6425,7 +6439,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-case.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.363Z",
-      "last_checked": "2026-08-16T10:01:36.883Z",
+      "last_checked": "2026-08-16T10:59:52.710Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6459,7 +6473,7 @@
       "product_url": "https://store.ooredoo.com.kw/iphone-17-pro-case.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.364Z",
-      "last_checked": "2026-08-16T10:01:37.128Z",
+      "last_checked": "2026-08-16T10:59:52.974Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6493,8 +6507,8 @@
       "product_url": "https://store.ooredoo.com.kw/magic-keyboard-for-ipad-pro-13-inch-m4-arabic.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.064Z",
-      "last_checked": "2026-08-16T10:01:37.373Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:53.238Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6527,8 +6541,8 @@
       "product_url": "https://store.ooredoo.com.kw/magic-keyboard-for-ipad-pro-11-inch-m4-arabic.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.090Z",
-      "last_checked": "2026-08-16T10:01:37.620Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:53.502Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6561,7 +6575,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash/smartwatches.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:37.867Z",
+      "last_checked": "2026-08-16T10:59:53.766Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6595,7 +6609,7 @@
       "product_url": "https://store.ooredoo.com.kw/honor-choice-watch-2-pro.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:38.115Z",
+      "last_checked": "2026-08-16T10:59:54.034Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6629,7 +6643,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-series-11-gps-cell-42mm-gold-titanium-case-with-gold-milanese-loop.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:38.361Z",
+      "last_checked": "2026-08-16T10:59:54.299Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6663,7 +6677,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-series-11-gps-cell-space-grey-aluminium-case-with-black-sport-band.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:38.606Z",
+      "last_checked": "2026-08-16T10:59:54.563Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6697,7 +6711,7 @@
       "product_url": "https://store.ooredoo.com.kw/aw-series-11-gps-cell-jet-black-aluminium-case-with-black-sport-band.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:38.851Z",
+      "last_checked": "2026-08-16T10:59:54.827Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6731,7 +6745,7 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-watch-ultimate-2.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.365Z",
-      "last_checked": "2026-08-16T10:01:39.096Z",
+      "last_checked": "2026-08-16T10:59:55.090Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6765,7 +6779,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash/tablets-and-laptops.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.366Z",
-      "last_checked": "2026-08-16T10:01:39.344Z",
+      "last_checked": "2026-08-16T10:59:55.355Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6799,8 +6813,8 @@
       "product_url": "https://store.ooredoo.com.kw/apple-macbook-neo-13inch-a18.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.272Z",
-      "last_checked": "2026-08-16T10:01:39.599Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:55.627Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6833,8 +6847,8 @@
       "product_url": "https://store.ooredoo.com.kw/apple-macbook-air-15inch-m5.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.343Z",
-      "last_checked": "2026-08-16T10:01:39.847Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:55.892Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6867,8 +6881,8 @@
       "product_url": "https://store.ooredoo.com.kw/apple-macbook-air-13inch-m5.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.305Z",
-      "last_checked": "2026-08-16T10:01:40.093Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:56.157Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6901,8 +6915,8 @@
       "product_url": "https://store.ooredoo.com.kw/huawei-matepad-papermatte-mini.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.024Z",
-      "last_checked": "2026-08-16T10:01:40.339Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:56.422Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -6935,7 +6949,7 @@
       "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-11inch-wi-fi-standard-glass.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-08-12T22:20:43.206Z",
-      "last_checked": "2026-08-16T10:01:40.586Z",
+      "last_checked": "2026-08-16T10:59:56.689Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -6969,8 +6983,8 @@
       "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-13inch-wi-fi-standard-glass.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:21.968Z",
-      "last_checked": "2026-08-16T10:01:40.830Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:56.953Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -7003,8 +7017,8 @@
       "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-13inch-wi-fi-cellular-standard-glass.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.121Z",
-      "last_checked": "2026-08-16T10:01:41.076Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:57.217Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -7037,8 +7051,8 @@
       "product_url": "https://store.ooredoo.com.kw/honor-pad-10-wifi-8gb-ram.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.194Z",
-      "last_checked": "2026-08-16T10:01:41.320Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:57.481Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -7071,8 +7085,8 @@
       "product_url": "https://store.ooredoo.com.kw/honor-pad-x9a-wifi-8gb-ram.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:22.225Z",
-      "last_checked": "2026-08-16T10:01:41.566Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:57.745Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -7105,8 +7119,8 @@
       "product_url": "https://store.ooredoo.com.kw/ipad-11inch-wifi-2025.html?list_id=Device_Products_Listing_0",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-26T12:42:21.925Z",
-      "last_checked": "2026-08-16T10:01:41.813Z",
-      "status": "Updated",
+      "last_checked": "2026-08-16T10:59:58.012Z",
+      "status": "Current",
       "source_categories": [
         "All Products"
       ],
@@ -7139,7 +7153,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.366Z",
-      "last_checked": "2026-08-16T10:01:42.059Z",
+      "last_checked": "2026-08-16T10:59:58.277Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -7173,7 +7187,7 @@
       "product_url": "https://store.ooredoo.com.kw/cash.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.366Z",
-      "last_checked": "2026-08-16T10:01:42.313Z",
+      "last_checked": "2026-08-16T10:59:58.549Z",
       "status": "Current",
       "source_categories": [
         "All Products"
@@ -7207,13 +7221,421 @@
       "product_url": "https://store.ooredoo.com.kw/gadgets.html",
       "source_url": "https://store.ooredoo.com.kw/cash.html",
       "first_identified_at": "2026-07-23T06:45:32.366Z",
-      "last_checked": "2026-08-16T10:01:42.561Z",
+      "last_checked": "2026-08-16T10:59:58.815Z",
       "status": "Current",
       "source_categories": [
         "All Products"
       ],
       "source_urls": [
         "https://store.ooredoo.com.kw/cash.html"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "a7b5a3093cd3b26165",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "iPad 11inch A16 Chip WiFi",
+      "brand": "iPad",
+      "category": "Tablets",
+      "description": "iPad 11inch A16 Chip WiFi KD 5 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "KD 5",
+      "monthly_installment": "KD 5 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/6/6/662805-02.jpg",
+      "local_image_url": "/device-images/2d69ee49ab99d2bffc.jpg",
+      "product_url": "https://store.ooredoo.com.kw/ipad-11inch-wifi-2025.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=8802&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:21.925Z",
+      "last_checked": "2026-08-16T10:59:59.084Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "060f280c41d356d5ee",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Apple iPad Pro M5 13inch Wi-Fi Standard Glass",
+      "brand": "Apple",
+      "category": "Tablets",
+      "description": "Apple iPad Pro M5 13inch Wi-Fi Standard Glass KD 32.500 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "KD 32.500",
+      "monthly_installment": "KD 32.500 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/6/6/667838-01_3.jpg",
+      "local_image_url": "/device-images/0e3dc4c8577abd6e7c.jpg",
+      "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-13inch-wi-fi-standard-glass.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=9401&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:21.968Z",
+      "last_checked": "2026-08-16T10:59:59.354Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "531d49a5411b0b9cee",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Huawei Matepad Mini PaperMatte",
+      "brand": "Huawei",
+      "category": "Tablets",
+      "description": "Huawei Matepad Mini PaperMatte KD 14.500 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "KD 14.500",
+      "monthly_installment": "KD 14.500 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/8/0/800_800_e9fa6b3467bf2a5d2a5300067231e5f9.png",
+      "local_image_url": "/device-images/c21ac6068c239750f2.png",
+      "product_url": "https://store.ooredoo.com.kw/huawei-matepad-papermatte-mini.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=9835&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.024Z",
+      "last_checked": "2026-08-16T10:59:59.618Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "690e19a64a30e3b0f5",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Magic Keyboard for iPad Pro 13 inch M4 Arabic",
+      "brand": "Magic",
+      "category": "Tablets",
+      "description": "Magic Keyboard for iPad Pro 13 inch M4 Arabic KD 5 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "KD 5",
+      "monthly_installment": "KD 5 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/m/a/magic-keyboard-for-ipad-pro-11---black---1.png",
+      "local_image_url": "/device-images/4f150c034edff3afbc.png",
+      "product_url": "https://store.ooredoo.com.kw/magic-keyboard-for-ipad-pro-13-inch-m4-arabic.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=7920&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.064Z",
+      "last_checked": "2026-08-16T10:59:59.883Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "85a4be5865697dda2e",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Magic Keyboard for iPad Pro 11 inch M4 Arabic",
+      "brand": "Magic",
+      "category": "Tablets",
+      "description": "Magic Keyboard for iPad Pro 11 inch M4 Arabic KD 4.500 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "KD 4.500",
+      "monthly_installment": "KD 4.500 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/m/a/magic-keyboard-for-ipad-pro-11---black---1_2.png",
+      "local_image_url": "/device-images/78e7949bfb4638bf92.png",
+      "product_url": "https://store.ooredoo.com.kw/magic-keyboard-for-ipad-pro-11-inch-m4-arabic.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=7917&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.090Z",
+      "last_checked": "2026-08-16T11:00:00.147Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "8ff1ae39d09ad6e200",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Apple iPad Pro M5 13inch Wi-Fi + Cellular Standard Glass",
+      "brand": "Apple",
+      "category": "Tablets",
+      "description": "Apple iPad Pro M5 13inch Wi-Fi + Cellular Standard Glass KD 27 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "KD 27",
+      "monthly_installment": "KD 27 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/6/6/667838-01_2.jpg",
+      "local_image_url": "/device-images/c33de924ebed9c2f7d.jpg",
+      "product_url": "https://store.ooredoo.com.kw/apple-ipad-pro-m5-13inch-wi-fi-cellular-standard-glass.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=9384&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.121Z",
+      "last_checked": "2026-08-16T11:00:00.413Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "36101352f08c492722",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Samsung A56 8GB RAM 5G",
+      "brand": "Samsung",
+      "category": "Tablets",
+      "description": "Samsung A56 8GB RAM 5G KD 11.500 /Month",
+      "storage": "8GB",
+      "colors": "",
+      "price": "KD 11.500",
+      "monthly_installment": "KD 11.500 /",
+      "contract_duration": "",
+      "associated_plan": "5G Samsung A56 8GB RAM 5G KD 11.500 /Month",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/5/5/551859-01.jpg",
+      "local_image_url": "/device-images/862a17c21292caeb7e.jpg",
+      "product_url": "https://store.ooredoo.com.kw/samsung-a56-8gb-ram-5g.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=8903&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-08-05T22:45:05.669Z",
+      "last_checked": "2026-08-16T11:00:00.677Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "2b24cdc7ecfa488cc8",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "HONOR Pad 10 WIFI 8GB RAM",
+      "brand": "Honor",
+      "category": "Tablets",
+      "description": "HONOR Pad 10 WIFI 8GB RAM KD 12.500 /Month",
+      "storage": "8GB",
+      "colors": "",
+      "price": "KD 12.500",
+      "monthly_installment": "KD 12.500 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/p/a/pad10-share.png",
+      "local_image_url": "/device-images/4ca8516392e9740ac5.png",
+      "product_url": "https://store.ooredoo.com.kw/honor-pad-10-wifi-8gb-ram.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=9106&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.194Z",
+      "last_checked": "2026-08-16T11:00:00.941Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "760055041b337f5e3e",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "HONOR Pad X9a WIFI 8GB RAM",
+      "brand": "Honor",
+      "category": "Tablets",
+      "description": "HONOR Pad X9a WIFI 8GB RAM KD 11 /Month",
+      "storage": "8GB",
+      "colors": "",
+      "price": "KD 11",
+      "monthly_installment": "KD 11 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/x/9/x9a_1__1.png",
+      "local_image_url": "/device-images/2b62c8230ae5b6008e.png",
+      "product_url": "https://store.ooredoo.com.kw/honor-pad-x9a-wifi-8gb-ram.html?queryID=cc83fe4c3a4a802697b5b787679c10c0&objectID=9108&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.225Z",
+      "last_checked": "2026-08-16T11:00:01.206Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "73fb5a474a0888e3aa",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Apple MacBook Neo 13inch A18",
+      "brand": "Apple",
+      "category": "Tablets",
+      "description": "Apple MacBook Neo 13inch A18 KD 8.500 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "18 KD",
+      "monthly_installment": "KD 8.500 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/a/r/artboard_15_5.png",
+      "local_image_url": "/device-images/4a15cd52c904d6ba85.png",
+      "product_url": "https://store.ooredoo.com.kw/apple-macbook-neo-13inch-a18.html?queryID=3ebd12140dffbd003ee2a5626dc3f48c&objectID=9934&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.272Z",
+      "last_checked": "2026-08-16T11:00:01.472Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "5db96a001f3c25325d",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Apple MacBook Air 13inch M5",
+      "brand": "Apple",
+      "category": "Tablets",
+      "description": "Apple MacBook Air 13inch M5 KD 15 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "5 KD",
+      "monthly_installment": "KD 15 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/a/r/artboard_2_5_2.png",
+      "local_image_url": "/device-images/e3404b07139adaa98e.png",
+      "product_url": "https://store.ooredoo.com.kw/apple-macbook-air-13inch-m5.html?queryID=3ebd12140dffbd003ee2a5626dc3f48c&objectID=9932&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.305Z",
+      "last_checked": "2026-08-16T11:00:01.738Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
+      ],
+      "missing_from_stc": true,
+      "freshness": "live"
+    },
+    {
+      "id": "7cf273a865cb5205d3",
+      "provider": "ooredoo",
+      "provider_name": "Ooredoo Kuwait",
+      "logo": "https://ooredoo.com.kw/documents/d/guest/ooredoo-logo",
+      "color": "#ed1c24",
+      "name": "Apple MacBook Air 15inch M5",
+      "brand": "Apple",
+      "category": "Tablets",
+      "description": "Apple MacBook Air 15inch M5 KD 18.500 /Month",
+      "storage": "",
+      "colors": "",
+      "price": "5 KD",
+      "monthly_installment": "KD 18.500 /",
+      "contract_duration": "",
+      "associated_plan": "",
+      "offer": "",
+      "stock_status": "Unknown",
+      "image_url": "https://store.ooredoo.com.kw/media/catalog/product/cache/b88b6b99924dab1ca8b2951fe4a1b379/a/r/artboard_2_5_3.png",
+      "local_image_url": "/device-images/495ef20705ef94c4fe.png",
+      "product_url": "https://store.ooredoo.com.kw/apple-macbook-air-15inch-m5.html?queryID=3ebd12140dffbd003ee2a5626dc3f48c&objectID=9933&indexName=storeook_b2b_shop_products",
+      "source_url": "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet",
+      "first_identified_at": "2026-07-26T12:42:22.343Z",
+      "last_checked": "2026-08-16T11:00:02.004Z",
+      "status": "Updated",
+      "source_categories": [
+        "Tablet Search"
+      ],
+      "source_urls": [
+        "https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet"
       ],
       "missing_from_stc": true,
       "freshness": "live"
@@ -7241,7 +7663,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/z-fold8-ultra",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.888Z",
-      "last_checked": "2026-08-16T10:01:42.809Z",
+      "last_checked": "2026-08-16T11:00:02.278Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7275,7 +7697,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/z-fold8",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.888Z",
-      "last_checked": "2026-08-16T10:01:43.354Z",
+      "last_checked": "2026-08-16T11:00:02.663Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7309,7 +7731,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/z-flip8",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.888Z",
-      "last_checked": "2026-08-16T10:01:43.460Z",
+      "last_checked": "2026-08-16T11:00:02.683Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7343,7 +7765,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/s26",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.888Z",
-      "last_checked": "2026-08-16T10:01:43.553Z",
+      "last_checked": "2026-08-16T11:00:02.703Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7377,7 +7799,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/s26-plus",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:43.627Z",
+      "last_checked": "2026-08-16T11:00:02.724Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7411,7 +7833,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/s26-ultra",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:43.720Z",
+      "last_checked": "2026-08-16T11:00:02.743Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7445,7 +7867,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/iphone-17-pro-max",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:43.797Z",
+      "last_checked": "2026-08-16T11:00:02.765Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7479,7 +7901,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/iphone-17-pro",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:43.876Z",
+      "last_checked": "2026-08-16T11:00:02.795Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7513,7 +7935,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/iphone-air",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:43.949Z",
+      "last_checked": "2026-08-16T11:00:02.819Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7547,7 +7969,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/iphone-17",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.018Z",
+      "last_checked": "2026-08-16T11:00:02.857Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7581,7 +8003,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-magic-v6",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.127Z",
+      "last_checked": "2026-08-16T11:00:02.886Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7615,7 +8037,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-600",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.196Z",
+      "last_checked": "2026-08-16T11:00:02.906Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7649,7 +8071,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-600-pro",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.271Z",
+      "last_checked": "2026-08-16T11:00:02.925Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7683,7 +8105,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/galaxy-a27",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.337Z",
+      "last_checked": "2026-08-16T11:00:02.948Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7717,7 +8139,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/a57",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.416Z",
+      "last_checked": "2026-08-16T11:00:02.969Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7751,7 +8173,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/a37",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.502Z",
+      "last_checked": "2026-08-16T11:00:02.988Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7785,7 +8207,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-600-lite",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.625Z",
+      "last_checked": "2026-08-16T11:00:03.008Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7819,7 +8241,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-magic8-pro",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.889Z",
-      "last_checked": "2026-08-16T10:01:44.746Z",
+      "last_checked": "2026-08-16T11:00:03.125Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7853,7 +8275,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-x9d",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:44.827Z",
+      "last_checked": "2026-08-16T11:00:03.149Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7887,7 +8309,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-x7d",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:44.947Z",
+      "last_checked": "2026-08-16T11:00:03.168Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7921,7 +8343,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/galaxy-a17",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.017Z",
+      "last_checked": "2026-08-16T11:00:03.192Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7955,7 +8377,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/airpods-max-2",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.087Z",
+      "last_checked": "2026-08-16T11:00:03.211Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -7989,7 +8411,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/magnetic-battery",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.165Z",
+      "last_checked": "2026-08-16T11:00:03.230Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8023,7 +8445,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/car-charger",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.240Z",
+      "last_checked": "2026-08-16T11:00:03.251Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8057,7 +8479,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/usb-c-cable",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.312Z",
+      "last_checked": "2026-08-16T11:00:03.271Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8091,7 +8513,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/huawei-freeclip-2",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.394Z",
+      "last_checked": "2026-08-16T11:00:03.291Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8125,7 +8547,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/huawei-watch-kids-x1-pro",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.500Z",
+      "last_checked": "2026-08-16T11:00:03.308Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8159,7 +8581,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/huawei-watch-kids-x1",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.572Z",
+      "last_checked": "2026-08-16T11:00:03.329Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8193,7 +8615,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/huawei-ultimate-watch-2-black-edition",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.648Z",
+      "last_checked": "2026-08-16T11:00:03.350Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8227,7 +8649,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/huawei-ultimate-watch-2-blue-edition",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.729Z",
+      "last_checked": "2026-08-16T11:00:03.372Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8261,7 +8683,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/apple-watch-ultra-3",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.825Z",
+      "last_checked": "2026-08-16T11:00:03.392Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8295,7 +8717,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/apple-watch-ultra-3-milanese",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.896Z",
+      "last_checked": "2026-08-16T11:00:03.412Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8329,7 +8751,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/airPods-pro-3",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:45.968Z",
+      "last_checked": "2026-08-16T11:00:03.431Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8363,7 +8785,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-case",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:46.043Z",
+      "last_checked": "2026-08-16T11:00:03.452Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8397,7 +8819,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-air-case",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:46.150Z",
+      "last_checked": "2026-08-16T11:00:03.472Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8431,7 +8853,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-pro-case",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.890Z",
-      "last_checked": "2026-08-16T10:01:46.228Z",
+      "last_checked": "2026-08-16T11:00:03.492Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8465,7 +8887,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-air-bumper-case",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.305Z",
+      "last_checked": "2026-08-16T11:00:03.512Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8499,7 +8921,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-pro-max-case",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.375Z",
+      "last_checked": "2026-08-16T11:00:03.536Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8533,7 +8955,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-pro-silicone-case",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.462Z",
+      "last_checked": "2026-08-16T11:00:03.555Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8567,7 +8989,7 @@
       "product_url": "https://www.stc.com.kw/en/product/ACCESSORY/iPhone-17-air-magsafe-battery",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.537Z",
+      "last_checked": "2026-08-16T11:00:03.576Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8601,7 +9023,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-magic-v5",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.624Z",
+      "last_checked": "2026-08-16T11:00:03.595Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8635,7 +9057,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/z-fold7",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.702Z",
+      "last_checked": "2026-08-16T11:00:03.612Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8669,7 +9091,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/iphone-16e",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.789Z",
+      "last_checked": "2026-08-16T11:00:03.635Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8703,7 +9125,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/samsung-a26",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.864Z",
+      "last_checked": "2026-08-16T11:00:03.665Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8737,7 +9159,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/samsung-a56",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:46.937Z",
+      "last_checked": "2026-08-16T11:00:03.691Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8771,7 +9193,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/huawei-mate-xt",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.043Z",
+      "last_checked": "2026-08-16T11:00:03.715Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8805,7 +9227,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-400-pro",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.120Z",
+      "last_checked": "2026-08-16T11:00:03.735Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8839,7 +9261,7 @@
       "product_url": "https://www.stc.com.kw/en/product/SMARTPHONE/honor-400",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.193Z",
+      "last_checked": "2026-08-16T11:00:03.758Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8873,7 +9295,7 @@
       "product_url": "https://www.stc.com.kw/en/product/TABLET/honor-pad-x9a",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.275Z",
+      "last_checked": "2026-08-16T11:00:03.779Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8907,7 +9329,7 @@
       "product_url": "https://www.stc.com.kw/en/product/TABLET/ipad-air-13-m4",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.348Z",
+      "last_checked": "2026-08-16T11:00:03.797Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8941,7 +9363,7 @@
       "product_url": "https://www.stc.com.kw/en/product/TABLET/ipad-air-11-m4",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.423Z",
+      "last_checked": "2026-08-16T11:00:03.822Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -8975,7 +9397,7 @@
       "product_url": "https://www.stc.com.kw/en/product/TABLET/huawei-matepad-11-5",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.496Z",
+      "last_checked": "2026-08-16T11:00:03.839Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -9009,7 +9431,7 @@
       "product_url": "https://www.stc.com.kw/en/product/TABLET/ipad-pro-11-m5",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.610Z",
+      "last_checked": "2026-08-16T11:00:03.864Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
@@ -9043,7 +9465,7 @@
       "product_url": "https://www.stc.com.kw/en/product/TABLET/ipad-pro-13-m5",
       "source_url": "https://www.stc.com.kw/en/e-store/grid/all",
       "first_identified_at": "2026-07-23T06:43:16.891Z",
-      "last_checked": "2026-08-16T10:01:47.712Z",
+      "last_checked": "2026-08-16T11:00:03.887Z",
       "status": "Current (source unavailable)",
       "source_categories": [
         "Devices"
