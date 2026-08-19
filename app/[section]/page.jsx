@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 const sections = {
   overview: 'overview',
   'booster-ads': 'boosted',
+  'boosted-ads': 'boosted',
   organic: 'organic',
   'plan-comparison': 'plans',
   'banner-comparison': 'banners',

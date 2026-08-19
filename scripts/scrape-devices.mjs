@@ -18,17 +18,29 @@ const brands = {
 };
 
 const sources = [
-  { provider: 'zain', category: 'Devices', url: 'https://www.kw.zain.com/en/shop/devices' },
-  { provider: 'stc', category: 'Devices', url: 'https://www.stc.com.kw/en/e-store/grid/all' },
-  { provider: 'ooredoo', category: 'Internet Devices', url: 'https://store.ooredoo.com.kw/gadgets/internet-devices.html' },
-  { provider: 'ooredoo', category: 'Tablets', url: 'https://store.ooredoo.com.kw/gadgets/tablets-laptops.html' },
-  { provider: 'ooredoo', category: 'Gaming', url: 'https://store.ooredoo.com.kw/gadgets/gaming.html' },
-  { provider: 'ooredoo', category: 'Accessories', url: 'https://store.ooredoo.com.kw/gadgets/accessories.html' },
-  { provider: 'ooredoo', category: 'Smartwatches', url: 'https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html' },
-  { provider: 'ooredoo', category: 'TV', url: 'https://store.ooredoo.com.kw/getooredooadd/tv.html' },
-  { provider: 'ooredoo', category: 'All Products', url: 'https://store.ooredoo.com.kw/cash.html' },
-  { provider: 'ooredoo', category: 'Tablet Search', url: 'https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet' },
+  { provider: 'ooredoo', category: 'Smartphones', forceCategory: true, accept: 'smartphones', url: 'https://store.ooredoo.com.kw/gadgets/smartphones.html' },
+  { provider: 'zain', category: 'Smartphones', forceCategory: true, accept: 'smartphones', url: 'https://www.kw.zain.com/en/shop/smartphones' },
+  { provider: 'stc', category: 'Smartphones', forceCategory: true, accept: 'smartphones', url: 'https://www.stc.com.kw/en/e-store/grid/smartphone' },
+  { provider: 'stc', category: 'Internet Devices', forceCategory: true, accept: 'internet', url: 'https://www.stc.com.kw/en/e-store/grid/router' },
+  { provider: 'zain', category: 'Internet Devices', forceCategory: true, accept: 'internet', url: 'https://www.kw.zain.com/en/shop/internet-devices' },
+  { provider: 'ooredoo', category: 'Internet Devices', forceCategory: true, accept: 'internet', url: 'https://store.ooredoo.com.kw/gadgets/internet-devices.html' },
+  { provider: 'stc', category: 'Tablets', forceCategory: true, accept: 'tablets', url: 'https://www.stc.com.kw/en/e-store/grid/tablet' },
+  { provider: 'zain', category: 'Tablets', forceCategory: true, accept: 'tablets', url: 'https://www.kw.zain.com/en/shop/tablets' },
+  { provider: 'ooredoo', category: 'Tablets', accept: 'tablet_or_laptop', url: 'https://store.ooredoo.com.kw/gadgets/tablets-laptops.html' },
+  { provider: 'zain', category: 'Laptops', forceCategory: true, accept: 'laptops', url: 'https://www.kw.zain.com/en/shop/laptops' },
+  { provider: 'stc', category: 'Gaming', forceCategory: true, accept: 'gaming', filters: ['Gaming'], url: 'https://www.stc.com.kw/en/e-store/grid/gamingconsole' },
+  { provider: 'zain', category: 'Gaming', forceCategory: true, accept: 'gaming', url: 'https://www.kw.zain.com/en/shop/gaming' },
+  { provider: 'ooredoo', category: 'Gaming', forceCategory: true, accept: 'gaming', url: 'https://store.ooredoo.com.kw/gadgets/gaming.html' },
+  { provider: 'stc', category: 'Accessories', forceCategory: true, accept: 'accessories', filters: ['Accessories'], url: 'https://www.stc.com.kw/en/e-store/grid/gamingconsole' },
+  { provider: 'zain', category: 'Accessories', forceCategory: true, accept: 'accessories', url: 'https://www.kw.zain.com/en/shop/headsets' },
+  { provider: 'ooredoo', category: 'Accessories', forceCategory: true, accept: 'accessories', url: 'https://store.ooredoo.com.kw/gadgets/accessories.html' },
+  { provider: 'stc', category: 'Smartwatches', forceCategory: true, accept: 'watches', filters: ['Accessories', 'Wearables'], url: 'https://www.stc.com.kw/en/e-store/grid/gamingconsole' },
+  { provider: 'zain', category: 'Smartwatches', forceCategory: true, accept: 'watches', url: 'https://www.kw.zain.com/en/shop/headsets' },
+  { provider: 'ooredoo', category: 'Smartwatches', forceCategory: true, accept: 'watches', url: 'https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html' },
+  { provider: 'stc', category: 'TV', forceCategory: true, accept: 'tv', filters: ['Smart TVs'], url: 'https://www.stc.com.kw/en/e-store/grid/gamingconsole' },
+  { provider: 'ooredoo', category: 'TV', forceCategory: true, accept: 'tv', url: 'https://store.ooredoo.com.kw/getooredooadd/tv.html' },
 ];
+const allowedSourceUrls = new Set(sources.map((source) => source.url));
 
 function stableId(value) {
   return createHash('sha1').update(value).digest('hex').slice(0, 18);
@@ -93,9 +105,27 @@ function storageFromText(text) {
 }
 
 function stockFromText(text) {
+  if (/coming soon|register now|pre-?order/i.test(text)) return 'Coming soon';
   if (/out of stock|sold out|unavailable|notify me/i.test(text)) return 'Out of stock';
   if (/in stock|available|add to cart|buy now|order now|shop now/i.test(text)) return 'In stock';
-  return 'Unknown';
+  return 'Availability not disclosed';
+}
+
+function stockQuantityFromText(text) {
+  const value = clean(text);
+  const match = value.match(/(?:only\s*)?(\d{1,5})\s*(?:units?|items?)?\s*(?:left|remaining|available|in stock)\b/i)
+    || value.match(/\bstock\s*(?:quantity|qty)?\s*[:=-]\s*(\d{1,5})\b/i);
+  return match ? Number(match[1]) : null;
+}
+
+function stockEvidenceFromText(text, status) {
+  if (status === 'Coming soon') return /register now/i.test(text) ? 'Register Now shown by source' : 'Coming Soon shown by source';
+  if (status === 'Out of stock') return 'Unavailable or Out of Stock shown by source';
+  if (status === 'In stock') {
+    const action = clean((text.match(/\b(?:in stock|available|add to cart|buy now|order now|shop now)\b/i) || [])[0]);
+    return `${action || 'Purchase action'} shown by source`;
+  }
+  return 'Public source does not disclose availability';
 }
 
 function isRealDeviceCandidate(device) {
@@ -105,9 +135,11 @@ function isRealDeviceCandidate(device) {
   if (/^data:/i.test(image)) return false;
   if (/kuwait\.svg|\/icons?\/|logo|sprite|placeholder|blank|loading/i.test(image)) return false;
   if (/^(apple|samsung|huawei|honor|xiaomi|zain basics|kuwait|العربية|english|arabic|filter by|switch to business|portable|fixed|home internet)$/i.test(name)) return false;
-  if (/^(devices|internet devices|accessories|smartwatches|tablets|laptops|gaming|tv|all products)$/i.test(name)) return false;
+  if (/^(devices|internet devices|portable internet|accessories|smartwatches|tablets|laptops|gaming|tv|all products|view all|connect with us|on sale|samsung tvs)$/i.test(name)) return false;
+  if (/^get your favorite\b/i.test(name)) return false;
   if (/planspostpaid|postpaidmobile|redbullmobilebyzain/i.test(name.replace(/\s+/g, ''))) return false;
   if (!device.product_url || /login|cart|checkout|wishlist|compare|customer/i.test(device.product_url)) return false;
+  if (sources.some((source) => canonicalUrl(source.url) === canonicalUrl(device.product_url))) return false;
   return true;
 }
 
@@ -132,7 +164,8 @@ async function saveDeviceImage(url) {
     });
     if (!response.ok) return '';
     const contentType = response.headers.get('content-type') || '';
-    if (!contentType.toLowerCase().startsWith('image/')) return '';
+    const imagePath = new URL(url).pathname.toLowerCase();
+    if (!contentType.toLowerCase().startsWith('image/') && !/\.(?:avif|webp|png|jpe?g|gif|svg)$/.test(imagePath)) return '';
     const fileName = `${stableId(url)}${imageExtension(url, contentType)}`;
     await mkdir(imageDir, { recursive: true });
     await writeFile(path.join(imageDir, fileName), Buffer.from(await response.arrayBuffer()));
@@ -143,7 +176,7 @@ async function saveDeviceImage(url) {
 }
 
 async function clickLoadMore(page) {
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 60; index += 1) {
     const clicked = await page.evaluate(() => {
       const buttons = [...document.querySelectorAll('button,a')];
       const button = buttons.find((item) => /load more|show more|view more|more products|next/i.test(item.innerText || item.getAttribute('aria-label') || ''));
@@ -165,8 +198,15 @@ async function scrapeSource(browser, source) {
   });
   const page = await context.newPage();
   await page.goto(source.url, { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.waitForTimeout(5500);
-  for (let index = 0; index < 10; index += 1) {
+  await page.waitForTimeout(source.provider === 'stc' ? 7000 : 4000);
+  for (const filterLabel of source.filters || []) {
+    const filter = page.getByText(filterLabel, { exact: true }).first();
+    for (let attempt = 0; attempt < 8 && !(await filter.count()); attempt += 1) await page.waitForTimeout(1000);
+    if (!(await filter.count())) throw new Error(`Required ${filterLabel} filter was not exposed.`);
+    await filter.click({ timeout: 10000 });
+    await page.waitForTimeout(2200);
+  }
+  for (let index = 0; index < 5; index += 1) {
     await page.mouse.wheel(0, 2600).catch(() => {});
     await page.waitForTimeout(900);
   }
@@ -233,8 +273,13 @@ async function scrapeSource(browser, source) {
 function normalizeDevice(row, source) {
   const text = clean(`${row.title} ${row.text}`);
   const provider = brands[source.provider];
-  const title = clean(row.title);
+  const zainCardTitle = source.provider === 'zain'
+    ? clean(row.text).split(/\b(?:Zain Plus|Plan|KD\s*[\d.]|BUY NOW|Add to compare)\b/i)[0].replace(/^new\s+/i, '')
+    : '';
+  const title = zainCardTitle.length >= 3 && zainCardTitle.length <= 120 ? zainCardTitle : clean(row.title);
   const price = priceFromText(text);
+  const stockStatus = stockFromText(text);
+  const stockQuantity = stockQuantityFromText(text);
   const key = clean(`${source.provider}|${title}|${storageFromText(text)}|${row.url}`).toLowerCase();
   return {
     id: stableId(key),
@@ -244,7 +289,7 @@ function normalizeDevice(row, source) {
     color: provider.color,
     name: title,
     brand: guessBrand(title),
-    category: guessCategory(title, source.category),
+    category: source.forceCategory ? source.category : guessCategory(title, source.category),
     description: clean(row.text).slice(0, 420),
     storage: storageFromText(text),
     colors: '',
@@ -253,8 +298,13 @@ function normalizeDevice(row, source) {
     contract_duration: clean((text.match(/\b(?:12|18|24|36)\s*(?:months?|mo)\b/i) || [])[0] || ''),
     associated_plan: clean((text.match(/\b(?:postpaid|prepaid|wiyana|eezee|5g|internet|plan)\b.{0,70}/i) || [])[0] || ''),
     offer: clean((text.match(/\b(?:free|discount|offer|save|gift|bundle|installment)\b.{0,100}/i) || [])[0] || ''),
-    stock_status: stockFromText(text),
-    image_url: row.image,
+    stock_status: stockStatus,
+    stock_quantity: stockQuantity,
+    stock_disclosure: stockQuantity === null ? (stockStatus === 'Availability not disclosed' ? 'not_disclosed' : 'availability_only') : 'exact_quantity',
+    stock_evidence: stockEvidenceFromText(text, stockStatus),
+    stock_freshness: 'live',
+    stock_checked_at: new Date().toISOString(),
+    image_url: absoluteUrl(source.url, row.image),
     local_image_url: '',
     product_url: row.url,
     source_url: source.url,
@@ -266,12 +316,25 @@ function normalizeDevice(row, source) {
   };
 }
 
+function sourceAcceptsDevice(device, source) {
+  const text = clean(`${device.name} ${device.description} ${device.product_url}`).toLowerCase();
+  if (source.accept === 'smartphones') return /iphone|smartphone|mobile\s*phone|galaxy\s*[sazf]|flip|fold|pixel|huawei\s*(?:pura|nova|mate)|honor\s*(?:magic|x\d)|oppo|xiaomi|redmi/.test(text);
+  if (source.accept === 'internet') return /router|mifi|wi-?fi|hotspot|\bcpe\b|eero|netgear|zte|fiber|mesh|internet\s*device/.test(text);
+  if (source.accept === 'tablets') return /ipad|tablet|galaxy\s*tab|matepad|magicpad|\btab\s*[a-z0-9]/.test(text);
+  if (source.accept === 'laptops') return /laptop|macbook|surface|vivobook|notebook/.test(text);
+  if (source.accept === 'tablet_or_laptop') return /ipad|tablet|galaxy\s*tab|matepad|magicpad|\btab\s*[a-z0-9]|laptop|macbook|surface|vivobook|notebook/.test(text);
+  if (source.accept === 'watches') return /watch|fitbit|wearable|smart\s*band|galaxy\s*fit/.test(text);
+  if (source.accept === 'tv') return /\btv\b|television|smart\s*tv/.test(text);
+  if (source.accept === 'gaming') return /playstation|\bps\s*5\b|\bps5\b|xbox|nintendo|gaming|console/.test(text);
+  if (source.accept === 'accessories') return !/watch|fitbit|wearable|smart\s*band|\btv\b|television|playstation|\bps5\b|xbox|nintendo|console/.test(text);
+  return true;
+}
+
 function dedupeDevices(devices) {
   const merged = new Map();
   for (const device of devices) {
-    const key = clean(`${device.provider}|${device.brand}|${device.name}|${device.storage}|${device.product_url}`).toLowerCase();
-    const fallback = clean(`${device.provider}|${device.brand}|${device.name}|${device.storage}`).toLowerCase();
-    const id = key || fallback || device.id;
+    const productIdentity = clean(`${device.provider}|${device.brand}|${device.name}|${device.storage}`).toLowerCase();
+    const id = productIdentity || `${device.provider}|${canonicalUrl(device.product_url)}` || device.id;
     const existing = merged.get(id);
     if (!existing) {
       merged.set(id, device);
@@ -306,11 +369,11 @@ function canonicalUrl(value) {
 }
 
 function identityKey(device) {
-  return clean(`${device.provider}|${device.name}|${device.storage || ''}|${canonicalUrl(device.product_url)}`).toLowerCase();
+  return clean(`${device.provider}|${device.brand || ''}|${device.name}|${device.storage || ''}`).toLowerCase();
 }
 
 function deviceChanged(previous, current) {
-  return ['name', 'price', 'monthly_installment', 'stock_status', 'offer', 'storage', 'product_url', 'image_url']
+  return ['name', 'price', 'monthly_installment', 'stock_status', 'stock_quantity', 'stock_disclosure', 'offer', 'storage', 'product_url', 'image_url']
     .some((field) => {
       if (field === 'product_url' || field === 'image_url') return canonicalUrl(previous?.[field]) !== canonicalUrl(current?.[field]);
       return clean(previous?.[field]) !== clean(current?.[field]);
@@ -321,16 +384,33 @@ let previousPayload = { data: [] };
 try { previousPayload = JSON.parse(await readFile(dataPath, 'utf8')); } catch {}
 const previousDevices = Array.isArray(previousPayload) ? previousPayload : previousPayload.data || [];
 
-const browser = await chromium.launch({ headless });
+let browser;
+try {
+  browser = await chromium.launch({ channel: 'chrome', headless });
+} catch {
+  browser = await chromium.launch({ headless });
+}
 const discovered = [];
 const coverage = [];
 try {
   for (const source of sources) {
     try {
-      const rows = await scrapeSource(browser, source);
-      const normalized = rows.map((row) => normalizeDevice(row, source));
+      let rows = [];
+      let sourceError;
+      for (let attempt = 1; attempt <= 3 && !rows.length; attempt += 1) {
+        try { rows = await scrapeSource(browser, source); } catch (error) { sourceError = error; }
+        if (!rows.length && attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+      }
+      if (!rows.length && sourceError) throw sourceError;
+      const normalized = rows.map((row) => normalizeDevice(row, source)).filter((device) => sourceAcceptsDevice(device, source));
       discovered.push(...normalized);
-      coverage.push({ provider: source.provider, category: source.category, source_url: source.url, status: normalized.length ? 'ok' : 'No device cards were exposed.', count: normalized.length });
+      coverage.push({
+        provider: source.provider,
+        category: source.category,
+        source_url: source.url,
+        status: normalized.length ? 'ok' : rows.length ? 'No matching devices were exposed in this category.' : 'No device cards were exposed.',
+        count: normalized.length,
+      });
     } catch (error) {
       coverage.push({ provider: source.provider, category: source.category, source_url: source.url, status: error.message, count: 0 });
     }
@@ -344,12 +424,20 @@ const liveKeys = new Set(liveDevices.map(identityKey));
 const failedSources = coverage.filter((item) => item.status !== 'ok');
 const preserved = previousDevices.filter((device) => {
   if (liveKeys.has(identityKey(device))) return false;
+  const priorSources = device.source_urls || [device.source_url];
+  if (!priorSources.some((sourceUrl) => allowedSourceUrls.has(sourceUrl))) return false;
   const providerCoverage = coverage.filter((source) => source.provider === device.provider);
   const providerFullyUnavailable = providerCoverage.length && providerCoverage.every((source) => source.status !== 'ok');
   return providerFullyUnavailable || failedSources.some((source) => source.provider === device.provider
-    && (device.source_urls || [device.source_url]).includes(source.source_url));
+    && priorSources.includes(source.source_url));
 })
-  .map((device) => ({ ...device, freshness: 'preserved_source_failure', status: 'Current (source unavailable)' }));
+  .map((device) => ({
+    ...device,
+    image_url: absoluteUrl(device.source_url || device.product_url, device.image_url),
+    freshness: 'preserved_source_failure',
+    stock_freshness: 'preserved_source_failure',
+    status: 'Current (source unavailable)',
+  }));
 const deduped = addGapSignals(dedupeDevices([...liveDevices, ...preserved]));
 const previousByKey = new Map(previousDevices.map((device) => [identityKey(device), device]));
 const currentKeys = new Set(deduped.map(identityKey));
@@ -375,6 +463,7 @@ for (const device of deduped) {
   }
   device.freshness ||= 'live';
   device.last_checked = new Date().toISOString();
+  device.image_url = absoluteUrl(device.source_url || device.product_url, device.image_url);
   device.local_image_url = await saveDeviceImage(device.image_url);
   if (!device.local_image_url && previous?.local_image_url) device.local_image_url = previous.local_image_url;
 }

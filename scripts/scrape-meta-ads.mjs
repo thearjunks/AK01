@@ -1,13 +1,11 @@
 import { chromium } from 'playwright';
-import { createHash } from 'node:crypto';
-import { chmod, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { chmod, readdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const dataPath = path.join(root, 'public', 'data', 'ads.json');
-const artworkDir = path.join(root, 'public', 'artwork');
 const pagesModule = await import(pathToFileURL(path.join(root, 'src', 'data', 'pages.js')).href);
 const pageIdFilter = String(process.env.META_ADS_PAGE_IDS || '')
   .split(',')
@@ -17,11 +15,8 @@ const trackedPageIds = new Set(pageIdFilter);
 const trackedPages = pageIdFilter.length
   ? pagesModule.pages.filter((page) => trackedPageIds.has(page.pageId))
   : pagesModule.pages;
-const activeStatus = process.env.META_ADS_ACTIVE_STATUS || 'all';
-// ponytail: a page that previously had this many ads or more suddenly returning 0 is
-// almost always a transient scrape/bot-block failure, not every campaign ending at once.
-// Raise this if a real "operator paused everything" event ever needs to clear the snapshot.
-const ZERO_RESULT_FALLBACK_MIN_PREVIOUS = 3;
+const activeStatus = process.env.META_ADS_ACTIVE_STATUS || 'active';
+const maxAttempts = Number(process.env.META_ADS_MAX_ATTEMPTS || 3);
 
 const maxScrolls = Number(process.env.META_ADS_MAX_SCROLLS || 120);
 const headless = process.env.META_ADS_HEADLESS !== '0';
@@ -45,6 +40,24 @@ function libraryUrlFor(trackedPage) {
   url.searchParams.set('search_type', 'page');
   url.searchParams.set('view_all_page_id', trackedPage.pageId);
   return url.toString();
+}
+
+function sourceResultCountFromText(text) {
+  if (/no ads match your search criteria/i.test(text)) return { count: 0, approximate: false };
+  const matches = [...text.matchAll(/(^|\n)\s*(~)?\s*([\d,.]+)\s+results?\s*(?=\n|$)/gi)]
+    .map((match) => ({ count: Number(match[3].replace(/,/g, '')), approximate: Boolean(match[2]) }))
+    .filter((item) => Number.isFinite(item.count));
+  return matches.sort((a, b) => b.count - a.count)[0] || null;
+}
+
+function collectionIsComplete(found, sourceResult, exhausted) {
+  if (!sourceResult || !exhausted) return false;
+  if (!sourceResult.approximate) return found >= sourceResult.count;
+  // Meta labels this value with "~", so it is an estimate rather than a
+  // pageable record total.  A completed traversal is authoritative; this
+  // guard only catches large collection shortfalls.
+  const tolerance = Math.max(3, Math.ceil(sourceResult.count * 0.05));
+  return found >= sourceResult.count - tolerance;
 }
 
 function dateFromText(text) {
@@ -113,29 +126,8 @@ function imageScore(src) {
   if (/scontent\./.test(src)) score += 5;
   if (/t39\.35426|t45|t15|ads/i.test(src)) score += 6;
   if (/s600x600|p600x600|600/.test(src)) score += 3;
-  if (/s148x148|t39\.30808-1/.test(src)) score -= 4;
+  if (/s60x60|s80x80|s148x148|t39\.30808-1/.test(src)) score -= 12;
   return score;
-}
-
-function hashUrl(url) {
-  return createHash('sha1').update(url).digest('hex').slice(0, 20);
-}
-
-function extensionFor(url) {
-  const pathname = new URL(url).pathname.toLowerCase();
-  const ext = path.extname(pathname);
-  return ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-}
-
-async function saveArtwork(response, src) {
-  if (!src || !response?.ok()) return '';
-  const contentType = response.headers()['content-type'] || '';
-  if (!contentType.toLowerCase().startsWith('image/')) return '';
-  const ext = extensionFor(src);
-  const fileName = `${hashUrl(src)}${ext}`;
-  await mkdir(artworkDir, { recursive: true });
-  await writeFile(path.join(artworkDir, fileName), await response.body());
-  return `/artwork/${fileName}`;
 }
 
 async function launchBrowser() {
@@ -160,92 +152,117 @@ async function scrapePage(browser, trackedPage) {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
   });
   const page = await context.newPage();
-  const imageResponses = new Map();
 
-  page.on('response', async (response) => {
-    const url = response.url();
-    if (/scontent\./.test(url) && /\.(jpg|jpeg|png|webp)(\?|$)/i.test(url)) {
-      imageResponses.set(url, response);
-    }
-  });
+  try {
+    const libraryUrl = libraryUrlFor(trackedPage);
+    await page.goto(libraryUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.waitForTimeout(7000);
 
-  const libraryUrl = libraryUrlFor(trackedPage);
-  await page.goto(libraryUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await page.waitForTimeout(7000);
+    const extractVisibleRawAds = () => page.evaluate(() => {
+      const candidates = new Map();
+      const libraryNodes = [...document.querySelectorAll('div')]
+        .filter((node) => /Library ID:\s*\d+/.test(node.innerText || ''));
 
-  let lastHeight = 0;
-  let lastCount = 0;
-  let stableScrolls = 0;
-  for (let index = 0; index < maxScrolls; index += 1) {
-    await page.mouse.wheel(0, 2400);
-    await page.waitForTimeout(1800);
-    const current = await page.evaluate(() => ({
-      height: document.body.scrollHeight,
-      ids: [...document.body.innerText.matchAll(/Library ID:\s*(\d+)/g)].length,
-    }));
-    stableScrolls = current.height === lastHeight && current.ids === lastCount ? stableScrolls + 1 : 0;
-    if (stableScrolls >= 8) break;
-    lastCount = current.ids;
-    lastHeight = current.height;
-  }
+      for (const node of libraryNodes) {
+        const idMatch = (node.innerText || '').match(/Library ID:\s*(\d+)/);
+        if (!idMatch) continue;
+        const id = idMatch[1];
 
-  const rawAds = await page.evaluate(() => {
-    const candidates = new Map();
-    const libraryNodes = [...document.querySelectorAll('div')]
-      .filter((node) => /Library ID:\s*\d+/.test(node.innerText || ''));
-
-    for (const node of libraryNodes) {
-      const idMatch = (node.innerText || '').match(/Library ID:\s*(\d+)/);
-      if (!idMatch) continue;
-      const id = idMatch[1];
-
-      let card = node;
-      for (let depth = 0; depth < 8 && card.parentElement; depth += 1) {
-        const parentText = card.parentElement.innerText || '';
-        const libraryIds = parentText.match(/Library ID:\s*\d+/g) || [];
-        if (libraryIds.length !== 1 || !parentText.includes(idMatch[1])) break;
-        card = card.parentElement;
+        let card = node;
+        for (let depth = 0; depth < 8 && card.parentElement; depth += 1) {
+          const parentText = card.parentElement.innerText || '';
+          const libraryIds = parentText.match(/Library ID:\s*\d+/g) || [];
+          if (libraryIds.length !== 1 || !parentText.includes(id)) break;
+          card = card.parentElement;
+        }
+        const text = card.innerText || '';
+        const previous = candidates.get(id);
+        const score = (text.length || 0) + ((text.match(/Library ID:\s*\d+/g) || []).length > 1 ? 1000000 : 0);
+        if (!previous || score < previous.score) candidates.set(id, { card, score });
       }
-      const text = card.innerText || '';
-      const previous = candidates.get(id);
-      const score = (text.length || 0) + ((text.match(/Library ID:\s*\d+/g) || []).length > 1 ? 1000000 : 0);
-      if (!previous || score < previous.score) {
-        candidates.set(id, { card, score });
-      }
-    }
 
-    const cards = [];
-    for (const [id, { card }] of candidates) {
-      const text = card.innerText || '';
-
-      const labels = [
-        ...[...card.querySelectorAll('[aria-label]')].map((item) => item.getAttribute('aria-label')),
-        ...[...card.querySelectorAll('img[alt]')].map((item) => item.getAttribute('alt')),
-        ...[...card.querySelectorAll('title')].map((item) => item.textContent),
-      ].filter(Boolean);
-      const images = [...card.querySelectorAll('img')]
-        .map((img) => img.currentSrc || img.src)
-        .filter(Boolean);
-
-      cards.push({
-        id,
-        text,
-        labels,
-        images,
-        hasVideo: Boolean(card.querySelector('video')) || /\d{1,2}:\d{2}\s*\/\s*\d{1,2}:\d{2}/.test(text),
+      return [...candidates].map(([id, { card }]) => {
+        const text = card.innerText || '';
+        return {
+          id,
+          text,
+          labels: [
+            ...[...card.querySelectorAll('[aria-label]')].map((item) => item.getAttribute('aria-label')),
+            ...[...card.querySelectorAll('img[alt]')].map((item) => item.getAttribute('alt')),
+            ...[...card.querySelectorAll('title')].map((item) => item.textContent),
+          ].filter(Boolean),
+          images: [...card.querySelectorAll('img')]
+            .map((img) => img.currentSrc || img.src)
+            .filter(Boolean),
+          hasVideo: Boolean(card.querySelector('video')) || /\d{1,2}:\d{2}\s*\/\s*\d{1,2}:\d{2}/.test(text),
+        };
       });
+    });
+
+    const rawAdsById = new Map();
+    const captureVisibleAds = async () => {
+      for (const rawAd of await extractVisibleRawAds()) {
+        if (/Ad Library report/i.test(rawAd.text)) continue;
+        const previous = rawAdsById.get(rawAd.id);
+        if (!previous) {
+          rawAdsById.set(rawAd.id, rawAd);
+          continue;
+        }
+        rawAdsById.set(rawAd.id, {
+          ...previous,
+          text: rawAd.text.length > previous.text.length ? rawAd.text : previous.text,
+          labels: [...new Set([...previous.labels, ...rawAd.labels])],
+          images: [...new Set([...previous.images, ...rawAd.images])],
+          hasVideo: previous.hasVideo || rawAd.hasVideo,
+        });
+      }
+    };
+
+    await captureVisibleAds();
+    let lastHeight = 0;
+    let lastUniqueCount = rawAdsById.size;
+    let stableScrolls = 0;
+    for (let index = 0; index < maxScrolls; index += 1) {
+      await page.mouse.wheel(0, 1200);
+      await page.waitForTimeout(2000);
+      await captureVisibleAds();
+      const currentHeight = await page.evaluate(() => document.body.scrollHeight);
+      stableScrolls = currentHeight === lastHeight && rawAdsById.size === lastUniqueCount
+        ? stableScrolls + 1
+        : 0;
+      if (stableScrolls >= 12) break;
+      lastUniqueCount = rawAdsById.size;
+      lastHeight = currentHeight;
     }
 
-    return cards;
-  });
+    // Meta collapses distinct Library IDs that share creative/text into a
+    // "See summary details" group.  The headline estimate counts the ads,
+    // while the result grid counts the collapsed cards.  Open every group and
+    // collect the individual IDs so the dashboard represents active ads, not
+    // only visible summary cards.
+    const summaryButtons = page.getByText('See summary details', { exact: true });
+    const summaryCount = await summaryButtons.count();
+    for (let index = 0; index < summaryCount; index += 1) {
+      try {
+        await summaryButtons.nth(index).click({ timeout: 15000 });
+        await page.waitForTimeout(700);
+        await captureVisibleAds();
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(250);
+      } catch (error) {
+        console.warn(`  could not expand grouped result ${index + 1}/${summaryCount}: ${error.message}`);
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    }
 
-  const ads = [];
-  for (const [sourceIndex, rawAd] of rawAds.filter((ad) => /Started running on/i.test(ad.text) && !/Ad Library report/i.test(ad.text)).entries()) {
+    const rawAds = [...rawAdsById.values()];
+
+    const ads = [];
+    for (const [sourceIndex, rawAd] of rawAds.entries()) {
     const artworkUrl = rawAd.images.sort((a, b) => imageScore(b) - imageScore(a))[0] || '';
-    const localArtworkUrl = artworkUrl ? await saveArtwork(imageResponses.get(artworkUrl), artworkUrl) : '';
     const searchableMeta = `${rawAd.text}\n${rawAd.labels.join('\n')}`;
     const creativeText = cleanCreativeText(rawAd.text);
-    ads.push({
+      ads.push({
       page_id: trackedPage.pageId,
       page_name: trackedPage.name,
       ad_archive_id: rawAd.id,
@@ -256,70 +273,83 @@ async function scrapePage(browser, trackedPage) {
       language: languageFromText(creativeText),
       media_type: rawAd.hasVideo ? 'video' : artworkUrl ? 'image' : 'unknown',
       ad_status: stopTimeFromText(searchableMeta) ? 'inactive' : 'active',
-      ad_snapshot_url: `${libraryUrl}&q=${rawAd.id}`,
+      ad_snapshot_url: `https://www.facebook.com/ads/library/?id=${rawAd.id}`,
       artwork_url: artworkUrl,
-      local_artwork_url: localArtworkUrl,
+      local_artwork_url: '',
       _source_index: sourceIndex,
-    });
+      });
+    }
+
+    const sourceResult = sourceResultCountFromText(await page.locator('body').innerText());
+    return { ads, sourceResult, exhausted: stableScrolls >= 12 };
+  } finally {
+    await context.close();
   }
-
-  await context.close();
-  return ads;
-}
-
-let previousAds = [];
-try {
-  previousAds = JSON.parse(await readFile(dataPath, 'utf8')).data || [];
-} catch {
-  // no previous snapshot yet, nothing to fall back to
-}
-const previousByPage = new Map();
-for (const ad of previousAds) {
-  const key = String(ad.page_id);
-  if (!previousByPage.has(key)) previousByPage.set(key, []);
-  previousByPage.get(key).push(ad);
 }
 
 const browser = await launchBrowser();
 const displayedCounts = {};
+const sourceCounts = {};
+const validationPages = [];
 const resultsByPage = new Map();
 
 try {
   for (const trackedPage of trackedPages) {
     console.log(`Scraping ${trackedPage.name} (${trackedPage.pageId})...`);
-    const previous = previousByPage.get(trackedPage.pageId) || [];
-    let ads = [];
-    try {
-      ads = await scrapePage(browser, trackedPage);
-    } catch (error) {
-      console.error(`  FAILED: ${error.message}`);
+    let best = { ads: [], sourceResult: null, exhausted: false };
+    let lastError = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const result = await scrapePage(browser, trackedPage);
+        if (result.ads.length > best.ads.length) best = result;
+        const complete = collectionIsComplete(result.ads.length, result.sourceResult, result.exhausted);
+        console.log(`  attempt ${attempt}: ${result.ads.length}/${result.sourceResult?.approximate ? '~' : ''}${result.sourceResult?.count ?? '?'} cards`);
+        if (complete) break;
+      } catch (error) {
+        lastError = error;
+        console.error(`  attempt ${attempt} failed: ${error.message}`);
+      }
     }
-    if (ads.length === 0 && previous.length >= ZERO_RESULT_FALLBACK_MIN_PREVIOUS) {
-      console.warn(`  0 ads found but ${previous.length} were in the previous snapshot; keeping previous snapshot for this page (likely a transient scrape failure).`);
-      ads = previous;
-    } else {
-      console.log(`  ${ads.length} ads found`);
+    if (!collectionIsComplete(best.ads.length, best.sourceResult, best.exhausted)) {
+      const expected = best.sourceResult ? `${best.sourceResult.approximate ? '~' : ''}${best.sourceResult.count}` : 'an unavailable source total';
+      throw new Error(`${trackedPage.name} collection incomplete: captured ${best.ads.length} of ${expected} active results after ${maxAttempts} attempts.${lastError ? ` Last error: ${lastError.message}` : ''}`);
     }
-    displayedCounts[trackedPage.pageId] = String(ads.length);
-    resultsByPage.set(trackedPage.pageId, ads);
+    displayedCounts[trackedPage.pageId] = String(best.ads.length);
+    sourceCounts[trackedPage.pageId] = best.sourceResult.count;
+    validationPages.push({
+      page_id: trackedPage.pageId,
+      page_name: trackedPage.name,
+      captured: best.ads.length,
+      source_count: best.sourceResult.count,
+      approximate: best.sourceResult.approximate,
+      pagination_exhausted: best.exhausted,
+      complete: true,
+    });
+    resultsByPage.set(trackedPage.pageId, best.ads);
   }
 } finally {
   await browser.close();
 }
 
-const trackedPageIdSet = new Set(trackedPages.map((page) => page.pageId));
-const untouchedAds = previousAds.filter((ad) => !trackedPageIdSet.has(String(ad.page_id)));
 const freshAds = trackedPages.flatMap((page) => resultsByPage.get(page.pageId) || []);
 
 // de-dupe by page + library id in case a page was scraped more than once in this run
-const dedupedAds = [...new Map([...untouchedAds, ...freshAds].map((ad) => [`${ad.page_id}:${ad.ad_archive_id}`, ad])).values()];
+const dedupedAds = [...new Map(freshAds.map((ad) => [`${ad.page_id}:${ad.ad_archive_id}`, ad])).values()];
 
 const payload = {
   generated_at: new Date().toISOString(),
-  source: `Meta Ads Library public pages, ${activeStatus} ads, country KW`,
+  source: `Meta Ads Library public pages, active ads, country KW`,
   displayed_counts: displayedCounts,
+  source_counts: sourceCounts,
+  validation: {
+    complete: true,
+    active_only: activeStatus === 'active',
+    pages: validationPages,
+  },
   data: dedupedAds,
 };
 
-await writeFile(dataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+const temporaryDataPath = `${dataPath}.next`;
+await writeFile(temporaryDataPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+await rename(temporaryDataPath, dataPath);
 console.log(JSON.stringify({ ads: dedupedAds.length, pages: trackedPages.length }, null, 2));

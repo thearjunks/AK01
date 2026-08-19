@@ -34,7 +34,7 @@ jobs:
 
       - run: node scripts/install-playwright.mjs
 
-      - name: Collect 30-day organic posts
+      - name: Collect and validate three Instagram accounts
         run: node scripts/scrape-organic-posts.mjs
         env:
           PLAYWRIGHT_BROWSERS_PATH: '0'
@@ -46,6 +46,10 @@ jobs:
           SOCIAL_X_PASSWORD: ${{ secrets.SOCIAL_X_PASSWORD }}
           SOCIAL_TIKTOK_EMAIL: ${{ secrets.SOCIAL_TIKTOK_EMAIL }}
           SOCIAL_TIKTOK_PASSWORD: ${{ secrets.SOCIAL_TIKTOK_PASSWORD }}
+          SOCIAL_PLATFORMS: Instagram
+          SOCIAL_REQUIRE_INSTAGRAM_COVERAGE: '1'
+          ORGANIC_MAX_SCROLLS: '8'
+          INSTAGRAM_DETAIL_LIMIT: '12'
 
       - name: Cache post thumbnails
         run: node scripts/cache-social-thumbnails.mjs

@@ -8,6 +8,7 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 const adsRefreshIntervalMs = Number(process.env.ADS_REFRESH_INTERVAL_MS || 10 * 60 * 1000);
 const comparisonRefreshIntervalMs = Number(process.env.COMPARISON_REFRESH_INTERVAL_MS || 60 * 60 * 1000);
+const socialRefreshIntervalMs = Number(process.env.SOCIAL_REFRESH_INTERVAL_MS || 24 * 60 * 60 * 1000);
 
 async function startScheduledAdsRefresh() {
   try {
@@ -29,6 +30,16 @@ async function startScheduledComparisonRefresh(endpoint, label) {
     console.log(`[scheduled-${label}-refresh] ${result.job?.message || `HTTP ${response.status}`}`);
   } catch (error) {
     console.error(`[scheduled-${label}-refresh] ${error.message}`);
+  }
+}
+
+async function startScheduledSocialRefresh() {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/fetch-social-posts`, { method: 'POST', headers: { accept: 'application/json' } });
+    const result = await response.json();
+    console.log(`[scheduled-instagram-refresh] ${result.message || result.error || `HTTP ${response.status}`}`);
+  } catch (error) {
+    console.error(`[scheduled-instagram-refresh] ${error.message}`);
   }
 }
 
@@ -55,6 +66,13 @@ app.prepare()
         initialPlansTimer.unref();
         initialDevicesTimer.unref();
         console.log(`[scheduled-comparison-refresh] enabled every ${Math.round(comparisonRefreshIntervalMs / 60000)} minutes`);
+      }
+      if (socialRefreshIntervalMs > 0) {
+        const socialTimer = setInterval(startScheduledSocialRefresh, socialRefreshIntervalMs);
+        const initialSocialTimer = setTimeout(startScheduledSocialRefresh, 90 * 1000);
+        socialTimer.unref();
+        initialSocialTimer.unref();
+        console.log(`[scheduled-instagram-refresh] enabled every ${Math.round(socialRefreshIntervalMs / 60000)} minutes`);
       }
     });
   })

@@ -15,6 +15,7 @@ const providers = [
   { key: 'ooredoo', name: 'Ooredoo Kuwait', id: '181832232881', color: '#ed1c24' },
   { key: 'zain', name: 'Zain Kuwait', id: '114476661945257', color: '#00a651' },
 ];
+const planProviders = providers;
 const adProviders = [
   ...providers,
   { key: 'virgin', name: 'Virgin Mobile Kuwait', id: '1293796630758728', color: '#e0007a' },
@@ -22,20 +23,26 @@ const adProviders = [
   { key: 'tawseel', name: 'Zain-tawseel', id: '444661005390298', color: '#00a651' },
   { key: 'gamez', name: 'Gamez Card', id: '101008544936040', color: '#f59e0b' },
 ];
-const planCategories = ['Prepaid', 'Postpaid', 'Postpaid Internet', 'Roaming'];
 const bannerCategories = ['Homepage Offers', 'Homepage Carousel', 'Offer Banners', 'Homepage Hero', 'Offers News More'];
 const deviceCategories = ['Smartphones', 'Tablets', 'Laptops', 'Internet Devices', 'Gaming', 'Accessories', 'Smartwatches', 'TV'];
 const deviceSourceLinks = [
-  { provider: 'zain', label: 'Zain devices', url: 'https://www.kw.zain.com/en/shop/devices' },
-  { provider: 'stc', label: 'stc e-store', url: 'https://www.stc.com.kw/en/e-store/grid/all' },
+  { provider: 'ooredoo', label: 'Ooredoo smartphones', url: 'https://store.ooredoo.com.kw/gadgets/smartphones.html' },
+  { provider: 'zain', label: 'Zain smartphones', url: 'https://www.kw.zain.com/en/shop/smartphones' },
+  { provider: 'stc', label: 'stc smartphones', url: 'https://www.stc.com.kw/en/e-store/grid/smartphone' },
+  { provider: 'stc', label: 'stc internet devices', url: 'https://www.stc.com.kw/en/e-store/grid/router' },
+  { provider: 'zain', label: 'Zain internet devices', url: 'https://www.kw.zain.com/en/shop/internet-devices' },
   { provider: 'ooredoo', label: 'Ooredoo internet devices', url: 'https://store.ooredoo.com.kw/gadgets/internet-devices.html' },
+  { provider: 'stc', label: 'stc tablets', url: 'https://www.stc.com.kw/en/e-store/grid/tablet' },
+  { provider: 'zain', label: 'Zain tablets', url: 'https://www.kw.zain.com/en/shop/tablets' },
   { provider: 'ooredoo', label: 'Ooredoo tablets/laptops', url: 'https://store.ooredoo.com.kw/gadgets/tablets-laptops.html' },
+  { provider: 'zain', label: 'Zain laptops', url: 'https://www.kw.zain.com/en/shop/laptops' },
+  { provider: 'stc', label: 'stc gaming, accessories, watches and TV filters', url: 'https://www.stc.com.kw/en/e-store/grid/gamingconsole' },
+  { provider: 'zain', label: 'Zain gaming', url: 'https://www.kw.zain.com/en/shop/gaming' },
   { provider: 'ooredoo', label: 'Ooredoo gaming', url: 'https://store.ooredoo.com.kw/gadgets/gaming.html' },
+  { provider: 'zain', label: 'Zain headsets/accessories', url: 'https://www.kw.zain.com/en/shop/headsets' },
   { provider: 'ooredoo', label: 'Ooredoo accessories', url: 'https://store.ooredoo.com.kw/gadgets/accessories.html' },
   { provider: 'ooredoo', label: 'Ooredoo smartwatches', url: 'https://store.ooredoo.com.kw/gadgets/accessories/smartwatches.html' },
   { provider: 'ooredoo', label: 'Ooredoo TV', url: 'https://store.ooredoo.com.kw/getooredooadd/tv.html' },
-  { provider: 'ooredoo', label: 'Ooredoo full catalog/search', url: 'https://store.ooredoo.com.kw/cash.html' },
-  { provider: 'ooredoo', label: 'Ooredoo tablet search', url: 'https://store.ooredoo.com.kw/catalogsearch/result/?q=tablet' },
 ];
 const providerLogoOverrides = {
   zain: '/brand-logos/zain_logo.svg',
@@ -126,8 +133,7 @@ async function waitForComparisonJob(endpoint, label, onProgress) {
 
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
 function imageOf(ad) {
-  const image = ad.local_artwork_url || ad.artwork_url || '';
-  return image;
+  return ad.artwork_url || '';
 }
 function dateOf(ad) { return String(ad.ad_delivery_start_time || '').slice(0, 10); }
 function sourceOrderOf(ad) { return Number.isFinite(ad._source_index) ? ad._source_index : Number.MAX_SAFE_INTEGER; }
@@ -194,7 +200,7 @@ function organicDateLabel(post) {
   return new Date(published).toLocaleString();
 }
 function organicRelativeLabel(post) {
-  return organicPublishedLabel(post) || (organicPublishedAt(post) ? relativeTime(organicPublishedAt(post)) : 'Publication time unavailable');
+  return organicPublishedAt(post) ? relativeTime(organicPublishedAt(post)) : organicPublishedLabel(post) || 'Publication time unavailable';
 }
 
 function engagementValue(value) {
@@ -312,11 +318,10 @@ function Overview({ ads, onNavigate }) {
 }
 
 function Filters({ filters, setFilters }) {
-  const reset = { search: '', provider: '', language: '', platform: '', mediaType: '', status: 'active', dateMode: 'all', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' };
+  const reset = { search: '', provider: '', platform: '', mediaType: '', status: 'active', dateMode: 'all', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' };
   return <section className="boosted-filter-panel surface"><div className="boosted-filter-heading"><div><span>Filters</span><b>Refine the complete paid-ad archive</b></div><small>Date controls use the delivery dates available in Meta results.</small></div><div className="filter-bar boosted-filter-grid">
     <label className="filter-search"><Search size={17} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search campaign copy or ID" /></label>
     <label className="filter-field"><span>Competitor</span><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All competitors</option>{adProviders.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-    <label className="filter-field"><span>Language</span><select value={filters.language} onChange={(event) => setFilters({ ...filters, language: event.target.value })}><option value="">All languages</option><option value="en">English</option><option value="ar">Arabic</option><option value="mixed">Arabic and English</option><option value="unknown">Unknown</option></select></label>
     <label className="filter-field"><span>Platform</span><select value={filters.platform} onChange={(event) => setFilters({ ...filters, platform: event.target.value })}><option value="">All platforms</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="messenger">Messenger</option><option value="threads">Threads</option><option value="audience network">Audience Network</option><option value="unknown">Unknown</option></select></label>
     <label className="filter-field"><span>Media type</span><select value={filters.mediaType} onChange={(event) => setFilters({ ...filters, mediaType: event.target.value })}><option value="">All media types</option><option value="image">Images</option><option value="video">Videos</option><option value="unknown">Unknown</option></select></label>
     <label className="filter-field"><span>Active status</span><select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">Active and inactive</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
@@ -340,10 +345,12 @@ function CampaignGrid({ rows }) {
   return <div className="campaign-grid boosted-campaign-grid">{rows.map((ad) => <article className="campaign-card-new" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="campaign-image">{imageOf(ad) ? <img src={imageOf(ad)} alt="Campaign creative" loading="lazy" decoding="async" onLoad={(event) => { if (event.currentTarget.naturalWidth <= 120 && event.currentTarget.naturalHeight <= 120) event.currentTarget.classList.add('low-resolution'); }} /> : <EmptyArtwork />}<span>{statusOf(ad) === 'inactive' ? 'Inactive' : 'Active'}</span></div><div className="campaign-content"><div className="campaign-company"><BrandMark pageId={ad.page_id} name={ad.page_name} /><span><b>{ad.page_name}</b><small>{dateOf(ad)}</small></span></div><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><div><span>ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open ad <ArrowUpRight size={14} /></a></div></div></article>)}</div>;
 }
 
-function ActiveOfferRows({ rows }) {
+function ActiveOfferRows({ rows, validation }) {
   return <div className="active-offer-rows">{providers.map((provider, index) => {
     const providerRows = rows.filter((ad) => String(ad.page_id) === provider.id);
-    return <section className="active-offer-row surface" key={provider.id} style={{ '--brand': provider.color }}><header><div><BrandMark pageId={provider.id} /><span><small>Row {index + 1}</small><b>{provider.name}</b></span></div><div><strong>{providerRows.length}</strong><span>active offers</span></div></header><div className="offer-scroll-frame" role="list" aria-label={`${provider.name} active offers`}>{providerRows.length ? providerRows.map((ad) => <article className="active-offer-card" role="listitem" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="active-offer-creative">{imageOf(ad) ? <img src={imageOf(ad)} alt={`${provider.name} offer creative`} loading="lazy" decoding="async" /> : <EmptyArtwork label="Offer" />}<span>Active</span></div><div className="active-offer-copy"><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><dl><div><dt>Impressions</dt><dd>{impressionsOf(ad)}</dd></div><div><dt>Started</dt><dd>{dateOf(ad) || 'Unavailable'}</dd></div><div><dt>Platform</dt><dd>{platformsOf(ad).join(', ') || 'Not provided'}</dd></div><div><dt>Media</dt><dd>{mediaTypeOf(ad)}</dd></div></dl><footer><span>Library ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open offer <ArrowUpRight size={14} /></a></footer></div></article>) : <p className="column-empty">No active offers match the current filters.</p>}</div></section>;
+    const sourcePage = validation?.pages?.find((page) => String(page.page_id) === provider.id);
+    const sourceLabel = sourcePage ? `${sourcePage.approximate ? '~' : ''}${sourcePage.source_count}` : '';
+    return <section className="active-offer-row surface" key={provider.id} style={{ '--brand': provider.color }}><header><div><BrandMark pageId={provider.id} /><span><small>Row {index + 1}</small><b>{provider.name}</b></span></div><div><strong>{providerRows.length}</strong><span>exact active cards{sourceLabel ? ` · Meta estimate ${sourceLabel}` : ''}</span></div></header><div className="offer-scroll-frame" role="list" aria-label={`${provider.name} active offers`}>{providerRows.length ? providerRows.map((ad) => <article className="active-offer-card" role="listitem" key={`${ad.page_id}-${ad.ad_archive_id}`}><div className="active-offer-creative">{imageOf(ad) ? <img src={imageOf(ad)} alt={`${provider.name} offer creative`} loading="lazy" decoding="async" /> : <EmptyArtwork label="Offer" />}<span>Active</span></div><div className="active-offer-copy"><h3>{titleOf(ad)}</h3><p>{textOf(ad)}</p><dl><div><dt>Impressions</dt><dd>{impressionsOf(ad)}</dd></div><div><dt>Started</dt><dd>{dateOf(ad) || 'Unavailable'}</dd></div><div><dt>Platform</dt><dd>{platformsOf(ad).join(', ') || 'Not provided'}</dd></div><div><dt>Media</dt><dd>{mediaTypeOf(ad)}</dd></div></dl><footer><span>Library ID {ad.ad_archive_id}</span><a href={ad.ad_snapshot_url || '#'} target="_blank" rel="noreferrer">Open offer <ArrowUpRight size={14} /></a></footer></div></article>) : <p className="column-empty">No active offers match the current filters.</p>}</div></section>;
   })}</div>;
 }
 
@@ -360,13 +367,12 @@ function BannerComparison({ banners, visibleProviders }) {
   })}</div>;
 }
 
-function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
+function Boosted({ ads, meta, onFetchLive, fetchState, updatedAt }) {
   const [tab, setTab] = useState('compare');
-  const [filters, setFilters] = useState({ search: '', provider: '', language: '', platform: '', mediaType: '', status: 'active', dateMode: 'all', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' });
+  const [filters, setFilters] = useState({ search: '', provider: '', platform: '', mediaType: '', status: 'active', dateMode: 'all', exactDate: '', from: '2019-07-26', to: new Date().toISOString().slice(0, 10), sort: 'recent' });
   const filtered = useMemo(() => ads.filter((ad) => adProviders.some((provider) => provider.id === String(ad.page_id))).filter((ad) => {
     if (filters.search && !`${textOf(ad)} ${ad.ad_archive_id}`.toLowerCase().includes(filters.search.toLowerCase())) return false;
     if (filters.provider && String(ad.page_id) !== filters.provider) return false;
-    if (filters.language && languageOf(ad) !== filters.language) return false;
     const adPlatforms = platformsOf(ad);
     if (filters.platform === 'unknown' && adPlatforms.length) return false;
     if (filters.platform && filters.platform !== 'unknown' && !adPlatforms.includes(filters.platform)) return false;
@@ -382,7 +388,7 @@ function Boosted({ ads, onFetchLive, fetchState, updatedAt }) {
   }), [ads, filters]);
   const activeOffers = filtered.filter((ad) => statusOf(ad) === 'active' && providers.some((provider) => provider.id === String(ad.page_id)));
   const tabs = [['campaigns', 'Campaign library', filtered.length], ['compare', 'Active offers', activeOffers.length], ['opportunities', 'Offer gaps', filtered.length]];
-  return <><div className="page-actions"><div className="segmented">{tabs.map(([key, label, count]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{count}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(tab === 'compare' ? activeOffers : filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-fetch every 10 minutes` : 'Auto-fetch every 10 minutes'}</small></div><div className="results-summary"><span><b>{tab === 'compare' ? activeOffers.length : filtered.length}</b> {tab === 'compare' ? 'active competitor offers' : 'campaigns across all available dates'}</span><span><i /> {tab === 'compare' ? 'Three scrollable rows: stc, Ooredoo, then Zain' : 'Ads from the tracked Meta URLs'}</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <ActiveOfferRows rows={activeOffers} /> : <OpportunityMatrix rows={filtered} />}</>;
+  return <><div className="page-actions"><div className="segmented">{tabs.map(([key, label, count]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)} type="button">{label}<span>{count}</span></button>)}</div><div className="boosted-actions"><button className={`fetch-live-button ${fetchState.state === 'fetching' ? 'fetching' : ''}`} disabled={fetchState.state === 'fetching'} type="button" onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live ads…' : 'Fetch live ads'}</button><button className="export-button" type="button" onClick={() => exportAds(tab === 'compare' ? activeOffers : filtered)}><Download size={16} /> Export CSV</button></div></div><Filters filters={filters} setFilters={setFilters} /><div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last verified ${new Date(updatedAt).toLocaleString()} · Server refresh every 10 minutes` : 'Waiting for a verified live fetch'}</small></div><div className="results-summary"><span><b>{tab === 'compare' ? activeOffers.length : filtered.length}</b> {tab === 'compare' ? 'unique active Library IDs captured' : 'campaigns across all available dates'}</span><span><i /> {tab === 'compare' ? 'Exact cards are shown separately from Meta’s approximate ~ result estimate' : 'Ads from the tracked Meta URLs'}</span></div>{tab === 'campaigns' ? <CampaignGrid rows={filtered} /> : tab === 'compare' ? <ActiveOfferRows rows={activeOffers} validation={meta?.validation} /> : <OpportunityMatrix rows={filtered} />}</>;
 }
 
 function Organic({ posts, profiles, source, coverage, onRefresh, onFetchLive, fetchState, updatedAt }) {
@@ -396,6 +402,8 @@ function Organic({ posts, profiles, source, coverage, onRefresh, onFetchLive, fe
     return true;
   }).sort((a, b) => organicPublishedTime(b) - organicPublishedTime(a));
   const selectedPlatform = filters.platform || recentPlatform;
+  const trackedAccountCount = selectedPlatform ? socialAccounts.filter(([, platform]) => platform === selectedPlatform).length : socialAccounts.length;
+  const verifiedAccountCount = coverage.filter((item) => (!selectedPlatform || item.platform === selectedPlatform) && Number(item.count) > 0 && item.status === 'ok').length;
   const platformCoverage = ['Facebook', 'Instagram', 'TikTok', 'X'].map((platform) => ({
     platform,
     posts: posts.filter((post) => post.platform === platform).length,
@@ -404,17 +412,23 @@ function Organic({ posts, profiles, source, coverage, onRefresh, onFetchLive, fe
 
   return <>
     <section className="organic-status"><div><span><i /> Live monitoring</span><h2>Organic publishing watch</h2><p>Only posts published during the last 30 days are displayed.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchLive}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Refreshing posts...' : 'Refresh organic posts'}</button><div className="source-chip"><small>Data source</small><b>{source}</b></div></section>
-    <div className={`live-fetch-status organic-live-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last fetched ${new Date(updatedAt).toLocaleString()} · Manual refresh available` : 'Manual refresh available'}</small></div>
-    <section className="organic-kpis"><div><b>{socialAccounts.length}</b><span>Accounts</span></div><div><b>{posts.length}</b><span>Posts · last 30 days</span></div><div><b>{coverage.filter((item) => Number(item.count) > 0).length}/{socialAccounts.length}</b><span>Account sources returning posts</span></div><div><b>24h</b><span>Backup refresh</span></div></section>
+    <div className={`live-fetch-status organic-live-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last verified ${new Date(updatedAt).toLocaleString()} · manual refresh available anytime · 24-hour backup refresh` : 'Not yet verified · use Refresh organic posts'}</small></div>
+    <section className="organic-kpis"><div><b>{trackedAccountCount}</b><span>{selectedPlatform || 'Tracked'} accounts</span></div><div><b>{filtered.length}</b><span>Available posts · last 30 days</span></div><div><b>{verifiedAccountCount}/{trackedAccountCount}</b><span>Verified account sources</span></div><div><b>24h</b><span>Backup refresh</span></div></section>
     <section className="organic-platform-coverage" aria-label="Organic platform coverage">{platformCoverage.map((item) => <div className={item.posts ? 'available' : 'blocked'} key={item.platform}><span>{item.platform}</span><b>{item.posts} posts</b><small>{item.posts ? `${item.accounts} tracked ${item.accounts === 1 ? 'account' : 'accounts'} represented` : 'No verified posts returned by source'}</small></div>)}</section>
     <div className="organic-mobile-layout">
       <section className="organic-feed-main organic-mobile-main">
         <div className="feed-toolbar surface"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search post captions or descriptions" /></label><select value={filters.company} onChange={(event) => setFilters({ ...filters, company: event.target.value })}><option value="">All companies</option><option value="stc">stc</option><option value="ooredoo">Ooredoo</option><option value="zain">Zain</option></select><select value={filters.platform} onChange={(event) => setFilters({ ...filters, platform: event.target.value })}><option value="">All platforms</option><option>Facebook</option><option>Instagram</option><option>TikTok</option><option>X</option></select><select value={filters.recent} onChange={(event) => setFilters({ ...filters, recent: event.target.value })} aria-label="Recent posts"><option value="all">All most recent</option><option value="Instagram">Most recent Instagram</option><option value="Facebook">Most recent Facebook</option><option value="TikTok">Most recent TikTok</option><option value="X">Most recent X</option></select></div>
-        <div className="organic-results"><span><b>{filtered.length}</b> verified organic posts</span><span><i /> Scroll inside each competitor feed to move one post at a time</span></div>
-        <CompetitorMobileFeeds posts={filtered} profiles={profiles} platform={selectedPlatform || 'All platforms'} companyKey={filters.company} onRefresh={onRefresh} />
+        {selectedPlatform === 'Instagram' ? <InstagramAccountFrame posts={filtered} profiles={profiles} companyKey={filters.company} onRefresh={onRefresh} /> : null}
       </section>
     </div>
   </>;
+}
+
+function InstagramAccountFrame({ posts, profiles, companyKey, onRefresh }) {
+  return <section className="instagram-account-frame surface">
+    <header><div><span>Instagram post viewer</span><h3>Competitor posts in one screen</h3><p>Scroll inside each competitor column to move through one Instagram post at a time.</p></div></header>
+    <CompetitorMobileFeeds posts={posts} profiles={profiles} platform="Instagram" companyKey={companyKey} onRefresh={onRefresh} />
+  </section>;
 }
 
 function CompetitorMobileFeeds({ posts, profiles, platform, companyKey, onRefresh }) {
@@ -490,30 +504,42 @@ function InstagramPostScroller({ posts }) {
   </section>;
 }
 
-function PlanComparison({ plans, fetchState, updatedAt, onFetchPlans }) {
-  const [filters, setFilters] = useState({ search: '', provider: '', category: '', sort: '' });
+function PlanSourceDirectory({ sourceMatrix }) {
+  if (!sourceMatrix.length) return null;
+  return <section className="plan-source-directory surface"><header><div><span>Refresh scope</span><h3>Tracked live plan sources</h3><p>Refresh checks these exact public pages. Repeated URLs are fetched once and mapped to every listed category.</p></div><b>{sourceMatrix.length} categories</b></header><div><table><thead><tr><th>Category</th>{planProviders.map((provider) => <th key={provider.key}>{provider.name}</th>)}</tr></thead><tbody>{sourceMatrix.map((row) => <tr key={row.category}><th>{row.category}</th>{planProviders.map((provider) => { const links = (Array.isArray(row[provider.key]) ? row[provider.key] : [row[provider.key]]).filter(Boolean); return <td key={provider.key}>{links.length ? <div className="source-link-list">{links.map((link, index) => <a key={link} href={link} target="_blank" rel="noreferrer">{links.length > 1 ? `Source ${index + 1}` : 'Open source'} <ArrowUpRight /></a>)}</div> : <span>—</span>}</td>; })}</tr>)}</tbody></table></div></section>;
+}
+
+function PlanComparison({ plans, sourceMatrix, fetchState, updatedAt, onFetchPlans }) {
+  const [tab, setTab] = useState('comparison');
+  const [filters, setFilters] = useState({ search: '', provider: '', category: '', country: '', sort: '' });
+  const planCategories = useMemo(() => sourceMatrix.map((row) => row.category).filter(Boolean), [sourceMatrix]);
+  const sourceLinkCount = sourceMatrix.reduce((total, row) => total + planProviders.reduce((count, provider) => count + (Array.isArray(row[provider.key]) ? row[provider.key].length : row[provider.key] ? 1 : 0), 0), 0);
+  const roamingCountries = useMemo(() => [...new Set(plans.filter((plan) => plan.category === 'Roaming Plans').flatMap((plan) => plan.countries || []))].sort((a, b) => a.localeCompare(b)), [plans]);
   const filtered = useMemo(() => plans.filter((plan) => plan.status !== 'Inactive').filter((plan) => {
-    const haystack = `${plan.title || ''} ${plan.price || ''} ${plan.category || ''} ${plan.sub_category || ''} ${plan.provider_name || ''} ${planBenefits(plan).join(' ')}`.toLowerCase();
+    const haystack = `${plan.title || ''} ${plan.price || ''} ${plan.category || ''} ${plan.sub_category || ''} ${plan.provider_name || ''} ${(plan.countries || []).join(' ')} ${planBenefits(plan).join(' ')}`.toLowerCase();
     if (filters.search && !haystack.includes(filters.search.toLowerCase())) return false;
     if (filters.provider && plan.provider !== filters.provider) return false;
-    if (filters.category && plan.category !== filters.category) return false;
+    if (filters.category && plan.category !== filters.category && !(plan.source_categories || []).includes(filters.category)) return false;
+    if (filters.country && !(plan.countries || []).some((country) => country.toLowerCase() === filters.country.toLowerCase())) return false;
     return true;
   }).sort((a, b) => {
     if (filters.sort === 'price_asc') return planPriceValue(a) - planPriceValue(b);
     if (filters.sort === 'price_desc') return planPriceValue(b) - planPriceValue(a);
     return 0;
   }), [plans, filters]);
-  const counts = providers.map((provider) => ({ ...provider, count: filtered.filter((plan) => plan.provider === provider.key).length }));
-  const visibleProviders = filters.provider ? providers.filter((provider) => provider.key === filters.provider) : providers;
+  const counts = planProviders.map((provider) => ({ ...provider, count: filtered.filter((plan) => plan.provider === provider.key).length }));
+  const visibleProviders = filters.provider ? planProviders.filter((provider) => provider.key === filters.provider) : planProviders;
   return <>
-    <section className="organic-status plan-status"><div><span><i /> Live plan intelligence</span><h2>Active plan comparison</h2><p>All currently visible prepaid, postpaid, internet, and roaming plans across stc, Ooredoo, and Zain.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching plans...' : 'Fetch live plans'}</button><div className="source-chip"><small>Active plans</small><b>{plans.filter((plan) => plan.status !== 'Inactive').length}</b></div></section>
-    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-refresh every hour` : 'Auto-refresh every hour'}</small></div>
+    <section className="organic-status plan-status"><div><span><i /> Live plan intelligence</span><h2>Active plan comparison</h2><p>Live plan and roaming offers across stc, Ooredoo, and Zain.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching plans...' : 'Fetch live plans'}</button><div className="source-chip"><small>Active plans</small><b>{plans.filter((plan) => plan.status !== 'Inactive').length}</b></div></section>
+    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Refresh checks ${sourceLinkCount} configured links` : 'Use Fetch live plans to check every configured source'}</small></div>
+    <div className="segmented plan-tabs" role="tablist" aria-label="Plan comparison views"><button className={tab === 'comparison' ? 'active' : ''} type="button" role="tab" aria-selected={tab === 'comparison'} onClick={() => setTab('comparison')}>Plan comparison<span>{plans.length}</span></button><button className={tab === 'sources' ? 'active' : ''} type="button" role="tab" aria-selected={tab === 'sources'} onClick={() => setTab('sources')}>Tracked live plan sources<span>{sourceLinkCount}</span></button></div>
+    {tab === 'sources' ? <PlanSourceDirectory sourceMatrix={sourceMatrix} /> : <>
     <section className="organic-kpis">{counts.map((item) => <div key={item.key}><b>{item.count}</b><span>{item.name}</span></div>)}<div><b>{new Set(filtered.map((plan) => plan.category)).size}</b><span>Categories</span></div></section>
-    <div className="feed-toolbar surface plan-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search plan title, benefits, or price" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All providers</option>{providers.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}><option value="">All categories</option>{planCategories.map((category) => <option key={category}>{category}</option>)}</select><select value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })} aria-label="Sort by price"><option value="">Sort by price</option><option value="price_asc">Price low to high</option><option value="price_desc">Price high to low</option></select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '', sort: '' })}><Filter size={16} /> Clear</button></div>
+    <div className={`feed-toolbar surface plan-toolbar ${filters.category === 'Roaming Plans' ? 'with-country' : ''}`}><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search plan title, benefits, or price" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All providers</option>{planProviders.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value, country: event.target.value === 'Roaming Plans' ? filters.country : '' })}><option value="">All categories</option>{planCategories.map((category) => <option key={category}>{category}</option>)}</select>{filters.category === 'Roaming Plans' ? <label className="country-filter"><Search /><input list="roaming-country-options" value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value })} placeholder="Search or select country" aria-label="Roaming country" /><datalist id="roaming-country-options">{roamingCountries.map((country) => <option key={country} value={country} />)}</datalist></label> : null}<select value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })} aria-label="Sort by price"><option value="">Sort by price</option><option value="price_asc">Price low to high</option><option value="price_desc">Price high to low</option></select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '', country: '', sort: '' })}><Filter size={16} /> Clear</button></div>
     {filtered.length ? <div className={`plan-comparison-columns ${visibleProviders.length === 1 ? 'single' : ''}`}>{visibleProviders.map((provider) => {
       const providerPlans = filtered.filter((plan) => plan.provider === provider.key);
-      return <section className="plan-provider-column" key={provider.key} style={{ '--brand': provider.color }}><header><div>{providerLogo(provider, plans) ? <img className="provider-logo" src={providerLogo(provider, plans)} alt={provider.name} /> : <BrandMark pageId={provider.id} />}<span><b>{provider.name}</b><small>{providerPlans.length} matching plans</small></span></div></header><div>{providerPlans.length ? providerPlans.map((plan) => { const benefits = planBenefits(plan); return <article className="plan-row-card" key={plan.id}><div className="plan-row-price"><strong>{plan.price || 'Price unavailable'}</strong><span>{plan.sub_category || plan.category}</span></div><h3>{plan.title || 'Plan'}</h3><ul>{benefits.length ? benefits.slice(0, 5).map((benefit) => <li key={benefit}>{benefit}</li>) : <li>Benefits were not exposed clearly on the source page.</li>}</ul><footer><a href={plan.detail_url || plan.source_url} target="_blank" rel="noreferrer">Open plan <ArrowUpRight size={14} /></a><a href={plan.source_url} target="_blank" rel="noreferrer">Source</a></footer></article>; }) : <p className="column-empty">No matching plans</p>}</div></section>;
-    })}</div> : <div className="empty-state"><CircleAlert /><b>No plans match these filters</b><span>Try another provider, category, or keyword.</span></div>}
+      return <section className="plan-provider-column" key={provider.key} style={{ '--brand': provider.color }}><header><div>{providerLogo(provider, plans) ? <img className="provider-logo" src={providerLogo(provider, plans)} alt={provider.name} /> : <BrandMark pageId={provider.id} name={provider.key} />}<span><b>{provider.name}</b><small>{providerPlans.length} matching plans</small></span></div></header><div>{providerPlans.length ? providerPlans.map((plan) => { const benefits = planBenefits(plan); return <article className="plan-row-card" key={plan.id}><div className="plan-row-price"><strong>{plan.price || 'Price unavailable'}</strong><span>{plan.sub_category || plan.category}</span></div><h3>{plan.title || 'Plan'}</h3>{filters.category === 'Roaming Plans' && plan.countries?.length ? <p className="plan-country-coverage">{filters.country ? `Available in ${filters.country}` : `${plan.countries.length} supported ${plan.countries.length === 1 ? 'country' : 'countries'}`}</p> : null}<ul>{benefits.length ? benefits.slice(0, 5).map((benefit) => <li key={benefit}>{benefit}</li>) : <li>Benefits were not exposed clearly on the source page.</li>}</ul><footer><a href={plan.detail_url || plan.source_url} target="_blank" rel="noreferrer">Open plan <ArrowUpRight size={14} /></a><a href={plan.source_url} target="_blank" rel="noreferrer">Source</a></footer></article>; }) : <p className="column-empty">No matching plans</p>}</div></section>;
+    })}</div> : <div className="empty-state"><CircleAlert /><b>No plans match these filters</b><span>Try another provider, category, or keyword.</span></div>}</>}
   </>;
 }
 
@@ -543,10 +569,10 @@ function usableDeviceImage(value) {
 }
 
 function deviceImage(device) {
-  const remote = device.image_url || device.image || '';
-  if (usableDeviceImage(remote)) return apiUrl(`/api/device-image?url=${encodeURIComponent(remote)}`);
   const local = device.local_image_url || '';
   if (usableDeviceImage(local)) return local;
+  const remote = device.image_url || device.image || '';
+  if (usableDeviceImage(remote) && /^https?:\/\//i.test(remote)) return apiUrl(`/api/device-image?url=${encodeURIComponent(remote)}`);
   return '';
 }
 
@@ -557,6 +583,15 @@ function DeviceArtwork({ device }) {
   const src = failed && usableDeviceImage(local) ? local : deviceImage(device);
   if (!src) return <EmptyArtwork label="Device" />;
   return <img src={src} alt={device.name || 'Device'} onError={() => setFailed(true)} />;
+}
+
+function deviceStock(device) {
+  const status = device.stock_status || 'Availability not disclosed';
+  const label = device.stock_freshness === 'preserved_source_failure' ? `Last confirmed: ${status}` : status;
+  const detail = Number.isFinite(Number(device.stock_quantity)) && device.stock_quantity !== null
+    ? `${Number(device.stock_quantity)} units reported`
+    : device.stock_evidence || 'Quantity not disclosed by source';
+  return { label, detail };
 }
 
 function deviceKey(device) {
@@ -589,7 +624,7 @@ function DeviceComparison({ devices, payload, fetchState, onFetchDevices, onRelo
   const gapRows = filtered.filter((device) => device.provider !== 'stc' && device.missing_from_stc);
   const changes = payload.changes || {};
   return <>
-    <section className="organic-status plan-status"><div><span><i /> Device intelligence</span><h2>Device comparison dashboard</h2><p>Monitor devices, prices, installments, stock, offers, and stc gaps across stc, Ooredoo, and Zain.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchDevices}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching devices...' : 'Fetch live devices'}</button><div className="source-chip"><small>Devices loaded</small><b>{devices.length}</b></div></section>
+    <section className="organic-status plan-status"><div><span><i /> Device intelligence</span><h2>Device comparison dashboard</h2><p>Live public availability is shown for every device. Exact unit quantity appears only when the competitor store publicly discloses it.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchDevices}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching devices...' : 'Fetch live devices'}</button><div className="source-chip"><small>Devices loaded</small><b>{devices.length}</b></div></section>
     <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message || payload.source || 'Device monitoring snapshot ready.'}</span><small>{payload.generated_at ? `Last checked ${new Date(payload.generated_at).toLocaleString()} · Auto-refresh every hour` : 'Auto-refresh every hour'}</small></div>
     <section className="device-change-strip" aria-label="Changes detected in the latest device refresh"><div><b>{changes.added || 0}</b><span>Added</span></div><div><b>{changes.updated || 0}</b><span>Updated</span></div><div><b>{changes.removed || 0}</b><span>Removed</span></div><div><b>{changes.unchanged ?? devices.length}</b><span>Unchanged</span></div></section>
     <section className="organic-kpis device-kpis">{counts.map((item) => <div key={item.key}><b>{item.count}</b><span>{item.name}</span></div>)}<div><b>{competitorMissing.length}</b><span>Missing from stc</span></div></section>
@@ -598,7 +633,7 @@ function DeviceComparison({ devices, payload, fetchState, onFetchDevices, onRelo
     {tab === 'gaps' ? <section className="surface device-gap-board"><div className="section-heading"><div><span>stc gap analysis</span><h2>Competitor-only devices</h2></div><Sparkles /></div>{gapRows.length ? <div className="device-gap-grid">{gapRows.map((device) => <article className="device-card" key={device.id || `${device.provider}-${device.name}-${device.product_url}`}><div className="device-card-image"><DeviceArtwork device={device} /></div><div className="device-card-copy"><span>{device.provider_name || device.provider} · {device.category || 'Device'}</span><h3>{device.name || 'Device name unavailable'}</h3><p>{device.description || device.offer || 'Competitor-only device not currently matched in stc.'}</p><dl><div><dt>Brand</dt><dd>{device.brand || 'Unknown'}</dd></div><div><dt>Price</dt><dd>{device.price || 'Unavailable'}</dd></div><div><dt>Stock</dt><dd>{device.stock_status || 'Unknown'}</dd></div></dl><footer><small>Missing in stc</small>{device.product_url ? <a href={device.product_url} target="_blank" rel="noreferrer">Open <ArrowUpRight size={13} /></a> : null}</footer></div></article>)}</div> : <div className="empty-state"><CircleAlert /><b>No competitor-only devices match these filters</b><span>Try clearing filters or click Fetch live devices.</span></div>}</section> : <div className="device-layout">
       <div className={`device-provider-columns ${visibleProviders.length === 1 ? 'single' : ''}`}>{visibleProviders.map((provider) => {
         const providerDevices = filtered.filter((device) => device.provider === provider.key);
-        return <section className="device-provider-column" key={provider.key} style={{ '--brand': provider.color }}><header><div>{providerLogo(provider, devices) ? <img className="provider-logo" src={providerLogo(provider, devices)} alt={provider.name} /> : <BrandMark pageId={provider.id} />}<span><b>{provider.name}</b><small>{providerDevices.length} matching devices</small></span></div></header><div>{providerDevices.length ? providerDevices.map((device) => <article className="device-card" key={device.id || `${device.provider}-${device.name}-${device.product_url}`}><div className="device-card-image"><DeviceArtwork device={device} /></div><div className="device-card-copy"><span>{device.category || 'Device'}</span><h3>{device.name || 'Device name unavailable'}</h3><p>{device.description || device.offer || 'Description was not captured yet.'}</p><dl><div><dt>Price</dt><dd>{device.price || 'Unavailable'}</dd></div><div><dt>Monthly</dt><dd>{device.monthly_installment || 'Unavailable'}</dd></div><div><dt>Stock</dt><dd>{device.stock_status || 'Unknown'}</dd></div></dl><footer><small>{device.status || 'Snapshot'} · {device.last_checked || 'Not checked'}</small>{device.product_url ? <a href={device.product_url} target="_blank" rel="noreferrer">Open <ArrowUpRight size={13} /></a> : null}</footer></div></article>) : <p className="column-empty">No devices loaded yet for this operator.</p>}</div></section>;
+        return <section className="device-provider-column" key={provider.key} style={{ '--brand': provider.color }}><header><div>{providerLogo(provider, devices) ? <img className="provider-logo" src={providerLogo(provider, devices)} alt={provider.name} /> : <BrandMark pageId={provider.id} />}<span><b>{provider.name}</b><small>{providerDevices.length} matching devices</small></span></div></header><div>{providerDevices.length ? providerDevices.map((device) => { const stock = deviceStock(device); return <article className="device-card" key={device.id || `${device.provider}-${device.name}-${device.product_url}`}><div className="device-card-image"><DeviceArtwork device={device} /></div><div className="device-card-copy"><span>{device.category || 'Device'}</span><h3>{device.name || 'Device name unavailable'}</h3><p>{device.description || device.offer || 'Description was not captured yet.'}</p><dl><div><dt>Price</dt><dd>{device.price || 'Unavailable'}</dd></div><div><dt>Monthly</dt><dd>{device.monthly_installment || 'Unavailable'}</dd></div><div title={stock.detail}><dt>Stock</dt><dd>{stock.label}</dd></div></dl><footer><small>{device.status || 'Snapshot'} · {device.last_checked || 'Not checked'} · {stock.detail}</small>{device.product_url ? <a href={device.product_url} target="_blank" rel="noreferrer">Open <ArrowUpRight size={13} /></a> : null}</footer></div></article>; }) : <p className="column-empty">No devices loaded yet for this operator.</p>}</div></section>;
       })}</div>
     </div>}
   </>;
@@ -608,11 +643,13 @@ export default function Dashboard({ initialSection = 'overview' }) {
   const router = useRouter();
   const [active, setActive] = useState(initialSection);
   const [ads, setAds] = useState([]);
+  const [adsMeta, setAdsMeta] = useState({});
   const [adsUpdatedAt, setAdsUpdatedAt] = useState('');
   const [adsFetchState, setAdsFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved Ads Library snapshot.' });
   const [posts, setPosts] = useState([]);
   const [socialProfiles, setSocialProfiles] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [planSourceMatrix, setPlanSourceMatrix] = useState([]);
   const [banners, setBanners] = useState([]);
   const [bannerCoverage, setBannerCoverage] = useState([]);
   const [devices, setDevices] = useState([]);
@@ -624,21 +661,56 @@ export default function Dashboard({ initialSection = 'overview' }) {
   const [socialFetchState, setSocialFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved Organic snapshot.' });
   const [plansUpdatedAt, setPlansUpdatedAt] = useState('');
   const [plansFetchState, setPlansFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved plan snapshot.' });
+  const [bannerFetchState, setBannerFetchState] = useState({ state: 'snapshot', message: 'Showing the latest saved banner snapshot.' });
   const [menuOpen, setMenuOpen] = useState(false);
-  const applyAdsPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setAds(records.map((ad, index) => ({ ...ad, _source_index: Number.isFinite(ad._source_index) ? ad._source_index : index }))); setAdsUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
+  const applyAdsPayload = useCallback((payload) => {
+    const records = Array.isArray(payload) ? payload : payload.data || [];
+    const generatedAt = Array.isArray(payload) ? '' : payload.generated_at || '';
+    const generatedTime = new Date(generatedAt).getTime();
+    const isFresh = Number.isFinite(generatedTime) && Date.now() - generatedTime <= 15 * 60 * 1000;
+    const isValidated = Array.isArray(payload) || (payload.validation?.complete === true && payload.validation?.active_only === true);
+    setAdsMeta(Array.isArray(payload) ? {} : payload);
+    setAdsUpdatedAt(generatedAt);
+    setAds(isValidated ? records.map((ad, index) => ({ ...ad, _source_index: Number.isFinite(ad._source_index) ? ad._source_index : index })) : []);
+    return { isFresh, isValidated };
+  }, []);
   const loadAds = useCallback(async () => {
     try {
-      let response;
-      try { response = await fetch(apiUrl('/api/current-data'), { cache: 'no-store' }); if (!response.ok) throw new Error(); }
-      catch { response = await fetch('/data/ads.json', { cache: 'no-store' }); }
+      const response = await fetch(apiUrl('/api/current-data'), { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Live ads API returned HTTP ${response.status}`);
       const result = await response.json();
-      applyAdsPayload(result.payload || result);
-    } catch {
-      setAdsFetchState({ state: 'error', message: 'The saved ads dataset could not be loaded.' });
+      const payload = result.payload || result;
+      const { isFresh, isValidated } = applyAdsPayload(payload);
+      setAdsFetchState(isValidated
+        ? isFresh
+          ? { state: 'live', message: 'Verified live Ads Library traversal loaded from the dashboard API.' }
+          : { state: 'snapshot', message: 'Showing the last fully validated Ads Library snapshot while a new live refresh is requested.' }
+        : { state: 'error', message: 'The saved Ads Library data failed validation and cannot be displayed.' });
+    } catch (error) {
+      setAds([]);
+      setAdsFetchState({ state: 'error', message: `Live ads API unavailable: ${error.message}` });
     }
   }, [applyAdsPayload]);
   useEffect(() => { loadAds(); const timer = window.setInterval(loadAds, 30 * 1000); return () => window.clearInterval(timer); }, [loadAds]);
-  const applyPlansPayload = useCallback((payload) => { setPlans(Array.isArray(payload) ? payload : payload.data || []); setBanners(Array.isArray(payload) ? [] : payload.banners || []); setBannerCoverage(Array.isArray(payload) ? [] : payload.banner_coverage || []); setPlansUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); }, []);
+  const applyPlansPayload = useCallback((payload) => {
+    const planRows = Array.isArray(payload) ? payload : payload.data || [];
+    const planCoverage = Array.isArray(payload) ? [] : payload.coverage || [];
+    const bannerRows = Array.isArray(payload) ? [] : payload.banners || [];
+    const bannerSources = Array.isArray(payload) ? [] : payload.banner_coverage || [];
+    const failedPlans = planCoverage.filter((item) => item.status !== 'ok');
+    const failedBanners = bannerSources.filter((item) => item.status !== 'ok');
+    setPlans(planRows);
+    setPlanSourceMatrix(Array.isArray(payload) ? [] : payload.source_matrix || []);
+    setBanners(bannerRows);
+    setBannerCoverage(bannerSources);
+    setPlansUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || '');
+    setPlansFetchState(failedPlans.length
+      ? { state: 'error', message: `${failedPlans.length} live plan sources were blocked or incomplete; only validated or explicitly preserved records are shown.` }
+      : { state: 'live', message: `Live plan snapshot verified: ${planRows.length} active plans from ${planCoverage.length} unique public pages.` });
+    setBannerFetchState(failedBanners.length
+      ? { state: 'error', message: `${failedBanners.length} banner source was blocked or incomplete; its previous image was preserved.` }
+      : { state: 'live', message: `Live banner snapshot verified: ${bannerRows.length} current banners.` });
+  }, []);
   const loadPlans = useCallback(async () => {
     try {
       let response;
@@ -677,13 +749,27 @@ export default function Dashboard({ initialSection = 'overview' }) {
       const dataResponse = await fetch(apiUrl('/api/current-data'), { cache: 'no-store' });
       const dataResult = await responseJson(dataResponse, 'Updated ad data');
       if (!dataResult.payload) throw new Error('The completed refresh did not return an updated dataset.');
-      applyAdsPayload(dataResult.payload);
+      const applied = applyAdsPayload(dataResult.payload);
+      if (!applied.isValidated || !applied.isFresh) throw new Error('The completed live result is not fresh and fully validated.');
       setAdsFetchState({ state: 'live', message: job.message || `Live fetch complete. ${job.count || 0} current Ads Library cards loaded.` });
     } catch (error) {
-      setAdsFetchState({ state: 'error', message: `Live fetch failed: ${error.message}. The previous snapshot is still displayed.` });
+      await loadAds();
+      setAdsFetchState({ state: 'error', message: `Live fetch failed: ${error.message}. The last validated snapshot remains visible.` });
     }
-  }, [applyAdsPayload]);
-  const applySocialPayload = useCallback((payload) => { const records = Array.isArray(payload) ? payload : payload.data || []; setPosts(recentSocialPosts(records)); setSocialProfiles(Array.isArray(payload) ? [] : payload.profiles || []); setSource(Array.isArray(payload) ? 'Saved organic data' : payload.source || 'Connected provider'); setSocialUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || ''); setSocialCoverage(Array.isArray(payload) ? [] : payload.coverage || []); }, []);
+  }, [applyAdsPayload, loadAds]);
+  const applySocialPayload = useCallback((payload) => {
+    const records = Array.isArray(payload) ? payload : payload.data || [];
+    const validation = Array.isArray(payload) ? null : payload.instagram_validation;
+    const verifiedAccounts = validation?.accounts?.filter((account) => account.complete).length || 0;
+    setPosts(recentSocialPosts(records));
+    setSocialProfiles(Array.isArray(payload) ? [] : payload.profiles || []);
+    setSource(Array.isArray(payload) ? 'Saved organic data' : payload.source || 'Connected provider');
+    setSocialUpdatedAt(Array.isArray(payload) ? '' : payload.generated_at || '');
+    setSocialCoverage(Array.isArray(payload) ? [] : payload.coverage || []);
+    setSocialFetchState(validation?.complete
+      ? { state: 'live', message: `Live Instagram source verified: ${payload.fetched_count || 0} newest posts checked across ${verifiedAccounts} accounts.` }
+      : { state: 'error', message: payload.fetch_warning || 'The Instagram source has not been verified for all three accounts.' });
+  }, []);
   const loadPosts = useCallback(async () => {
     const controller = new AbortController(); const timer = window.setTimeout(() => controller.abort(), 1200);
     try {
@@ -694,7 +780,7 @@ export default function Dashboard({ initialSection = 'overview' }) {
     } catch { setSource('Not connected'); } finally { window.clearTimeout(timer); }
   }, [applySocialPayload]);
   const fetchLiveOrganic = useCallback(async () => {
-    setSocialFetchState({ state: 'fetching', message: 'Loading the latest monitored Facebook, Instagram, X, and TikTok posts.' });
+    setSocialFetchState({ state: 'fetching', message: 'Checking the latest posts from all three Instagram accounts.' });
     try {
       const response = await fetch(apiUrl('/api/fetch-social-posts'), { method: 'POST', cache: 'no-store' });
       const result = await response.json();
@@ -707,7 +793,8 @@ export default function Dashboard({ initialSection = 'overview' }) {
     }
   }, [applySocialPayload]);
   const fetchPlans = useCallback(async () => {
-    setPlansFetchState({ state: 'fetching', message: 'Fetching live plan pages from stc, Ooredoo, and Zain.' });
+    setPlansFetchState({ state: 'fetching', message: 'Fetching the 18 configured live plan links from stc, Ooredoo, and Zain.' });
+    setBannerFetchState({ state: 'fetching', message: 'Fetching current homepage banners from stc, Ooredoo, and Zain.' });
     try {
       const response = await fetch(apiUrl('/api/fetch-plans'), { method: 'POST', cache: 'no-store' });
       await responseJson(response, 'Plan and banner refresh');
@@ -716,10 +803,9 @@ export default function Dashboard({ initialSection = 'overview' }) {
       const dataResponse = await fetch(apiUrl('/api/plans'), { cache: 'no-store' });
       const payload = await responseJson(dataResponse, 'Updated plan and banner data');
       applyPlansPayload(payload);
-      const failed = [...(payload.coverage || []), ...(payload.banner_coverage || [])].filter((item) => item.status !== 'ok');
-      setPlansFetchState({ state: failed.length || payload.fetch_warning ? 'error' : 'live', message: payload.fetch_warning || `${job.message}${failed.length ? ` ${failed.length} sources are showing preserved data because the live page was partial or blocked.` : ''}` });
     } catch (error) {
       setPlansFetchState({ state: 'error', message: `Plan fetch failed: ${error.message}. The previous snapshot is still displayed.` });
+      setBannerFetchState({ state: 'error', message: `Banner fetch failed: ${error.message}. The previous snapshot is still displayed.` });
     }
   }, [applyPlansPayload]);
   const fetchDevices = useCallback(async () => {
@@ -739,12 +825,6 @@ export default function Dashboard({ initialSection = 'overview' }) {
     }
   }, [applyDevicesPayload]);
   useEffect(() => { loadPosts(); const timer = window.setInterval(loadPosts, 30000); return () => window.clearInterval(timer); }, [loadPosts]);
-  useEffect(() => {
-    if (active !== 'organic') return undefined;
-    fetchLiveOrganic();
-    const timer = window.setInterval(fetchLiveOrganic, 60 * 60 * 1000);
-    return () => window.clearInterval(timer);
-  }, [active, fetchLiveOrganic]);
   useEffect(() => setActive(initialSection), [initialSection]);
   const navigate = useCallback((section) => {
     const path = sectionPaths[section];
@@ -754,5 +834,5 @@ export default function Dashboard({ initialSection = 'overview' }) {
     router.push(path);
   }, [router]);
   const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organic: ['Organic monitoring', 'Track new posts from configured competitor accounts.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
-  return <div className="app-shell"><Sidebar active={active} onChange={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={navigate} /> : active === 'boosted' ? <Boosted ads={ads} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} profiles={socialProfiles} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
+  return <div className="app-shell"><Sidebar active={active} onChange={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={navigate} /> : active === 'boosted' ? <Boosted ads={ads} meta={adsMeta} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : active === 'organic' ? <Organic posts={posts} profiles={socialProfiles} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={bannerFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} sourceMatrix={planSourceMatrix} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
 }

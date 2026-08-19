@@ -10,6 +10,7 @@ const devicesDataPath = join(root, 'public', 'data', 'devices.json');
 const repositoryDataUrl = process.env.REPOSITORY_DATA_URL
   || 'https://raw.githubusercontent.com/thearjunks/AK01/main/public/data';
 const rollingMonthMs = 30 * 24 * 60 * 60 * 1000;
+const primaryAdPageIds = ['85631962851', '181832232881', '114476661945257'];
 
 let socialFetchPromise = null;
 let adsFetchPromise = null;
@@ -42,10 +43,50 @@ function normalizePayload(payload) {
   }
   return {
     ...payload,
-    generated_at: new Date().toISOString(),
+    generated_at: payload.generated_at || new Date().toISOString(),
     source: payload.source || 'Live fetch provider',
     data: records,
   };
+}
+
+function validateActiveAdsPayload(payload) {
+  const validation = payload.validation;
+  if (!validation?.complete || !validation.active_only || !Array.isArray(validation.pages) || validation.pages.length < 3) {
+    throw new Error('The live collector did not provide complete active-ad validation for every tracked page. The previous snapshot was preserved.');
+  }
+
+  const validatedPageIds = new Set(validation.pages.map((page) => String(page.page_id)));
+  if (primaryAdPageIds.some((pageId) => !validatedPageIds.has(pageId))) {
+    throw new Error('The live collector did not validate stc, Ooredoo, and Zain together. The previous snapshot was preserved.');
+  }
+  const seen = new Set();
+  for (const ad of payload.data) {
+    const key = `${ad.page_id}:${ad.ad_archive_id}`;
+    if (!ad.page_id || !ad.ad_archive_id || seen.has(key)) {
+      throw new Error('The live collector returned missing or duplicate ad identifiers. The previous snapshot was preserved.');
+    }
+    if (validatedPageIds.has(String(ad.page_id)) && (ad.ad_status === 'inactive' || ad.ad_delivery_stop_time)) {
+      throw new Error('The active-only collector returned an inactive ad. The previous snapshot was preserved.');
+    }
+    seen.add(key);
+  }
+
+  for (const page of validation.pages) {
+    const captured = payload.data.filter((ad) => String(ad.page_id) === String(page.page_id)).length;
+    const sourceCount = Number(page.source_count);
+    const tolerance = page.approximate ? Math.max(3, Math.ceil(sourceCount * 0.05)) : 0;
+    const minimum = sourceCount - tolerance;
+    if (!page.complete || !page.pagination_exhausted || captured !== Number(page.captured) || captured < minimum) {
+      throw new Error(`${page.page_name || page.page_id} failed source reconciliation (${captured}/${page.source_count}). The previous snapshot was preserved.`);
+    }
+  }
+
+  return payload;
+}
+
+function activeAdsValidationSummary(payload) {
+  const pages = payload.validation.pages;
+  return pages.map((page) => `${page.page_name}: ${page.captured}/${page.approximate ? '~' : ''}${page.source_count}`).join(' · ');
 }
 
 function normalizeSocialPayload(payload) {
@@ -53,10 +94,27 @@ function normalizeSocialPayload(payload) {
   if (!Array.isArray(records)) throw new Error('Social provider must return an array or { data: [...] }.');
   return {
     ...payload,
-    generated_at: new Date().toISOString(),
+    generated_at: payload.generated_at || new Date().toISOString(),
     source: payload.source || 'Live social provider',
     data: recentSocialPosts(records),
   };
+}
+
+function validateInstagramPayload(payload) {
+  const validation = payload.instagram_validation;
+  const expectedCompanies = ['stc Kuwait', 'Ooredoo Kuwait', 'Zain Kuwait'];
+  const minimumRequired = Math.max(15, Number(validation?.minimum_required_per_account || 15));
+  if (!validation?.complete || !Array.isArray(validation.accounts)) {
+    throw new Error('Instagram refresh was not validated for all three accounts. The previous snapshot was preserved.');
+  }
+  for (const company of expectedCompanies) {
+    const account = validation.accounts.find((item) => item.company === company);
+    const posts = payload.data.filter((post) => post.platform === 'Instagram' && post.company === company);
+    if (!account?.complete || !account.newest_post_at || Number(account.count || 0) < minimumRequired || posts.length < minimumRequired) {
+      throw new Error(`${company} Instagram refresh has fewer than ${minimumRequired} verified posts. The previous snapshot was preserved.`);
+    }
+  }
+  return payload;
 }
 
 function runScript(scriptName, extraEnv = {}) {
@@ -101,25 +159,28 @@ export async function readDevicesData() {
 async function fetchFromMetaPages() {
   let scrape;
   try {
-    scrape = await runScript('scrape-meta-ads.mjs');
+    scrape = await runScript('scrape-meta-ads.mjs', {
+      META_ADS_ACTIVE_STATUS: 'active',
+      META_ADS_PAGE_IDS: primaryAdPageIds.join(','),
+    });
   } catch (error) {
     console.error(`[fetch-live] scrape-meta-ads.mjs failed: ${error.message}`);
     throw error;
   }
   if (scrape.stderr) console.error(`[fetch-live] scrape-meta-ads.mjs stderr:\n${scrape.stderr}`);
-  const payload = normalizePayload(await readCurrentData());
+  const payload = validateActiveAdsPayload(normalizePayload(await readCurrentData()));
   await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
   return {
     ok: true,
-    message: `Fetched ${payload.data.length} ads across all available dates and statuses.`,
+    message: `Live active-ad validation passed. ${activeAdsValidationSummary(payload)}.`,
+    validated_count: payload.validation.pages.reduce((total, page) => total + Number(page.captured || 0), 0),
     payload,
     log: scrape.stdout,
   };
 }
 
 export async function fetchFromProvider() {
-  const providerUrl = process.env.LIVE_ADS_JSON_URL
-    || (process.env.NODE_ENV === 'production' ? `${repositoryDataUrl}/ads.json` : '');
+  const providerUrl = process.env.LIVE_ADS_JSON_URL || '';
   if (!providerUrl) return fetchFromMetaPages();
 
   const response = await fetch(providerUrl, {
@@ -127,9 +188,14 @@ export async function fetchFromProvider() {
   });
   if (!response.ok) return { ok: false, error: `Live provider returned HTTP ${response.status}.` };
 
-  const payload = normalizePayload(await response.json());
+  const payload = validateActiveAdsPayload(normalizePayload(await response.json()));
   await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
-  return { ok: true, message: `Fetched ${payload.data.length} live records.`, payload };
+  return {
+    ok: true,
+    message: `Live active-ad validation passed. ${activeAdsValidationSummary(payload)}.`,
+    validated_count: payload.validation.pages.reduce((total, page) => total + Number(page.captured || 0), 0),
+    payload,
+  };
 }
 
 export function getAdsFetchJob() {
@@ -143,7 +209,7 @@ export function startAdsFetchJob() {
 
   adsFetchJob = {
     state: 'running',
-    message: 'Loading the complete saved Meta Ads Library history across active and inactive ads.',
+    message: 'Collecting every active Meta ad and reconciling each page against Meta’s displayed result total.',
     started_at: new Date().toISOString(),
     finished_at: '',
     count: 0,
@@ -152,7 +218,7 @@ export function startAdsFetchJob() {
   adsFetchPromise = fetchFromProvider()
     .then((result) => {
       if (!result?.ok) throw new Error(result?.error || 'Live ad refresh failed.');
-      const count = result.payload?.data?.length || 0;
+      const count = result.validated_count || 0;
       adsFetchJob = {
         state: 'complete',
         message: result.message || `Live refresh completed with ${count} ads.`,
@@ -179,17 +245,9 @@ export function startAdsFetchJob() {
 }
 
 export async function fetchPlans() {
-  if (process.env.NODE_ENV === 'production') {
-    const response = await fetch(`${repositoryDataUrl}/plans.json?refresh=${Date.now()}`, { cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache' } });
-    if (!response.ok) throw new Error(`Automated plan snapshot returned HTTP ${response.status}.`);
-    const payload = await response.json();
-    if (!Array.isArray(payload.data) || !Array.isArray(payload.banners)) throw new Error('Automated plan snapshot has an invalid format.');
-    await writeFile(plansDataPath, JSON.stringify(payload, null, 2), 'utf8');
-    return { ok: true, payload, message: `Loaded ${payload.data.length} active plans and ${payload.banners.length} homepage banners from the hourly live collector.` };
-  }
   await runScript('scrape-plans.mjs');
   const payload = await readPlansData();
-  return { ok: true, payload, message: `Fetched ${payload.data?.length || 0} telecom plans from the configured pages.` };
+  return { ok: true, payload, message: `Fetched ${payload.data?.length || 0} telecom plans from ${payload.source_links?.length || 0} configured category links.` };
 }
 
 export async function fetchDevices() {
@@ -215,7 +273,7 @@ function startComparisonJob(kind) {
   const runningJob = {
     state: 'running',
     message: isPlans
-      ? 'Collecting active plans and homepage banners from all three competitors.'
+      ? 'Collecting plans from the 18 configured stc, Ooredoo, and Zain category links.'
       : 'Collecting the complete current e-store device catalog from all three competitors.',
     started_at: startedAt,
     finished_at: '',
@@ -259,8 +317,7 @@ export function getPlansFetchJob() { return { ...plansFetchJob }; }
 export function getDevicesFetchJob() { return { ...devicesFetchJob }; }
 
 async function fetchSocialPostsNow() {
-  const providerUrl = process.env.SOCIAL_POSTS_JSON_URL
-    || (process.env.NODE_ENV === 'production' ? `${repositoryDataUrl}/social-posts.json` : '');
+  const providerUrl = process.env.SOCIAL_POSTS_JSON_URL || '';
   if (!providerUrl) {
     await runScript('scrape-organic-posts.mjs', {
       SOCIAL_FACEBOOK_EMAIL: process.env.SOCIAL_FACEBOOK_EMAIL || '',
@@ -271,17 +328,22 @@ async function fetchSocialPostsNow() {
       SOCIAL_X_PASSWORD: process.env.SOCIAL_X_PASSWORD || '',
       SOCIAL_TIKTOK_EMAIL: process.env.SOCIAL_TIKTOK_EMAIL || '',
       SOCIAL_TIKTOK_PASSWORD: process.env.SOCIAL_TIKTOK_PASSWORD || '',
+      SOCIAL_PLATFORMS: 'Instagram',
+      SOCIAL_REQUIRE_INSTAGRAM_COVERAGE: '1',
+      INSTAGRAM_MIN_POSTS: process.env.INSTAGRAM_MIN_POSTS || '15',
+      ORGANIC_MAX_SCROLLS: process.env.ORGANIC_MAX_SCROLLS || '8',
+      INSTAGRAM_DETAIL_LIMIT: process.env.INSTAGRAM_DETAIL_LIMIT || '12',
     });
     await runScript('cache-social-thumbnails.mjs');
-    const payload = normalizeSocialPayload(await readSocialData());
+    const payload = validateInstagramPayload(normalizeSocialPayload(await readSocialData()));
     await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
-    return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
+    return { ok: true, payload, message: `Verified ${payload.fetched_count} newest Instagram posts and loaded ${payload.data.length} posts from the last 30 days.` };
   }
   const liveProviderUrl = `${providerUrl}${providerUrl.includes('?') ? '&' : '?'}refresh=${Date.now()}`;
   const response = await fetch(liveProviderUrl, { cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache', 'user-agent': 'kuwait-social-monitor/1.0' } });
   if (!response.ok) throw new Error(`Social provider returned HTTP ${response.status}.`);
   const input = await response.json();
-  const payload = normalizeSocialPayload(input);
+  const payload = validateInstagramPayload(normalizeSocialPayload(input));
   if (!payload.data.length) {
     const saved = await readSocialData();
     const savedRecords = Array.isArray(saved) ? saved : saved.data || [];
@@ -291,7 +353,7 @@ async function fetchSocialPostsNow() {
   }
   await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
   await runScript('cache-social-thumbnails.mjs');
-  return { ok: true, payload, message: `Fetched ${payload.data.length} organic posts from the last 30 days.` };
+  return { ok: true, payload, message: `Verified ${payload.fetched_count} newest Instagram posts and loaded ${payload.data.length} posts from the last 30 days.` };
 }
 
 export function fetchSocialPosts() {
@@ -318,8 +380,13 @@ export async function proxyImage(targetUrl) {
   });
   if (!response.ok) return { error: `Image source returned HTTP ${response.status}.`, status: response.status };
 
-  const contentType = response.headers.get('content-type') || 'application/octet-stream';
-  if (!contentType.toLowerCase().startsWith('image/')) return { error: 'Source URL did not return an image.', status: 415 };
+  let contentType = response.headers.get('content-type') || 'application/octet-stream';
+  if (!contentType.toLowerCase().startsWith('image/')) {
+    const extension = parsed.pathname.toLowerCase().match(/\.(avif|webp|png|jpe?g|gif|svg)$/)?.[1];
+    const inferredTypes = { avif: 'image/avif', webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml' };
+    if (!extension) return { error: 'Source URL did not return an image.', status: 415 };
+    contentType = inferredTypes[extension];
+  }
 
   return { contentType, buffer: Buffer.from(await response.arrayBuffer()) };
 }

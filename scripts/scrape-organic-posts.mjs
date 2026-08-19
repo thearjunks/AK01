@@ -18,8 +18,13 @@ const tiktokEmail = process.env.SOCIAL_TIKTOK_EMAIL || '';
 const tiktokPassword = process.env.SOCIAL_TIKTOK_PASSWORD || '';
 const authProfileDir = process.env.SOCIAL_BROWSER_PROFILE_DIR || path.join(root, '.auth', 'social-browser');
 const instagramDetailLimit = Math.max(0, Number(process.env.INSTAGRAM_DETAIL_LIMIT || 18));
+const selectedPlatforms = new Set(String(process.env.SOCIAL_PLATFORMS || 'Facebook,Instagram,X,TikTok').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean));
+const platformEnabled = (platform) => selectedPlatforms.has(platform.toLowerCase());
+const requireInstagramCoverage = process.env.SOCIAL_REQUIRE_INSTAGRAM_COVERAGE === '1';
+const minimumInstagramPosts = Math.max(15, Number(process.env.INSTAGRAM_MIN_POSTS || 15));
 const browserOptions = {
   headless: process.env.SOCIAL_BROWSER_VISIBLE === '1' ? false : true,
+  ignoreHTTPSErrors: process.env.SOCIAL_IGNORE_HTTPS_ERRORS === '1',
   viewport: { width: 1440, height: 1100 },
   locale: 'en-US',
   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
@@ -107,7 +112,8 @@ function relativeDate(label, now = Date.now()) {
   return new Date(now - amount * ms).toISOString();
 }
 
-function isRecent(post, now = Date.now()) {
+function isRecent(post) {
+  const now = Date.now();
   const time = new Date(post.published_at || '').getTime();
   return Number.isFinite(time) && time >= now - rollingMonthMs && time <= now + 86400000;
 }
@@ -398,13 +404,17 @@ async function scrapeInstagramDirectPosts() {
   return found;
 }
 
-async function instagramApiPosts(request, target) {
-  const response = await request.get(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(target.handle)}`, {
-    headers: { 'x-ig-app-id': '936619743392459', referer: target.url, 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36' },
-    timeout: 30000,
-  });
-  if (!response.ok()) throw new Error(`Instagram public API returned HTTP ${response.status()} for ${target.handle}.`);
-  const payload = await response.json();
+async function instagramApiPosts(page, target) {
+  const result = await page.evaluate(async (handle) => {
+    const response = await fetch(`/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`, {
+      credentials: 'include',
+      headers: { 'x-ig-app-id': '936619743392459' },
+    });
+    return { ok: response.ok, status: response.status, text: await response.text() };
+  }, target.handle);
+  if (!result.ok) throw new Error(`Instagram profile API returned HTTP ${result.status} for ${target.handle}.`);
+  let payload;
+  try { payload = JSON.parse(result.text); } catch { throw new Error(`Instagram profile API returned invalid JSON for ${target.handle}.`); }
   const user = payload?.data?.user;
   const edges = user?.edge_owner_to_timeline_media?.edges || [];
   if (user) collectedProfiles.push({
@@ -435,58 +445,161 @@ async function instagramApiPosts(request, target) {
   })).filter((post) => post.id !== 'instagram-undefined' && post.thumbnail && post.url);
 }
 
-async function instagramEmbedProfile(request, target) {
+function findEmbeddedInstagramPayload(value) {
+  if (typeof value === 'string') {
+    if (!value.includes('shortcode_media')) return null;
+    try { return JSON.parse(value); } catch { return null; }
+  }
+  if (!value || typeof value !== 'object') return null;
+  for (const child of Object.values(value)) {
+    const found = findEmbeddedInstagramPayload(child);
+    if (found) return found;
+  }
+  return null;
+}
+
+function collectShortcodeMedia(value, found = new Map()) {
+  if (!value || typeof value !== 'object') return found;
+  if (value.shortcode_media?.shortcode) found.set(value.shortcode_media.shortcode, value.shortcode_media);
+  for (const child of Object.values(value)) collectShortcodeMedia(child, found);
+  return found;
+}
+
+async function instagramEmbedData(target) {
   const response = await fetch(`${target.url.replace(/\/$/, '')}/embed/`, {
     headers: { referer: target.url, accept: 'text/html,application/xhtml+xml', 'accept-language': 'en-US,en;q=0.9', 'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' },
   });
   if (!response.ok) throw new Error(`Instagram embed returned HTTP ${response.status} for ${target.handle}.`);
-  let html = await response.text();
-  for (let pass = 0; pass < 3; pass += 1) html = html.replace(/\\"/g, '"').replace(/\\\//g, '/').replace(/\\u0026/g, '&');
-  const value = (field) => (html.match(new RegExp(`"${field}"\\s*:\\s*"([^"]*)"`)) || [])[1] || '';
-  const count = (field) => {
-    const parsed = Number((html.match(new RegExp(`"${field}"\\s*:\\s*(\\d+)`)) || [])[1]);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-  return {
+  const html = await response.text();
+  const scripts = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  const serverScript = scripts.find((body) => body.includes('s.handle(') && body.includes('shortcode_media'));
+  if (!serverScript) throw new Error(`Instagram live profile payload was unavailable for ${target.handle}.`);
+  const start = serverScript.indexOf('s.handle(') + 's.handle('.length;
+  const end = serverScript.indexOf(');requireLazy', start);
+  if (end < 0) throw new Error(`Instagram live profile payload was incomplete for ${target.handle}.`);
+  let serverPayload;
+  try { serverPayload = JSON.parse(serverScript.slice(start, end)); } catch { throw new Error(`Instagram live profile payload was invalid for ${target.handle}.`); }
+  const payload = findEmbeddedInstagramPayload(serverPayload);
+  if (!payload) throw new Error(`Instagram live posts were unavailable for ${target.handle}.`);
+  const context = payload.context || {};
+  const media = [...collectShortcodeMedia(payload).values()];
+  const posts = media.map((node) => ({
+    id: `instagram-${node.shortcode}`,
     company: target.company,
     platform: 'Instagram',
-    username: value('username') || target.handle,
-    display_name: value('full_name') || target.company,
-    profile_picture_url: value('profile_pic_url'),
-    followers: count('followers_count'),
-    total_posts: count('posts_count'),
-    verified: /"(?:verified|is_verified)"\s*:\s*true/.test(html),
+    published_at: node.taken_at_timestamp ? new Date(node.taken_at_timestamp * 1000).toISOString() : '',
+    thumbnail: node.display_url || node.thumbnail_src || '',
+    caption: node.edge_media_to_caption?.edges?.[0]?.node?.text || '',
+    post_type: node.is_video ? 'Reel' : node.__typename === 'GraphSidecar' ? 'Carousel' : 'Image',
+    url: `https://www.instagram.com/${node.is_video ? 'reel' : 'p'}/${node.shortcode}/`,
+    status: 'New',
+    likes: Number.isFinite(node.edge_liked_by?.count) ? node.edge_liked_by.count : Number.isFinite(node.edge_media_preview_like?.count) ? node.edge_media_preview_like.count : null,
+    comments: Number.isFinite(node.edge_media_to_comment?.count) ? node.edge_media_to_comment.count : null,
+    views: Number.isFinite(node.video_view_count) ? node.video_view_count : Number.isFinite(node.video_play_count) ? node.video_play_count : null,
+    source_verified_at: new Date().toISOString(),
+  })).filter((post) => post.published_at && post.thumbnail && post.url);
+  if (!posts.length) throw new Error(`Instagram returned no dated live posts for ${target.handle}.`);
+  const owner = media[0]?.owner || {};
+  const profile = {
+    company: target.company,
+    platform: 'Instagram',
+    username: context.username || owner.username || target.handle,
+    display_name: context.full_name || target.company,
+    profile_picture_url: context.profile_pic_url || owner.profile_pic_url || '',
+    followers: Number.isFinite(context.followers_count) ? context.followers_count : Number.isFinite(owner.edge_followed_by?.count) ? owner.edge_followed_by.count : null,
+    total_posts: Number.isFinite(context.posts_count) ? context.posts_count : Number.isFinite(owner.edge_owner_to_timeline_media?.count) ? owner.edge_owner_to_timeline_media.count : null,
+    verified: Boolean(context.verified || context.is_verified || owner.is_verified),
     profile_url: target.url,
     captured_at: new Date().toISOString(),
   };
+  return { profile, posts };
 }
 
-async function scrapeInstagram(page, request, target, { renderProfile = true } = {}) {
+function instagramFeedPost(target, item) {
+  const code = item?.code || '';
+  const image = item?.image_versions2?.candidates?.[0]?.url
+    || item?.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url
+    || item?.display_uri
+    || '';
+  const isVideo = item?.media_type === 2 || item?.product_type === 'clips';
+  return {
+    id: `instagram-${code}`,
+    company: target.company,
+    platform: 'Instagram',
+    published_at: item?.taken_at ? new Date(item.taken_at * 1000).toISOString() : '',
+    thumbnail: image,
+    caption: item?.caption?.text || '',
+    post_type: isVideo ? 'Reel' : item?.media_type === 8 ? 'Carousel' : 'Image',
+    url: `https://www.instagram.com/${isVideo ? 'reel' : 'p'}/${code}/`,
+    status: 'New',
+    likes: Number.isFinite(item?.like_count) ? item.like_count : null,
+    comments: Number.isFinite(item?.comment_count) ? item.comment_count : null,
+    shares: Number.isFinite(item?.reshare_count) ? item.reshare_count : null,
+    views: Number.isFinite(item?.play_count) ? item.play_count
+      : Number.isFinite(item?.view_count) ? item.view_count
+        : Number.isFinite(item?.video_view_count) ? item.video_view_count : null,
+    source_verified_at: new Date().toISOString(),
+  };
+}
+
+async function instagramFeedData(target) {
   const found = new Map();
-  const errors = [];
-  try { collectedProfiles.push(await instagramEmbedProfile(request, target)); } catch (error) { errors.push(error.message); }
-  try { for (const post of await instagramApiPosts(request, target)) found.set(post.id, post); } catch (error) { errors.push(error.message); }
-  if (!renderProfile) {
-    if (!found.size && errors.length) throw new Error(errors.join(' '));
-    return [...found.values()];
-  }
-  try {
-    await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
-    await page.waitForTimeout(4000);
-    const blocked = await page.evaluate(() => /Page couldn't load|Something went wrong|issue and the page could not be loaded/i.test(`${document.title}\n${document.body.innerText}`));
-    if (blocked) errors.push(`Instagram profile page did not load for ${target.handle}.`);
-  } catch (error) {
-    errors.push(`Instagram profile page failed for ${target.handle}: ${error.message}`);
-  }
-  for (let scroll = 0; scroll <= maxScrolls; scroll += 1) {
-    for (const post of await visibleInstagramPosts(page, target)) found.set(post.id, post);
-    if (scroll < maxScrolls) { await page.mouse.wheel(0, 2200); await page.waitForTimeout(1300); }
+  let nextMaxId = '';
+  let user = null;
+  for (let pageNumber = 0; pageNumber < 6; pageNumber += 1) {
+    const endpoint = new URL(`https://www.instagram.com/api/v1/feed/user/${target.handle}/username/`);
+    endpoint.searchParams.set('count', '18');
+    if (nextMaxId) endpoint.searchParams.set('max_id', nextMaxId);
+    const response = await fetch(endpoint, {
+      headers: {
+        'x-ig-app-id': '936619743392459',
+        referer: target.url,
+        'accept-language': 'en-US,en;q=0.9',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Instagram 300.0.0.0.0',
+      },
+    });
+    if (!response.ok) throw new Error(`Instagram feed returned HTTP ${response.status} for ${target.handle}.`);
+    const payload = await response.json();
+    if (payload?.status !== 'ok' || !Array.isArray(payload.items)) {
+      throw new Error(`Instagram feed returned an invalid payload for ${target.handle}.`);
+    }
+    user ||= payload.user || null;
+    for (const item of payload.items) {
+      const post = instagramFeedPost(target, item);
+      if (post.id !== 'instagram-' && post.published_at && post.thumbnail) found.set(post.id, post);
+    }
+    const recentCount = [...found.values()].filter(isRecent).length;
+    nextMaxId = payload.more_available ? payload.next_max_id || '' : '';
+    if (recentCount >= minimumInstagramPosts || !nextMaxId || !payload.items.length) break;
   }
   const posts = [...found.values()];
-  if (!posts.length && errors.length) throw new Error(errors.join(' '));
-  const enriched = [];
-  for (const post of posts.slice(0, instagramDetailLimit)) enriched.push(await enrichInstagramPost(page, post));
-  return [...enriched, ...posts.slice(instagramDetailLimit)];
+  if (posts.filter(isRecent).length < minimumInstagramPosts) {
+    throw new Error(`Instagram returned only ${posts.filter(isRecent).length} posts from the last 30 days for ${target.handle}; ${minimumInstagramPosts} are required.`);
+  }
+  const profile = user ? {
+    company: target.company,
+    platform: 'Instagram',
+    username: user.username || target.handle,
+    display_name: user.full_name || target.company,
+    profile_picture_url: user.profile_pic_url || '',
+    followers: Number.isFinite(user.follower_count) ? user.follower_count : null,
+    total_posts: Number.isFinite(user.media_count) ? user.media_count : null,
+    verified: Boolean(user.is_verified),
+    profile_url: target.url,
+    captured_at: new Date().toISOString(),
+  } : null;
+  return { profile, posts };
+}
+
+async function scrapeInstagram(target) {
+  const [embed, feed] = await Promise.all([
+    instagramEmbedData(target),
+    instagramFeedData(target),
+  ]);
+  collectedProfiles.push({ ...feed.profile, ...embed.profile });
+  const posts = new Map(embed.posts.map((post) => [post.id, post]));
+  for (const post of feed.posts) posts.set(post.id, { ...posts.get(post.id), ...post });
+  return [...posts.values()];
 }
 
 async function scrapeX(page, target) {
@@ -558,69 +671,83 @@ async function scrapeTikTok(page, target) {
   return enriched;
 }
 
-const { context, page } = await startBrowserSession();
+const needsBrowser = [...selectedPlatforms].some((platform) => platform !== 'instagram');
+const browserSession = needsBrowser ? await startBrowserSession() : { context: null, page: null };
+const { context, page } = browserSession;
 const discovered = [];
 const coverage = [];
 
 try {
-  let facebookLoginStatus = 'ok';
+  if (platformEnabled('Facebook')) {
+    let facebookLoginStatus = 'ok';
   try {
     await loginFacebook(page);
   } catch (error) {
     facebookLoginStatus = error.message;
   }
-  for (const target of facebookTargets) {
+    for (const target of facebookTargets) {
     try {
       const posts = (await scrapeFacebook(page, target)).filter(isRecent);
       discovered.push(...posts);
       coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: posts.length ? facebookLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${facebookLoginStatus}` : facebookLoginStatus });
     } catch (error) { coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: `${facebookLoginStatus} ${error.message}` }); }
-  }
-  let instagramLoginStatus = 'ok';
-  try {
-    await loginInstagram(page);
-  } catch (error) {
-    instagramLoginStatus = error.message;
-  }
-  for (const target of instagramTargets) {
-    try {
-      const posts = (await scrapeInstagram(page, context.request, target, { renderProfile: instagramLoginStatus === 'ok' })).filter(isRecent);
-      discovered.push(...posts);
-      coverage.push({ company: target.company, platform: 'Instagram', count: posts.length, status: posts.length ? instagramLoginStatus === 'ok' ? 'ok' : `public API ok; profile page skipped: ${instagramLoginStatus}` : instagramLoginStatus === 'ok' ? 'No Instagram posts were exposed to the collector.' : instagramLoginStatus });
     }
-    catch (error) { coverage.push({ company: target.company, platform: 'Instagram', count: 0, status: error.message }); }
   }
-  let xLoginStatus = 'ok';
+  if (platformEnabled('Instagram')) {
+    for (const target of instagramTargets) {
+    try {
+      const sourcePosts = await scrapeInstagram(target);
+      const posts = sourcePosts.filter(isRecent);
+      discovered.push(...posts);
+      coverage.push({ company: target.company, platform: 'Instagram', count: posts.length, source_count: sourcePosts.length, newest_source_post_at: sourcePosts.map((post) => post.published_at).filter(Boolean).sort().at(-1) || '', status: posts.length >= minimumInstagramPosts ? 'ok' : `Instagram returned fewer than ${minimumInstagramPosts} posts in the last 30 days.`, source: 'Official Instagram paginated profile feed', checked_at: new Date().toISOString() });
+    }
+    catch (error) { coverage.push({ company: target.company, platform: 'Instagram', count: 0, status: error.message, source: 'Official Instagram profile embed', checked_at: new Date().toISOString() }); }
+    }
+  }
+  if (platformEnabled('X')) {
+    let xLoginStatus = 'ok';
   try { await loginX(page); } catch (error) { xLoginStatus = error.message; }
-  for (const target of xTargets) {
+    for (const target of xTargets) {
     try {
       const posts = (await scrapeX(page, target)).filter(isRecent);
       discovered.push(...posts);
       coverage.push({ company: target.company, platform: 'X', count: posts.length, status: posts.length ? xLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${xLoginStatus}` : xLoginStatus });
     } catch (error) { coverage.push({ company: target.company, platform: 'X', count: 0, status: `${xLoginStatus} ${error.message}` }); }
+    }
   }
-  let tiktokLoginStatus = 'ok';
+  if (platformEnabled('TikTok')) {
+    let tiktokLoginStatus = 'ok';
   try { await loginTikTok(page); } catch (error) { tiktokLoginStatus = error.message; }
-  for (const target of tiktokTargets) {
+    for (const target of tiktokTargets) {
     try {
       const posts = await scrapeTikTok(page, target);
       discovered.push(...posts);
       coverage.push({ company: target.company, platform: 'TikTok', count: posts.length, status: posts.length ? tiktokLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${tiktokLoginStatus}` : tiktokLoginStatus });
     } catch (error) { coverage.push({ company: target.company, platform: 'TikTok', count: 0, status: `${tiktokLoginStatus} ${error.message}` }); }
+    }
   }
 } finally {
-  await context.close();
+  if (context) await context.close();
 }
 
 const merged = new Map();
 let previousData = [];
 let previousProfiles = [];
+let previousCoverage = [];
 try {
   const previous = JSON.parse(await readFile(dataPath, 'utf8'));
   previousData = Array.isArray(previous.data) ? previous.data : [];
   previousProfiles = Array.isArray(previous.profiles) ? previous.profiles : [];
+  previousCoverage = Array.isArray(previous.coverage) ? previous.coverage : [];
 } catch {}
 const recentDiscovered = discovered.filter(isRecent);
+if (requireInstagramCoverage) {
+  const missing = instagramTargets.filter((target) => recentDiscovered.filter((post) => post.platform === 'Instagram' && post.company === target.company).length < minimumInstagramPosts);
+  if (missing.length) {
+    const reasons = coverage.filter((item) => item.platform === 'Instagram' && missing.some((target) => target.company === item.company)).map((item) => `${item.company}: ${item.status} (source count ${item.source_count || 0}, newest ${item.newest_source_post_at || 'unknown'})`).join(' | ');
+    throw new Error(`Instagram refresh incomplete for ${missing.map((target) => target.company).join(', ')}. ${reasons} The previous snapshot was preserved.`);
+  }
+}
 const previousToKeep = recentDiscovered.length ? previousData.filter(isRecent) : previousData;
 for (const post of previousToKeep) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
 for (const post of recentDiscovered) merged.set(post.id || stableId(`${post.platform}|${post.url}|${post.caption}`), post);
@@ -631,15 +758,34 @@ const blockedWarning = blockedCoverage.length
   : '';
 const profileMap = new Map(previousProfiles.map((profile) => [`${profile.platform}|${profile.company}`, profile]));
 for (const profile of collectedProfiles) profileMap.set(`${profile.platform}|${profile.company}`, profile);
+const coverageMap = new Map(previousCoverage.map((item) => [`${item.platform}|${item.company}`, item]));
+for (const item of coverage) coverageMap.set(`${item.platform}|${item.company}`, item);
+const instagramValidation = instagramTargets.map((target) => {
+  const posts = recentDiscovered.filter((post) => post.platform === 'Instagram' && post.company === target.company);
+  return {
+    company: target.company,
+    handle: target.handle,
+    count: posts.length,
+    newest_post_at: posts.map((post) => post.published_at).filter(Boolean).sort().at(-1) || '',
+    minimum_required: minimumInstagramPosts,
+    complete: posts.length >= minimumInstagramPosts,
+  };
+});
 
 const payload = {
   generated_at: new Date().toISOString(),
-  source: 'Authenticated 30-day organic monitor for Facebook, Instagram, X, and TikTok',
-  coverage,
+  source: 'Official Instagram paginated live feed with retained 30-day history',
+  coverage: [...coverageMap.values()],
   profiles: [...profileMap.values()],
   fetched_count: recentDiscovered.length,
   mode: emptyFetch && previousData.length ? 'empty_fetch_preserved_previous' : 'live_merged',
   fetch_warning: emptyFetch && previousData.length ? 'Live organic fetch returned no posts, so the previous saved posts were preserved.' : blockedWarning,
+  instagram_validation: {
+    minimum_required_per_account: minimumInstagramPosts,
+    complete: instagramValidation.every((item) => item.complete),
+    checked_at: new Date().toISOString(),
+    accounts: instagramValidation,
+  },
   window_days: 30,
   data: [...merged.values()].sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()),
 };

@@ -3,7 +3,9 @@ import { fetchSocialPosts } from '../_lib/live-fetch.js';
 
 export async function POST() {
   try {
-    return NextResponse.json(await fetchSocialPosts());
+    const response = NextResponse.json(await fetchSocialPosts());
+    response.headers.set('cache-control', 'no-store, max-age=0');
+    return response;
   } catch (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
@@ -11,7 +13,9 @@ export async function POST() {
 
 export async function GET() {
   try {
-    return NextResponse.json(await fetchSocialPosts());
+    const response = NextResponse.json(await fetchSocialPosts());
+    response.headers.set('cache-control', 'no-store, max-age=0');
+    return response;
   } catch (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
