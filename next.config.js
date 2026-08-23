@@ -14,6 +14,7 @@ const nextConfig = {
       './node_modules/playwright/**/*',
       './node_modules/playwright-core/**/*',
     ],
+    '/api/social-image': ['./public/social-thumbnails/**/*'],
   },
 };
 

@@ -176,8 +176,13 @@ function relativeTime(value) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+function servedSocialImage(value) {
+  const url = String(value || '').trim();
+  return url.startsWith('/social-thumbnails/') ? `/api/social-image?path=${encodeURIComponent(url)}` : url;
+}
+
 function organicImage(post) {
-  return post.local_thumbnail_url || post.thumbnail_url || post.thumbnail || post.image_url || post.media_url || post.cover_url || '';
+  return servedSocialImage(post.local_thumbnail_url || post.thumbnail_url || post.thumbnail || post.image_url || post.media_url || post.cover_url || '');
 }
 
 function organicCaption(post) {
@@ -228,7 +233,7 @@ function organicProfile(provider, platform, profiles, posts) {
   return {
     username: profile.username || username || provider.key,
     displayName: profile.display_name || profile.full_name || provider.name,
-    picture: profile.local_profile_picture_url || profile.profile_picture_url || '',
+    picture: servedSocialImage(profile.local_profile_picture_url || profile.profile_picture_url || ''),
     followers: profile.followers ?? profile.total_followers,
     totalPosts: profile.total_posts ?? profile.posts_count,
     loadedPosts: posts.length,
