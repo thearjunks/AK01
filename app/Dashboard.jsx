@@ -133,7 +133,7 @@ async function waitForComparisonJob(endpoint, label, onProgress) {
 
 function textOf(ad) { return ad.ad_creative_body || ad.creative_text || ''; }
 function imageOf(ad) {
-  return ad.artwork_url || '';
+  return ad.local_artwork_url || ad.artwork_url || '';
 }
 function dateOf(ad) { return String(ad.ad_delivery_start_time || '').slice(0, 10); }
 function sourceOrderOf(ad) { return Number.isFinite(ad._source_index) ? ad._source_index : Number.MAX_SAFE_INTEGER; }

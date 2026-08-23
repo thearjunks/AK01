@@ -49,7 +49,8 @@ async function fetchImage(url) {
       signal: controller.signal,
       headers: {
         'accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        'user-agent': 'Mozilla/5.0 Meta Ads Dashboard Artwork Cache',
+        'referer': 'https://www.facebook.com/ads/library/',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
       },
     };
     let response = await fetch(requestUrl, options);

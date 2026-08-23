@@ -157,26 +157,34 @@ export async function readDevicesData() {
 }
 
 async function fetchFromMetaPages() {
-  let scrape;
+  const previousSnapshot = await readFile(dataPath, 'utf8');
   try {
-    scrape = await runScript('scrape-meta-ads.mjs', {
+    const scrape = await runScript('scrape-meta-ads.mjs', {
       META_ADS_ACTIVE_STATUS: 'active',
       META_ADS_PAGE_IDS: primaryAdPageIds.join(','),
     });
+    if (scrape.stderr) console.error(`[fetch-live] scrape-meta-ads.mjs stderr:\n${scrape.stderr}`);
+    const artwork = await runScript('cache-artwork.mjs');
+    if (artwork.stderr) console.error(`[fetch-live] cache-artwork.mjs stderr:\n${artwork.stderr}`);
+    const payload = validateActiveAdsPayload(normalizePayload(await readCurrentData()));
+    const artworkRows = payload.data.filter((ad) => String(ad.artwork_url || '').trim());
+    const cachedArtworkCount = artworkRows.filter((ad) => String(ad.local_artwork_url || '').trim()).length;
+    if (cachedArtworkCount !== artworkRows.length) {
+      throw new Error(`Creative caching incomplete (${cachedArtworkCount}/${artworkRows.length}). The previous validated snapshot was restored.`);
+    }
+    await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
+    return {
+      ok: true,
+      message: `Live active-ad validation passed. ${activeAdsValidationSummary(payload)}. Cached ${cachedArtworkCount}/${artworkRows.length} creatives.`,
+      validated_count: payload.validation.pages.reduce((total, page) => total + Number(page.captured || 0), 0),
+      payload,
+      log: `${scrape.stdout}${artwork.stdout ? `\n${artwork.stdout}` : ''}`,
+    };
   } catch (error) {
-    console.error(`[fetch-live] scrape-meta-ads.mjs failed: ${error.message}`);
+    await writeFile(dataPath, previousSnapshot, 'utf8');
+    console.error(`[fetch-live] paid-ad refresh failed: ${error.message}`);
     throw error;
   }
-  if (scrape.stderr) console.error(`[fetch-live] scrape-meta-ads.mjs stderr:\n${scrape.stderr}`);
-  const payload = validateActiveAdsPayload(normalizePayload(await readCurrentData()));
-  await writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf8');
-  return {
-    ok: true,
-    message: `Live active-ad validation passed. ${activeAdsValidationSummary(payload)}.`,
-    validated_count: payload.validation.pages.reduce((total, page) => total + Number(page.captured || 0), 0),
-    payload,
-    log: scrape.stdout,
-  };
 }
 
 export async function fetchFromProvider() {

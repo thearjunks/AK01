@@ -3,6 +3,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/api/fetch-live': [
       './scripts/scrape-meta-ads.mjs',
+      './scripts/cache-artwork.mjs',
       './src/data/pages.js',
       './node_modules/playwright/**/*',
       './node_modules/playwright-core/**/*',

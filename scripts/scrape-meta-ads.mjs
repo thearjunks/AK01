@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { chmod, readdir, rename, writeFile } from 'node:fs/promises';
+import { chmod, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -20,6 +20,17 @@ const maxAttempts = Number(process.env.META_ADS_MAX_ATTEMPTS || 3);
 
 const maxScrolls = Number(process.env.META_ADS_MAX_SCROLLS || 120);
 const headless = process.env.META_ADS_HEADLESS !== '0';
+const savedArtworkByAd = new Map();
+try {
+  const savedPayload = JSON.parse(await readFile(dataPath, 'utf8'));
+  const savedAds = Array.isArray(savedPayload) ? savedPayload : savedPayload.data || savedPayload.ads || [];
+  for (const ad of savedAds) {
+    const localArtworkUrl = String(ad.local_artwork_url || '').trim();
+    if (localArtworkUrl) savedArtworkByAd.set(`${ad.page_id}:${ad.ad_archive_id}`, localArtworkUrl);
+  }
+} catch {
+  // A first run has no prior snapshot to preserve.
+}
 const browserArgs = process.platform === 'linux'
   ? [
       '--disable-dev-shm-usage',
@@ -275,7 +286,7 @@ async function scrapePage(browser, trackedPage) {
       ad_status: stopTimeFromText(searchableMeta) ? 'inactive' : 'active',
       ad_snapshot_url: `https://www.facebook.com/ads/library/?id=${rawAd.id}`,
       artwork_url: artworkUrl,
-      local_artwork_url: '',
+      local_artwork_url: savedArtworkByAd.get(`${trackedPage.pageId}:${rawAd.id}`) || '',
       _source_index: sourceIndex,
       });
     }
