@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { fetchSocialPosts } from '../_lib/live-fetch.js';
 
-export async function POST() {
+function requestedPlatform(request) {
+  return new URL(request.url).searchParams.get('platform') || 'Instagram';
+}
+
+export async function POST(request) {
   try {
-    const response = NextResponse.json(await fetchSocialPosts());
+    const response = NextResponse.json(await fetchSocialPosts(requestedPlatform(request)));
     response.headers.set('cache-control', 'no-store, max-age=0');
     return response;
   } catch (error) {
@@ -11,9 +15,9 @@ export async function POST() {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const response = NextResponse.json(await fetchSocialPosts());
+    const response = NextResponse.json(await fetchSocialPosts(requestedPlatform(request)));
     response.headers.set('cache-control', 'no-store, max-age=0');
     return response;
   } catch (error) {

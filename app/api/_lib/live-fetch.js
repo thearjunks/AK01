@@ -324,7 +324,17 @@ export function startDevicesFetchJob() { return startComparisonJob('devices'); }
 export function getPlansFetchJob() { return { ...plansFetchJob }; }
 export function getDevicesFetchJob() { return { ...devicesFetchJob }; }
 
-async function fetchSocialPostsNow() {
+function socialPlatform(value) {
+  const requested = String(value || 'Instagram').trim().toLowerCase();
+  if (requested === 'facebook') return 'Facebook';
+  if (requested === 'tiktok') return 'TikTok';
+  if (requested === 'x' || requested === 'twitter') return 'X';
+  return 'Instagram';
+}
+
+async function fetchSocialPostsNow(requestedPlatform = 'Instagram') {
+  const platform = socialPlatform(requestedPlatform);
+  const platformLabel = platform === 'X' ? 'Twitter / X' : platform;
   const providerUrl = process.env.SOCIAL_POSTS_JSON_URL || '';
   if (!providerUrl) {
     await runScript('scrape-organic-posts.mjs', {
@@ -336,22 +346,27 @@ async function fetchSocialPostsNow() {
       SOCIAL_X_PASSWORD: process.env.SOCIAL_X_PASSWORD || '',
       SOCIAL_TIKTOK_EMAIL: process.env.SOCIAL_TIKTOK_EMAIL || '',
       SOCIAL_TIKTOK_PASSWORD: process.env.SOCIAL_TIKTOK_PASSWORD || '',
-      SOCIAL_PLATFORMS: 'Instagram',
-      SOCIAL_REQUIRE_INSTAGRAM_COVERAGE: '1',
+      SOCIAL_PLATFORMS: platform,
+      SOCIAL_REQUIRE_INSTAGRAM_COVERAGE: platform === 'Instagram' ? '1' : '0',
+      SOCIAL_IGNORE_HTTPS_ERRORS: '1',
       INSTAGRAM_MIN_POSTS: process.env.INSTAGRAM_MIN_POSTS || '15',
       ORGANIC_MAX_SCROLLS: process.env.ORGANIC_MAX_SCROLLS || '8',
       INSTAGRAM_DETAIL_LIMIT: process.env.INSTAGRAM_DETAIL_LIMIT || '12',
     });
     await runScript('cache-social-thumbnails.mjs');
-    const payload = validateInstagramPayload(normalizeSocialPayload(await readSocialData()));
+    const normalized = normalizeSocialPayload(await readSocialData());
+    const payload = platform === 'Instagram' ? validateInstagramPayload(normalized) : normalized;
     await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
-    return { ok: true, payload, message: `Verified ${payload.fetched_count} newest Instagram posts and loaded ${payload.data.length} posts from the last 30 days.` };
+    const platformPosts = payload.data.filter((post) => post.platform === platform);
+    const verifiedAccounts = (payload.coverage || []).filter((item) => item.platform === platform && item.status === 'ok' && Number(item.count || 0) > 0).length;
+    return { ok: true, payload, message: `${platformLabel} refresh checked all three accounts and loaded ${platformPosts.length} captured posts from the last 30 days (${verifiedAccounts}/3 sources fully verified).` };
   }
-  const liveProviderUrl = `${providerUrl}${providerUrl.includes('?') ? '&' : '?'}refresh=${Date.now()}`;
+  const liveProviderUrl = `${providerUrl}${providerUrl.includes('?') ? '&' : '?'}refresh=${Date.now()}&platform=${encodeURIComponent(platform)}`;
   const response = await fetch(liveProviderUrl, { cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache', 'user-agent': 'kuwait-social-monitor/1.0' } });
   if (!response.ok) throw new Error(`Social provider returned HTTP ${response.status}.`);
   const input = await response.json();
-  const payload = validateInstagramPayload(normalizeSocialPayload(input));
+  const normalized = normalizeSocialPayload(input);
+  const payload = platform === 'Instagram' ? validateInstagramPayload(normalized) : normalized;
   if (!payload.data.length) {
     const saved = await readSocialData();
     const savedRecords = Array.isArray(saved) ? saved : saved.data || [];
@@ -361,12 +376,13 @@ async function fetchSocialPostsNow() {
   }
   await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
   await runScript('cache-social-thumbnails.mjs');
-  return { ok: true, payload, message: `Verified ${payload.fetched_count} newest Instagram posts and loaded ${payload.data.length} posts from the last 30 days.` };
+  const platformPosts = payload.data.filter((post) => post.platform === platform);
+  return { ok: true, payload, message: `${platformLabel} provider loaded ${platformPosts.length} captured posts from the last 30 days.` };
 }
 
-export function fetchSocialPosts() {
+export function fetchSocialPosts(platform = 'Instagram') {
   if (socialFetchPromise) return socialFetchPromise;
-  socialFetchPromise = fetchSocialPostsNow().finally(() => { socialFetchPromise = null; });
+  socialFetchPromise = fetchSocialPostsNow(platform).finally(() => { socialFetchPromise = null; });
   return socialFetchPromise;
 }
 

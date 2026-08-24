@@ -734,11 +734,13 @@ const merged = new Map();
 let previousData = [];
 let previousProfiles = [];
 let previousCoverage = [];
+let previousInstagramValidation = null;
 try {
   const previous = JSON.parse(await readFile(dataPath, 'utf8'));
   previousData = Array.isArray(previous.data) ? previous.data : [];
   previousProfiles = Array.isArray(previous.profiles) ? previous.profiles : [];
   previousCoverage = Array.isArray(previous.coverage) ? previous.coverage : [];
+  previousInstagramValidation = previous.instagram_validation || null;
 } catch {}
 const recentDiscovered = discovered.filter(isRecent);
 if (requireInstagramCoverage) {
@@ -774,16 +776,21 @@ const instagramValidation = instagramTargets.map((target) => {
 
 const payload = {
   generated_at: new Date().toISOString(),
-  source: 'Official Instagram paginated live feed with retained 30-day history',
+  source: `Official ${[...selectedPlatforms].map((platform) => platform === 'x' ? 'Twitter / X' : platform[0].toUpperCase() + platform.slice(1)).join(', ')} live feed with retained 30-day history`,
   coverage: [...coverageMap.values()],
   profiles: [...profileMap.values()],
   fetched_count: recentDiscovered.length,
   mode: emptyFetch && previousData.length ? 'empty_fetch_preserved_previous' : 'live_merged',
   fetch_warning: emptyFetch && previousData.length ? 'Live organic fetch returned no posts, so the previous saved posts were preserved.' : blockedWarning,
-  instagram_validation: {
+  instagram_validation: platformEnabled('Instagram') ? {
     minimum_required_per_account: minimumInstagramPosts,
     complete: instagramValidation.every((item) => item.complete),
     checked_at: new Date().toISOString(),
+    accounts: instagramValidation,
+  } : previousInstagramValidation || {
+    minimum_required_per_account: minimumInstagramPosts,
+    complete: false,
+    checked_at: '',
     accounts: instagramValidation,
   },
   window_days: 30,
