@@ -1,24 +1,24 @@
 {
-  "generated_at": "2026-08-24T11:59:33.944Z",
-  "source": "Official Facebook live feed with retained 30-day history",
+  "generated_at": "2026-08-31T09:04:30.868Z",
+  "source": "Official Tiktok live feed with retained 30-day history",
   "coverage": [
     {
       "company": "stc Kuwait",
       "platform": "Facebook",
       "count": 1,
-      "status": "public profile fallback; authenticated login blocked: Facebook email and password are required."
+      "status": "Saved result; connect Facebook with Meta Login to fetch current verified content."
     },
     {
       "company": "Ooredoo Kuwait",
       "platform": "Facebook",
       "count": 1,
-      "status": "public profile fallback; authenticated login blocked: Facebook email and password are required."
+      "status": "Saved result; connect Facebook with Meta Login to fetch current verified content."
     },
     {
       "company": "Zain Kuwait",
       "platform": "Facebook",
       "count": 1,
-      "status": "public profile fallback; authenticated login blocked: Facebook email and password are required."
+      "status": "Saved result; connect Facebook with Meta Login to fetch current verified content."
     },
     {
       "company": "stc Kuwait",
@@ -128,9 +128,37 @@
       "local_profile_picture_url": "/social-thumbnails/0fa6b0795be395b1b7ab.jpg"
     }
   ],
-  "fetched_count": 3,
-  "mode": "live_merged",
-  "fetch_warning": "Live organic refresh was partial: stc Kuwait Facebook, Ooredoo Kuwait Facebook, Zain Kuwait Facebook need login, are rate-limited, or were blocked by the platform.",
+  "fetched_count": 0,
+  "mode": "empty_fetch_preserved_previous",
+  "fetch_warning": "Live organic fetch returned no posts, so the previous saved posts were preserved.",
+  "facebook_validation": {
+    "minimum_required_per_account": 15,
+    "complete": false,
+    "checked_at": "",
+    "accounts": [
+      {
+        "company": "stc Kuwait",
+        "count": 0,
+        "newest_post_at": "",
+        "minimum_required": 15,
+        "complete": false
+      },
+      {
+        "company": "Ooredoo Kuwait",
+        "count": 0,
+        "newest_post_at": "",
+        "minimum_required": 15,
+        "complete": false
+      },
+      {
+        "company": "Zain Kuwait",
+        "count": 0,
+        "newest_post_at": "",
+        "minimum_required": 15,
+        "complete": false
+      }
+    ]
+  },
   "instagram_validation": {
     "minimum_required_per_account": 15,
     "complete": true,
@@ -1956,23 +1984,6 @@
       "views": 29894,
       "source_verified_at": "2026-08-17T06:44:40.063Z",
       "local_thumbnail_url": "/social-thumbnails/6af18f69cdf922d8250e.jpg"
-    },
-    {
-      "id": "instagram-Dba3pgZCUzB",
-      "company": "Zain Kuwait",
-      "platform": "Instagram",
-      "published_at": "2026-07-30T17:00:01.000Z",
-      "thumbnail": "https://instagram.fkwi3-2.fna.fbcdn.net/v/t51.82787-15/758469096_18610689877036851_473146702969519606_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&_nc_map=urlgen_bucketless&ig_cache_key=Mzk1MjcxNjM2NzgwNzQ2NjY4OQ%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTQ0MC5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=ke38WP5XvvsQ7kNvwFOkEFz&_nc_oc=AdoJZCI9L5QlSSuaPviGSJz44CegCRNAy-cdxxyzm49VquO5x_dAUoF4pSAcSe1jNTo&_nc_ad=z-m&_nc_cid=1426&_nc_zt=23&_nc_ht=instagram.fkwi3-2.fna&_nc_gid=wc-XCi0Fbp-4BIQwfnZjoA&_nc_ss=7a22e&oh=00_AQEiLI4dcbbwlTvmTF7SvSmWRW5Dv_H9mwHnAYJqoAC0QA&oe=6A886AA4",
-      "caption": "حياكم الله في معسكر #وطن_الابتكار الصيفي بالتعاون مع مركز صباح الأحمد للموهبة والإبداع، أحد مراكز مؤسسة الكويت للتقدم العلمي ☀️ \n\nنلقاكم في مجمع الأڤنيوز - غراند أڤنيو من 1 إلى 10 أغسطس، يومياً من الساعة 1 ظهراً حتى 8 مساءً، بانتظار أطفالكم تجربة صيفية مليئة بالورش التفاعلية في الروبوتات، والذكاء الاصطناعي، والواقع المعزز، والبرمجة، والطباعة ثلاثية الأبعاد، وغيرها من مجالات العلوم والتكنولوجيا والابتكار🤖\n\nسجّلوا أبناءكم في الورش الممتدة لساعة واحدة، وامنحوهم فرصة التعلّم والاستكشاف والإبداع في أجواء ممتعة وتفاعلية!🧬",
-      "post_type": "Image",
-      "url": "https://www.instagram.com/p/Dba3pgZCUzB/",
-      "status": "New",
-      "likes": 133,
-      "comments": 16,
-      "shares": null,
-      "views": null,
-      "source_verified_at": "2026-08-17T06:44:40.063Z",
-      "local_thumbnail_url": "/social-thumbnails/4a7ef693ac9a2bf5397c.jpg"
     }
   ]
 }

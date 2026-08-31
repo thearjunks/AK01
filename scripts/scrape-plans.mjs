@@ -9,8 +9,9 @@ const root = path.resolve(__dirname, '..');
 const dataPath = path.join(root, 'public', 'data', 'plans.json');
 const bannerDir = path.join(root, 'public', 'plan-banners');
 const maxCardsPerPage = Number(process.env.PLAN_MAX_CARDS_PER_PAGE || 80);
-const maxBannersPerPage = Number(process.env.PLAN_MAX_BANNERS_PER_PAGE || 8);
+const maxBannersPerPage = Number(process.env.PLAN_MAX_BANNERS_PER_PAGE || 80);
 const headless = process.env.PLAN_HEADLESS !== '0';
+const bannersOnly = process.env.PLAN_BANNERS_ONLY === '1';
 
 const brands = {
   stc: { name: 'stc Kuwait', color: '#4f008c', logo: 'https://www.stc.com.kw/cdn/images/stc_logo_5776f67ce8.webp' },
@@ -61,12 +62,12 @@ const activeCrawlSources = sourceFilter
 const skipBanners = process.env.PLAN_SKIP_BANNERS === '1';
 
 const bannerSources = [
-  { provider: 'stc', category: 'Homepage Offers', url: 'https://www.stc.com.kw/en', method: 'Rendered STC homepage DOM/CDN assets' },
-  { provider: 'ooredoo', category: 'Homepage Carousel', url: 'https://ooredoo.com.kw/en/', method: 'Rendered Ooredoo carousel DOM' },
-  { provider: 'ooredoo', category: 'Offer Banners', url: 'https://ooredoo.com.kw/o/headless-delivery/v1.0/sites/20117/structured-contents/by-key/105294', method: 'Liferay Headless Delivery API' },
-  { provider: 'zain', category: 'Homepage Hero', url: 'https://www.kw.zain.com/en/shop', method: 'Rendered Zain hero carousel DOM' },
-  { provider: 'zain', category: 'Offers News More', url: 'https://www.kw.zain.com/en/shop', method: 'Rendered Zain offers/news DOM' },
+  { provider: 'stc', category: 'Homepage Visuals', url: 'https://www.stc.com.kw/en', method: 'Rendered homepage DOM and CSS backgrounds' },
+  { provider: 'ooredoo', category: 'Homepage Visuals', url: 'https://ooredoo.com.kw/en/', method: 'Rendered homepage DOM and CSS backgrounds' },
+  { provider: 'zain', category: 'Homepage Visuals', url: 'https://www.kw.zain.com/en/shop', method: 'Rendered homepage DOM and CSS backgrounds' },
 ];
+const bannerSourceFilter = cleanEnv(process.env.BANNER_SOURCE_FILTER).toLowerCase();
+const activeBannerSources = bannerSourceFilter ? bannerSources.filter((source) => source.provider === bannerSourceFilter) : bannerSources;
 
 function stableId(value) {
   return createHash('sha1').update(value).digest('hex').slice(0, 18);
@@ -152,7 +153,7 @@ function absoluteUrl(base, value) {
   return new URL(value, base).href;
 }
 
-async function bannerFromImage({ provider, category, subCategory = '', title, text = '', imageUrl, mobileImageUrl = '', linkUrl = '', sourceUrl, sourceMethod, apiUrl = '' }) {
+async function bannerFromImage({ provider, category, subCategory = '', title, text = '', imageUrl, mobileImageUrl = '', linkUrl = '', sourceUrl, sourceMethod, apiUrl = '', width = null, height = null, sectionPosition = '', pageY = null }) {
   const key = clean(`${provider}|${category}|${imageUrl}|${text}|${linkUrl}`).toLowerCase();
   return {
     id: stableId(key),
@@ -171,6 +172,11 @@ async function bannerFromImage({ provider, category, subCategory = '', title, te
     source_url: sourceUrl,
     source_method: sourceMethod,
     api_url: apiUrl,
+    width,
+    height,
+    dimensions: width && height ? `${width} × ${height}` : '',
+    section_position: sectionPosition,
+    page_y: pageY,
     freshness: 'live',
     last_checked: new Date().toISOString(),
   };
@@ -225,64 +231,78 @@ async function scrapeHomepageBanners(browser, source) {
     await context.close();
     throw new Error(`${source.provider} homepage returned Access Denied`);
   }
-  await page.mouse.wheel(0, 1200).catch(() => {});
-  await page.waitForTimeout(1200);
+  for (let step = 0; step < 12; step += 1) {
+    const finished = await page.evaluate((index) => {
+      window.scrollTo(0, Math.min(document.documentElement.scrollHeight, index * Math.max(window.innerHeight * 0.85, 700)));
+      return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 20;
+    }, step);
+    await page.waitForTimeout(450);
+    if (finished) break;
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(700);
   const rows = await page.evaluate((sourceInfo) => {
     const cleanText = (value) => (value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
-    const bestImage = (node) => {
-      const sources = [...node.querySelectorAll('source')].map((item) => item.srcset || item.getAttribute('srcset')).filter(Boolean);
-      const imgs = [...node.querySelectorAll('img')].map((item) => item.currentSrc || item.src).filter(Boolean);
-      return [...sources, ...imgs].find((src) => src && !/logo|icon|sprite|favicon/i.test(src)) || '';
+    const absolute = (value) => { try { return new URL(value, location.href).href; } catch { return ''; } };
+    const srcsetUrl = (value) => String(value || '').split(',').map((item) => item.trim().split(/\s+/)[0]).filter(Boolean).at(-1) || '';
+    const backgroundUrl = (node) => {
+      const value = getComputedStyle(node).backgroundImage || '';
+      const match = value.match(/url\(["']?([^"')]+)["']?\)/i);
+      return match ? absolute(match[1]) : '';
     };
-    const mobileImage = (node) => [...node.querySelectorAll('img')].map((item) => item.currentSrc || item.src).find(Boolean) || '';
-    const link = (node) => node.closest('a[href]')?.href || node.querySelector('a[href]')?.href || '';
     const out = [];
-    if (sourceInfo.provider === 'stc') {
-      const selectors = [
-        '[class*="StcCarouselHero"]',
-        '[class*="StcOfferCarousal"] [class*="carouselItem"]',
-        '[class*="StcCardImage"]',
-      ];
-      for (const selector of selectors) {
-        for (const node of document.querySelectorAll(selector)) {
-          const image = bestImage(node);
-          if (!image) continue;
-          const text = cleanText(node.innerText);
-          out.push({ image, mobileImage: mobileImage(node), text, title: text.split(' ').slice(0, 12).join(' '), link: link(node) });
-        }
-      }
-    }
-    if (sourceInfo.provider === 'ooredoo') {
-      for (const node of document.querySelectorAll('#banner .carousel-item, .carousel-item')) {
-        const image = bestImage(node);
-        if (!image) continue;
-        const text = cleanText(node.innerText || node.querySelector('img')?.alt || '');
-        out.push({ image, mobileImage: mobileImage(node), text, title: node.querySelector('img')?.alt || text || 'Ooredoo carousel banner', link: link(node) });
-      }
-    }
-    if (sourceInfo.provider === 'zain') {
-      const selector = sourceInfo.category.includes('Hero') ? '.slide.slick-slide' : '.z-card.z-card-whats-new';
-      for (const node of document.querySelectorAll(selector)) {
-        const image = bestImage(node);
-        if (!image) continue;
-        const text = cleanText(node.innerText || node.querySelector('img')?.alt || '');
-        out.push({ image, mobileImage: mobileImage(node), text, title: node.querySelector('img')?.alt || text || 'Zain banner', link: link(node) });
-      }
+    const nodes = new Set([...document.querySelectorAll('img'), ...document.querySelectorAll('[style],section,article,main div,main a')]);
+    for (const node of nodes) {
+      const img = node.tagName === 'IMG' ? node : null;
+      const image = absolute(img?.currentSrc || img?.src || img?.getAttribute('data-src') || srcsetUrl(img?.getAttribute('srcset')) || backgroundUrl(node));
+      if (!image || !/^https?:/i.test(image)) continue;
+      const contextNode = node.closest('[class*="banner" i],[class*="hero" i],[class*="carousel" i],[class*="slider" i],[class*="promo" i],[class*="offer" i],[class*="campaign" i],[class*="card" i],section,article') || node.parentElement || node;
+      const descriptor = cleanText(`${node.id || ''} ${node.className || ''} ${contextNode.id || ''} ${contextNode.className || ''} ${img?.alt || ''}`);
+      const contextText = cleanText(contextNode.innerText || '').slice(0, 700);
+      const bannerHint = /banner|hero|carousel|slider|promo|offer|campaign|deal|what.?s.?new/i.test(descriptor);
+      const cardHint = /card|tile/i.test(descriptor);
+      const productTile = /product|commerce|device-card|product-card|sku|plp/i.test(descriptor) || /add to compare|kd\s*\/?\s*month|buy now\s+add to compare/i.test(contextText);
+      const excluded = /logo|icon|sprite|favicon|social|flag|avatar|badge|payment|store-badge|play-store|app-store|chevron|arrow/i.test(`${image} ${descriptor}`)
+        || (!bannerHint && /loader|menu.?thumb|menu\+thumb/i.test(`${image} ${descriptor}`));
+      const chrome = node.closest('header,nav,footer,[role="navigation"]');
+      const rect = node.getBoundingClientRect();
+      const width = Math.round(img?.naturalWidth || rect.width || 0);
+      const height = Math.round(img?.naturalHeight || rect.height || 0);
+      const renderedWidth = Math.round(rect.width || 0);
+      const renderedHeight = Math.round(rect.height || 0);
+      const rendered = node.getClientRects().length > 0 && renderedWidth > 0 && renderedHeight > 0;
+      const significant = (rendered && renderedWidth >= 220 && renderedHeight >= 100 && renderedWidth * renderedHeight >= 30000)
+        || (bannerHint && width >= 500 && height >= 180)
+        || (rendered && (bannerHint || cardHint) && width >= 180 && height >= 90);
+      if (image.replace(/[?#].*$/, '').replace(/\/$/, '') === location.href.replace(/[?#].*$/, '').replace(/\/$/, '') || excluded || (productTile && !bannerHint) || (chrome && !bannerHint) || !significant) continue;
+      const section = node.closest('section,article,[class*="section" i],[class*="banner" i],[class*="hero" i],[class*="carousel" i],[class*="offer" i],[class*="promo" i]') || contextNode;
+      const heading = cleanText(section.querySelector?.('h1,h2,h3,h4')?.textContent || '');
+      const text = cleanText(section.innerText || contextText || img?.alt || '').slice(0, 700);
+      const pageY = Math.max(0, Math.round(rect.top + window.scrollY));
+      const category = /hero/i.test(descriptor) || (rendered && pageY < window.innerHeight * 1.15) ? 'Homepage Hero'
+        : /offer|deal/i.test(descriptor) ? 'Offer Banner'
+          : /campaign/i.test(descriptor) ? 'Campaign Visual'
+            : /promo/i.test(descriptor) ? 'Promotional Banner'
+              : rendered && /card|tile|what.?s.?new/i.test(descriptor) ? 'Promotional Card'
+                : 'Homepage Visual';
+      const anchor = node.closest('a[href]') || contextNode.querySelector?.('a[href]');
+      const domKey = `homepage-visual-${out.length}`;
+      node.setAttribute('data-homepage-visual-key', domKey);
+      out.push({ image, mobileImage: '', text, title: img?.alt || heading || `${category} visual`, link: anchor?.href || '', width, height, pageY, category, domKey, sectionPosition: heading || (pageY < window.innerHeight * 1.15 ? 'Top / hero area' : `Homepage section near ${pageY}px`) });
     }
     const seen = new Set();
-    return out.filter((item) => {
-      const key = `${item.image}|${item.text}`.toLowerCase();
+    return out.sort((a, b) => a.pageY - b.pageY).filter((item) => {
+      const key = item.image.replace(/[?#].*$/, '').toLowerCase();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    }).slice(0, 18);
-  }, source);
-  await context.close();
+    }).slice(0, sourceInfo.limit || 80);
+  }, { ...source, limit: maxBannersPerPage });
   const banners = [];
   for (const row of rows) {
-    banners.push(await bannerFromImage({
+    const banner = await bannerFromImage({
       provider: source.provider,
-      category: source.category,
+      category: row.category || source.category,
       title: row.title,
       text: row.text,
       imageUrl: absoluteUrl(source.url, row.image),
@@ -291,24 +311,29 @@ async function scrapeHomepageBanners(browser, source) {
       sourceUrl: source.url,
       sourceMethod: source.method,
       apiUrl: '',
-    }));
+      width: row.width,
+      height: row.height,
+      sectionPosition: row.sectionPosition,
+      pageY: row.pageY,
+    });
+    if (!banner.local_image_url && row.domKey) banner.local_image_url = await saveBannerScreenshot(page.locator(`[data-homepage-visual-key="${row.domKey}"]`), `${source.provider}|${row.image}`);
+    if (banner.local_image_url) banners.push(banner);
   }
+  await context.close();
   return banners;
 }
 
 async function collectTargetedBanners(browser) {
   const banners = [];
   const coverage = [];
-  for (const source of bannerSources) {
+  for (const source of activeBannerSources) {
     try {
       console.log(`Fetching banners: ${brands[source.provider].name} ${source.category}...`);
-      const rows = source.method.includes('Headless')
-        ? await fetchOoredooOfferApiBanners()
-        : await scrapeHomepageBanners(browser, source);
+      const rows = await scrapeHomepageBanners(browser, source);
       banners.push(...rows);
-      coverage.push({ provider: source.provider, category: source.category, count: rows.length, status: rows.length ? 'ok' : 'No banners found.', source: source.method, api_url: source.method.includes('Headless') ? source.url : '' });
+      coverage.push({ provider: source.provider, category: source.category, count: rows.length, status: rows.length ? 'ok' : 'No meaningful homepage visuals found.', source: source.method, source_url: source.url, fetched_at: new Date().toISOString() });
     } catch (error) {
-      coverage.push({ provider: source.provider, category: source.category, count: 0, status: error.message, source: source.method, api_url: source.method.includes('Headless') ? source.url : '' });
+      coverage.push({ provider: source.provider, category: source.category, count: 0, status: error.message, source: source.method, source_url: source.url, fetched_at: new Date().toISOString() });
     }
   }
   const deduped = new Map();
@@ -879,7 +904,7 @@ const data = [];
 const coverage = [];
 let bannerResult = { banners: [], coverage: [] };
 try {
-  for (const source of activeCrawlSources) {
+  for (const source of bannersOnly ? [] : activeCrawlSources) {
     try {
       console.log(`Scraping ${brands[source.provider].name}: ${source.categories.join(', ')}...`);
       const result = await scrapeSource(browser, source);
@@ -926,24 +951,25 @@ for (const plan of previousData) {
 const currentData = [...deduped.values()];
 const bannerMap = new Map(bannerResult.banners.map((banner) => [banner.id, banner]));
 const failedBannerSources = bannerResult.coverage.filter((item) => item.status !== 'ok');
+const configuredBannerProviders = new Set(activeBannerSources.map((source) => source.provider));
 for (const banner of previousBanners) {
-  const failed = failedBannerSources.some((source) => source.provider === banner.provider && source.category === banner.category);
-  if (failed && !bannerMap.has(banner.id)) bannerMap.set(banner.id, { ...banner, freshness: 'preserved_source_failure' });
+  const failed = failedBannerSources.some((source) => source.provider === banner.provider);
+  if ((!configuredBannerProviders.has(banner.provider) || failed) && !bannerMap.has(banner.id)) bannerMap.set(banner.id, failed ? { ...banner, freshness: 'preserved_source_failure' } : banner);
 }
 const currentBanners = [...bannerMap.values()];
 const warnings = [];
-if (failedPlanSources.length) warnings.push(`${failedPlanSources.length} plan sources did not expose priced cards or were blocked; matching previous records were preserved when available.`);
+if (!bannersOnly && failedPlanSources.length) warnings.push(`${failedPlanSources.length} plan sources did not expose priced cards or were blocked; matching previous records were preserved when available.`);
 if (failedBannerSources.length) warnings.push(`${failedBannerSources.length} banner sources were partial or blocked; their previous images were preserved.`);
 const payload = {
   generated_at: new Date().toISOString(),
-  source: 'Live public telecom plan pages and targeted homepage banner sources',
+  source: bannersOnly ? 'Live rendered competitor homepages' : 'Live public telecom plan pages and rendered competitor homepages',
   mode: warnings.length ? 'live_partial' : 'live',
   fetch_warning: warnings.join(' '),
   source_matrix: sourceMatrix,
   source_links: sources,
-  coverage: sourceFilter ? [...previousCoverage.filter((item) => !configuredSourceKeys.has(`${item.provider}|${item.source_url}`)), ...coverage] : coverage,
-  banner_coverage: bannerResult.coverage,
-  data: currentData.length ? currentData : previousData,
+  coverage: bannersOnly ? previousCoverage : sourceFilter ? [...previousCoverage.filter((item) => !configuredSourceKeys.has(`${item.provider}|${item.source_url}`)), ...coverage] : coverage,
+  banner_coverage: bannerSourceFilter ? [...previousBannerCoverage.filter((item) => !configuredBannerProviders.has(item.provider)), ...bannerResult.coverage] : bannerResult.coverage,
+  data: bannersOnly ? previousData : currentData.length ? currentData : previousData,
   banners: currentBanners.length ? currentBanners : previousBanners,
 };
 

@@ -8,20 +8,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const dataPath = path.join(root, 'public', 'data', 'social-posts.json');
 const maxScrolls = Math.max(3, Number(process.env.ORGANIC_MAX_SCROLLS || 20));
-const email = process.env.SOCIAL_FACEBOOK_EMAIL || '';
-const password = process.env.SOCIAL_FACEBOOK_PASSWORD || '';
-const instagramEmail = process.env.SOCIAL_INSTAGRAM_EMAIL || email;
-const instagramPassword = process.env.SOCIAL_INSTAGRAM_PASSWORD || password;
+const instagramEmail = process.env.SOCIAL_INSTAGRAM_EMAIL || '';
+const instagramPassword = process.env.SOCIAL_INSTAGRAM_PASSWORD || '';
 const xEmail = process.env.SOCIAL_X_EMAIL || '';
 const xPassword = process.env.SOCIAL_X_PASSWORD || '';
 const tiktokEmail = process.env.SOCIAL_TIKTOK_EMAIL || '';
 const tiktokPassword = process.env.SOCIAL_TIKTOK_PASSWORD || '';
+const facebookGraphToken = process.env.FACEBOOK_GRAPH_ACCESS_TOKEN || '';
+const facebookGraphVersion = process.env.FACEBOOK_GRAPH_VERSION || 'v23.0';
 const authProfileDir = process.env.SOCIAL_BROWSER_PROFILE_DIR || path.join(root, '.auth', 'social-browser');
 const instagramDetailLimit = Math.max(0, Number(process.env.INSTAGRAM_DETAIL_LIMIT || 18));
 const selectedPlatforms = new Set(String(process.env.SOCIAL_PLATFORMS || 'Facebook,Instagram,X,TikTok').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean));
 const platformEnabled = (platform) => selectedPlatforms.has(platform.toLowerCase());
 const requireInstagramCoverage = process.env.SOCIAL_REQUIRE_INSTAGRAM_COVERAGE === '1';
+const requireFacebookCoverage = process.env.SOCIAL_REQUIRE_FACEBOOK_COVERAGE === '1';
 const minimumInstagramPosts = Math.max(15, Number(process.env.INSTAGRAM_MIN_POSTS || 15));
+const minimumFacebookPosts = Math.max(15, Number(process.env.FACEBOOK_MIN_POSTS || 15));
 const browserOptions = {
   headless: process.env.SOCIAL_BROWSER_VISIBLE === '1' ? false : true,
   ignoreHTTPSErrors: process.env.SOCIAL_IGNORE_HTTPS_ERRORS === '1',
@@ -31,9 +33,9 @@ const browserOptions = {
 };
 
 const facebookTargets = [
-  { company: 'stc Kuwait', name: 'stc Kuwait', url: 'https://www.facebook.com/stc.kwt/' },
-  { company: 'Ooredoo Kuwait', name: 'Ooredoo Kuwait', url: 'https://www.facebook.com/OoredooKuwait' },
-  { company: 'Zain Kuwait', name: 'Zain Kuwait', url: 'https://www.facebook.com/zainkuwait' },
+  { company: 'stc Kuwait', name: 'stc Kuwait', handle: 'stc.kwt', url: 'https://www.facebook.com/stc.kwt/' },
+  { company: 'Ooredoo Kuwait', name: 'Ooredoo Kuwait', handle: 'OoredooKuwait', url: 'https://www.facebook.com/OoredooKuwait' },
+  { company: 'Zain Kuwait', name: 'Zain Kuwait', handle: 'zainkuwait', url: 'https://www.facebook.com/zainkuwait' },
 ];
 const instagramTargets = [
   { company: 'stc Kuwait', handle: 'stc_kwt', url: 'https://www.instagram.com/stc_kwt/' },
@@ -99,6 +101,24 @@ function relativeDate(label, now = Date.now()) {
   if (!value) return '';
   if (/just now/.test(value)) return new Date(now).toISOString();
   if (/yesterday/.test(value)) return new Date(now - 24 * 60 * 60 * 1000).toISOString();
+  if (/\ba day ago\b/.test(value)) return new Date(now - 24 * 60 * 60 * 1000).toISOString();
+  const weekdayMatch = value.match(/(?:last|on)\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i);
+  if (weekdayMatch) {
+    const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const current = new Date(now);
+    let daysBack = (current.getDay() - weekdays.indexOf(weekdayMatch[1].toLowerCase()) + 7) % 7;
+    if (!daysBack || value.startsWith('last ')) daysBack = daysBack || 7;
+    return new Date(now - daysBack * 86400000).toISOString();
+  }
+  const absoluteMatch = value.match(/(\d{1,2})\s+(january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(\d{4}))?(?:\s+at\s+(\d{1,2}):(\d{2}))?/i);
+  if (absoluteMatch) {
+    const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+    const current = new Date(now);
+    const year = Number(absoluteMatch[3] || current.getFullYear());
+    const parsed = new Date(year, months.indexOf(absoluteMatch[2].toLowerCase()), Number(absoluteMatch[1]), Number(absoluteMatch[4] || 12), Number(absoluteMatch[5] || 0));
+    if (!absoluteMatch[3] && parsed.getTime() > now + 86400000) parsed.setFullYear(parsed.getFullYear() - 1);
+    return parsed.toISOString();
+  }
   const match = value.match(/(\d+)\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|mo|month|months|y|year|years)\b/);
   if (!match) return '';
   const amount = Number(match[1]);
@@ -134,30 +154,6 @@ async function launchDirectBrowser() {
     return await chromium.launch({ channel: 'chrome', headless: true });
   } catch {
     return chromium.launch({ headless: true });
-  }
-}
-
-async function loginFacebook(page) {
-  if (!email || !password) throw new Error('Facebook email and password are required.');
-  let emailField;
-  let passwordField;
-  for (const loginUrl of ['https://www.facebook.com/login/', 'https://m.facebook.com/login/']) {
-    await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
-    await page.waitForTimeout(1200);
-    emailField = page.locator('input[name="email"], input#email').first();
-    passwordField = page.locator('input[name="pass"], input#pass').first();
-    if (await emailField.count() && await passwordField.count()) break;
-  }
-  if (!emailField || !(await emailField.count())) {
-    if (!/login/i.test(page.url())) return;
-    throw new Error(`Facebook login form was unavailable at ${page.url()}.`);
-  }
-  await emailField.fill(email);
-  await passwordField.fill(password);
-  await passwordField.press('Enter');
-  await page.waitForTimeout(6000);
-  if (/login|checkpoint|two_step_verification/i.test(page.url())) {
-    throw new Error('Facebook login requires correction or an interactive security check. Run LOGIN SOCIAL ACCOUNTS.cmd once, complete the browser login, then fetch again.');
   }
 }
 
@@ -228,48 +224,28 @@ async function loginTikTok(page) {
   if (/\/login|captcha|verify/i.test(page.url())) throw new Error('TikTok login requires an interactive security check.');
 }
 
-async function visibleFacebookPosts(page, target) {
-  return page.evaluate((arg) => {
-    const clean = (value) => (value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
-    const headings = [...document.querySelectorAll('h2')].filter((heading) => clean(heading.innerText).toLowerCase().includes(arg.name.toLowerCase()));
-    return headings.map((heading, index) => {
-      let card = heading;
-      for (let depth = 0; depth < 8 && card; depth += 1) card = card.parentElement;
-      if (!card) return null;
-      const invalid = (text) => !text || text.length < 20 || text.length > 900 || text.includes('Write a comment') || text.includes('Online status') || text.startsWith('Facebook') || text.startsWith('Photos from') || text.startsWith('m.me') || text.includes('Rate this translation') || /^(?:[A-Za-z0-9] ){15}/.test(text) || /^[A-Za-z0-9 ]{45,}$/.test(text);
-      const candidates = [...new Set([...card.querySelectorAll('div,span')].map((element) => clean(element.innerText)).filter((text) => !invalid(text)))].map((text) => text.replace(/\s*See translation\s*$/i, '').replace(/\s*See more\s*$/i, '').trim());
-      const score = (text) => (/\p{L}/u.test(text) ? 40 : 0) + (/[\u0600-\u06ff]/.test(text) ? 25 : 0) + Math.min(text.length, 450) - (text.includes(arg.name) ? 100 : 0);
-      const caption = candidates.sort((a, b) => score(b) - score(a))[0] || '';
-      const images = [...new Set([...card.querySelectorAll('img')].filter((image) => (image.currentSrc || image.src) && !(image.currentSrc || image.src).startsWith('data:') && image.naturalWidth >= 180).map((image) => image.currentSrc || image.src))];
-      const hrefs = [...new Set([...card.querySelectorAll('a[href]')].map((anchor) => anchor.href))];
-      const publishedLabel = [...new Set([...card.querySelectorAll('a,span,abbr')].map((element) => clean(element.innerText || element.getAttribute('aria-label') || element.getAttribute('title') || '')).filter((text) => /^(Just now|Yesterday|\d+\s*(?:m|h|d|w|mo|y)\b|\d+\s+(?:min|mins|hr|hrs|hour|hours|day|days|week|weeks|month|months|year|years)\b)/i.test(text)))][0] || '';
-      const dateNode = card.querySelector('[data-utime], time[datetime], abbr[title]');
-      const unixTime = Number(dateNode?.getAttribute('data-utime') || 0);
-      const publishedAt = unixTime ? new Date(unixTime * 1000).toISOString() : dateNode?.getAttribute('datetime') || '';
-      let url = hrefs.find((href) => /facebook\.com\/photo\/\?fbid=/.test(href)) || hrefs.find((href) => /facebook\.com\/.+\/(?:posts|videos|reel)\//.test(href)) || '';
-      if (url.includes('/photo/')) { try { const parsed = new URL(url); url = `${parsed.origin}${parsed.pathname}?fbid=${parsed.searchParams.get('fbid')}${parsed.searchParams.get('set') ? `&set=${parsed.searchParams.get('set')}` : ''}`; } catch {} }
-      const id = (url.match(/set=pcb\.(\d+)/) || url.match(/fbid=(\d+)/) || url.match(/\/(\d{8,})\/?/) || [])[1] || '';
-      if (!caption || (!url && !images.length)) return null;
-      const cardText = clean(card.innerText);
-      const metric = (pattern) => clean((cardText.match(pattern) || [])[1] || '');
-      return { id, caption, thumbnail: images[0] || '', post_type: images.length > 1 ? 'Carousel' : images.length === 1 ? 'Image' : 'Post', url: url || arg.url, index, published_label: publishedLabel, published_at: publishedAt,
-        likes_label: metric(/([\d,.]+\s*[KMB]?)\s+(?:likes?|reactions?)/i), comments_label: metric(/([\d,.]+\s*[KMB]?)\s+comments?/i), shares_label: metric(/([\d,.]+\s*[KMB]?)\s+shares?/i), views_label: metric(/([\d,.]+\s*[KMB]?)\s+views?/i) };
-    }).filter(Boolean);
-  }, target);
+async function facebookGraphRequest(pathname, parameters = {}) {
+  const url = new URL(`https://graph.facebook.com/${facebookGraphVersion}/${pathname.replace(/^\//, '')}`);
+  for (const [key, value] of Object.entries({ ...parameters, access_token: facebookGraphToken })) url.searchParams.set(key, String(value));
+  const response = await fetch(url, { headers: { accept: 'application/json' } });
+  const payload = await response.json();
+  if (!response.ok || payload.error) throw new Error(`Meta Graph API request failed: ${payload.error?.message || `HTTP ${response.status}`}`);
+  return payload;
 }
 
-async function scrapeFacebook(page, target) {
-  await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await page.waitForTimeout(4500);
-  const found = new Map();
-  for (let scroll = 0; scroll <= maxScrolls; scroll += 1) {
-    for (const post of await visibleFacebookPosts(page, target)) {
-      const id = post.id || stableId(`${target.company}|${post.url}|${post.caption}`);
-      found.set(`facebook-${id}`, { ...post, id: `facebook-${id}`, company: target.company, platform: 'Facebook', published_at: post.published_at || relativeDate(post.published_label), likes: metricNumber(post.likes_label), comments: metricNumber(post.comments_label), shares: metricNumber(post.shares_label), views: metricNumber(post.views_label), status: 'New' });
-    }
-    if (scroll < maxScrolls) { await page.mouse.wheel(0, 2400); await page.waitForTimeout(1400); }
-  }
-  return [...found.values()];
+async function scrapeFacebookGraph(target) {
+  const profile = await facebookGraphRequest(target.handle, { fields: 'id,name,picture.type(large),followers_count,fan_count' });
+  collectedProfiles.push({ company: target.company, platform: 'Facebook', username: target.handle, display_name: profile.name || target.name, profile_picture_url: profile.picture?.data?.url || '', followers: profile.followers_count ?? profile.fan_count ?? null });
+  const fields = 'id,message,created_time,permalink_url,full_picture,shares,reactions.limit(0).summary(true),comments.limit(0).summary(true),attachments.limit(1){media_type,media,image,subattachments.limit(1){media_type,media}}';
+  const payload = await facebookGraphRequest(`${profile.id}/posts`, { fields, limit: 100, since: Math.floor((Date.now() - rollingMonthMs) / 1000) });
+  return (payload.data || []).map((post) => {
+    const attachment = post.attachments?.data?.[0] || {};
+    const thumbnail = post.full_picture || attachment.media?.image?.src || attachment.image?.src || attachment.subattachments?.data?.[0]?.media?.image?.src || '';
+    const mediaType = String(attachment.media_type || '').toLowerCase();
+    const permalink = post.permalink_url || target.url;
+    const postType = /\/reel\//i.test(permalink) ? 'Reel' : mediaType.includes('video') ? 'Video' : mediaType.includes('album') ? 'Carousel' : thumbnail ? 'Image' : 'Post';
+    return { id: `facebook-${post.id}`, company: target.company, platform: 'Facebook', published_at: post.created_time || '', caption: clean(post.message), thumbnail, post_type: postType, url: permalink, likes: post.reactions?.summary?.total_count ?? null, comments: post.comments?.summary?.total_count ?? null, shares: post.shares?.count ?? null, views: null, status: 'New' };
+  });
 }
 
 async function visibleInstagramPosts(page, target) {
@@ -671,7 +647,7 @@ async function scrapeTikTok(page, target) {
   return enriched;
 }
 
-const needsBrowser = [...selectedPlatforms].some((platform) => platform !== 'instagram');
+const needsBrowser = [...selectedPlatforms].some((platform) => platform !== 'instagram' && platform !== 'facebook');
 const browserSession = needsBrowser ? await startBrowserSession() : { context: null, page: null };
 const { context, page } = browserSession;
 const discovered = [];
@@ -679,18 +655,18 @@ const coverage = [];
 
 try {
   if (platformEnabled('Facebook')) {
-    let facebookLoginStatus = 'ok';
-  try {
-    await loginFacebook(page);
-  } catch (error) {
-    facebookLoginStatus = error.message;
-  }
-    for (const target of facebookTargets) {
-    try {
-      const posts = (await scrapeFacebook(page, target)).filter(isRecent);
-      discovered.push(...posts);
-      coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: posts.length ? facebookLoginStatus === 'ok' ? 'ok' : `public profile fallback; authenticated login blocked: ${facebookLoginStatus}` : facebookLoginStatus });
-    } catch (error) { coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: `${facebookLoginStatus} ${error.message}` }); }
+    if (facebookGraphToken) {
+      for (const target of facebookTargets) {
+        try {
+          const posts = (await scrapeFacebookGraph(target)).filter(isRecent);
+          discovered.push(...posts);
+          coverage.push({ company: target.company, platform: 'Facebook', count: posts.length, status: posts.length >= minimumFacebookPosts ? 'ok' : `Meta Graph API returned fewer than ${minimumFacebookPosts} posts in the last 30 days.`, source: 'Official Meta Graph API', checked_at: new Date().toISOString() });
+        } catch (error) {
+          coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: error.message, source: 'Official Meta Graph API', checked_at: new Date().toISOString() });
+        }
+      }
+    } else {
+      for (const target of facebookTargets) coverage.push({ company: target.company, platform: 'Facebook', count: 0, status: 'Official Meta Graph API access through Facebook Login is required.', source: 'Official Meta Graph API required', checked_at: new Date().toISOString() });
     }
   }
   if (platformEnabled('Instagram')) {
@@ -735,14 +711,23 @@ let previousData = [];
 let previousProfiles = [];
 let previousCoverage = [];
 let previousInstagramValidation = null;
+let previousFacebookValidation = null;
 try {
   const previous = JSON.parse(await readFile(dataPath, 'utf8'));
   previousData = Array.isArray(previous.data) ? previous.data : [];
   previousProfiles = Array.isArray(previous.profiles) ? previous.profiles : [];
   previousCoverage = Array.isArray(previous.coverage) ? previous.coverage : [];
   previousInstagramValidation = previous.instagram_validation || null;
+  previousFacebookValidation = previous.facebook_validation || null;
 } catch {}
 const recentDiscovered = discovered.filter(isRecent);
+if (requireFacebookCoverage) {
+  const missing = facebookTargets.filter((target) => recentDiscovered.filter((post) => post.platform === 'Facebook' && post.company === target.company).length < minimumFacebookPosts);
+  if (missing.length) {
+    const reasons = coverage.filter((item) => item.platform === 'Facebook' && missing.some((target) => target.company === item.company)).map((item) => `${item.company}: ${item.status} (${item.count || 0} posts)`).join(' | ');
+    throw new Error(`Facebook refresh incomplete for ${missing.map((target) => target.company).join(', ')}. ${reasons} The previous snapshot was preserved.`);
+  }
+}
 if (requireInstagramCoverage) {
   const missing = instagramTargets.filter((target) => recentDiscovered.filter((post) => post.platform === 'Instagram' && post.company === target.company).length < minimumInstagramPosts);
   if (missing.length) {
@@ -773,6 +758,16 @@ const instagramValidation = instagramTargets.map((target) => {
     complete: posts.length >= minimumInstagramPosts,
   };
 });
+const facebookValidation = facebookTargets.map((target) => {
+  const posts = recentDiscovered.filter((post) => post.platform === 'Facebook' && post.company === target.company);
+  return {
+    company: target.company,
+    count: posts.length,
+    newest_post_at: posts.map((post) => post.published_at).filter(Boolean).sort().at(-1) || '',
+    minimum_required: minimumFacebookPosts,
+    complete: posts.length >= minimumFacebookPosts,
+  };
+});
 
 const payload = {
   generated_at: new Date().toISOString(),
@@ -782,6 +777,17 @@ const payload = {
   fetched_count: recentDiscovered.length,
   mode: emptyFetch && previousData.length ? 'empty_fetch_preserved_previous' : 'live_merged',
   fetch_warning: emptyFetch && previousData.length ? 'Live organic fetch returned no posts, so the previous saved posts were preserved.' : blockedWarning,
+  facebook_validation: platformEnabled('Facebook') ? {
+    minimum_required_per_account: minimumFacebookPosts,
+    complete: facebookValidation.every((item) => item.complete),
+    checked_at: new Date().toISOString(),
+    accounts: facebookValidation,
+  } : previousFacebookValidation || {
+    minimum_required_per_account: minimumFacebookPosts,
+    complete: false,
+    checked_at: '',
+    accounts: facebookValidation,
+  },
   instagram_validation: platformEnabled('Instagram') ? {
     minimum_required_per_account: minimumInstagramPosts,
     complete: instagramValidation.every((item) => item.complete),

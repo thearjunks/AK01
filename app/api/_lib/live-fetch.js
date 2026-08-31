@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
+import { readFacebookConnection } from '../facebook/_lib/oauth.js';
 
 const root = process.cwd();
 const dataPath = join(root, 'public', 'data', 'ads.json');
@@ -15,6 +16,7 @@ const primaryAdPageIds = ['85631962851', '181832232881', '114476661945257'];
 let socialFetchPromise = null;
 let adsFetchPromise = null;
 let plansFetchPromise = null;
+let bannersFetchPromise = null;
 let devicesFetchPromise = null;
 let adsFetchJob = {
   state: 'idle',
@@ -25,6 +27,7 @@ let adsFetchJob = {
 };
 const emptyComparisonJob = (message) => ({ state: 'idle', message, started_at: '', finished_at: '', count: 0 });
 let plansFetchJob = emptyComparisonJob('No plan or banner refresh is currently running.');
+let bannersFetchJob = emptyComparisonJob('No live homepage visual refresh is currently running.');
 let devicesFetchJob = emptyComparisonJob('No device refresh is currently running.');
 
 function isInRollingMonth(value, now = Date.now()) {
@@ -187,6 +190,23 @@ async function fetchFromMetaPages() {
   }
 }
 
+function validateFacebookPayload(payload) {
+  const validation = payload.facebook_validation;
+  const expectedCompanies = ['stc Kuwait', 'Ooredoo Kuwait', 'Zain Kuwait'];
+  const minimumRequired = Math.max(15, Number(validation?.minimum_required_per_account || 15));
+  if (!validation?.complete || !Array.isArray(validation.accounts)) {
+    throw new Error('Facebook refresh was not validated for all three accounts. The previous snapshot was preserved.');
+  }
+  for (const company of expectedCompanies) {
+    const account = validation.accounts.find((item) => item.company === company);
+    const posts = payload.data.filter((post) => post.platform === 'Facebook' && post.company === company);
+    if (!account?.complete || !account.newest_post_at || Number(account.count || 0) < minimumRequired || posts.length < minimumRequired) {
+      throw new Error(`${company} Facebook refresh has fewer than ${minimumRequired} verified posts. The previous snapshot was preserved.`);
+    }
+  }
+  return payload;
+}
+
 export async function fetchFromProvider() {
   const providerUrl = process.env.LIVE_ADS_JSON_URL || '';
   if (!providerUrl) return fetchFromMetaPages();
@@ -332,14 +352,58 @@ function socialPlatform(value) {
   return 'Instagram';
 }
 
+export async function fetchBanners(provider = '') {
+  await runScript('scrape-plans.mjs', { PLAN_BANNERS_ONLY: '1', BANNER_SOURCE_FILTER: provider, PLAN_MAX_BANNERS_PER_PAGE: process.env.PLAN_MAX_BANNERS_PER_PAGE || '80' });
+  const payload = await readPlansData();
+  const coverage = Array.isArray(payload.banner_coverage) ? payload.banner_coverage : [];
+  const expected = provider ? [provider] : ['stc', 'ooredoo', 'zain'];
+  if (expected.some((expectedProvider) => !coverage.some((item) => item.provider === expectedProvider))) {
+    throw new Error('Banner refresh did not report coverage for all three competitor homepages.');
+  }
+  const refreshedCount = provider ? (payload.banners || []).filter((banner) => banner.provider === provider && banner.freshness === 'live').length : payload.banners?.length || 0;
+  const refreshedCoverage = provider ? coverage.filter((item) => item.provider === provider) : coverage;
+  return { ok: true, payload, message: provider
+    ? `Refreshed ${refreshedCount} meaningful visuals from the live ${provider} homepage; ${payload.banners?.length || 0} visuals remain available across all three domains.`
+    : `Fetched ${payload.banners?.length || 0} meaningful homepage visuals from ${refreshedCoverage.filter((item) => item.status === 'ok').length}/3 live domains.` };
+}
+
+export function startBannersFetchJob(provider = '') {
+  if (bannersFetchPromise) return { accepted: false, job: { ...bannersFetchJob } };
+  const startedAt = new Date().toISOString();
+  bannersFetchJob = { state: 'running', message: `Rendering ${provider || 'all three'} live homepage${provider ? '' : 's'} and identifying meaningful banner-sized visuals.`, started_at: startedAt, finished_at: '', count: 0 };
+  bannersFetchPromise = fetchBanners(provider)
+    .then((result) => {
+      const failed = (result.payload?.banner_coverage || []).filter((item) => item.status !== 'ok');
+      bannersFetchJob = { state: 'complete', message: `${result.message}${failed.length ? ` ${failed.length} domain was blocked; its previous verified visuals were preserved.` : ''}`, started_at: startedAt, finished_at: new Date().toISOString(), count: result.payload?.banners?.length || 0 };
+    })
+    .catch((error) => { bannersFetchJob = { state: 'error', message: error.message, started_at: startedAt, finished_at: new Date().toISOString(), count: 0 }; })
+    .finally(() => { bannersFetchPromise = null; });
+  return { accepted: true, job: { ...bannersFetchJob } };
+}
+
+export function getBannersFetchJob() { return { ...bannersFetchJob }; }
+
 async function fetchSocialPostsNow(requestedPlatform = 'Instagram') {
   const platform = socialPlatform(requestedPlatform);
   const platformLabel = platform === 'X' ? 'Twitter / X' : platform;
   const providerUrl = process.env.SOCIAL_POSTS_JSON_URL || '';
+  const facebookConnection = platform === 'Facebook' ? await readFacebookConnection() : null;
+  const facebookAccessToken = process.env.FACEBOOK_GRAPH_ACCESS_TOKEN || facebookConnection?.access_token || '';
   if (!providerUrl) {
+    if (platform === 'Facebook' && !facebookAccessToken) {
+      const saved = await readSocialData();
+      const savedRecords = Array.isArray(saved) ? saved : saved.data || [];
+      const savedFacebookPosts = savedRecords.filter((post) => post.platform === 'Facebook').length;
+      return {
+        ok: true,
+        payload: saved,
+        state: 'configuration',
+        message: `Connect Facebook with Meta Login before refreshing. No new data was fetched; ${savedFacebookPosts} saved Facebook posts remain displayed.`,
+      };
+    }
     await runScript('scrape-organic-posts.mjs', {
-      SOCIAL_FACEBOOK_EMAIL: process.env.SOCIAL_FACEBOOK_EMAIL || '',
-      SOCIAL_FACEBOOK_PASSWORD: process.env.SOCIAL_FACEBOOK_PASSWORD || '',
+      FACEBOOK_GRAPH_ACCESS_TOKEN: facebookAccessToken,
+      FACEBOOK_GRAPH_VERSION: process.env.FACEBOOK_GRAPH_VERSION || 'v23.0',
       SOCIAL_INSTAGRAM_EMAIL: process.env.SOCIAL_INSTAGRAM_EMAIL || '',
       SOCIAL_INSTAGRAM_PASSWORD: process.env.SOCIAL_INSTAGRAM_PASSWORD || '',
       SOCIAL_X_EMAIL: process.env.SOCIAL_X_EMAIL || '',
@@ -348,14 +412,16 @@ async function fetchSocialPostsNow(requestedPlatform = 'Instagram') {
       SOCIAL_TIKTOK_PASSWORD: process.env.SOCIAL_TIKTOK_PASSWORD || '',
       SOCIAL_PLATFORMS: platform,
       SOCIAL_REQUIRE_INSTAGRAM_COVERAGE: platform === 'Instagram' ? '1' : '0',
+      SOCIAL_REQUIRE_FACEBOOK_COVERAGE: platform === 'Facebook' ? '1' : '0',
       SOCIAL_IGNORE_HTTPS_ERRORS: '1',
       INSTAGRAM_MIN_POSTS: process.env.INSTAGRAM_MIN_POSTS || '15',
+      FACEBOOK_MIN_POSTS: process.env.FACEBOOK_MIN_POSTS || '15',
       ORGANIC_MAX_SCROLLS: process.env.ORGANIC_MAX_SCROLLS || '8',
       INSTAGRAM_DETAIL_LIMIT: process.env.INSTAGRAM_DETAIL_LIMIT || '12',
     });
     await runScript('cache-social-thumbnails.mjs');
     const normalized = normalizeSocialPayload(await readSocialData());
-    const payload = platform === 'Instagram' ? validateInstagramPayload(normalized) : normalized;
+    const payload = platform === 'Instagram' ? validateInstagramPayload(normalized) : platform === 'Facebook' ? validateFacebookPayload(normalized) : normalized;
     await writeFile(socialDataPath, JSON.stringify(payload, null, 2), 'utf8');
     const platformPosts = payload.data.filter((post) => post.platform === platform);
     const verifiedAccounts = (payload.coverage || []).filter((item) => item.platform === platform && item.status === 'ok' && Number(item.count || 0) > 0).length;
@@ -366,7 +432,7 @@ async function fetchSocialPostsNow(requestedPlatform = 'Instagram') {
   if (!response.ok) throw new Error(`Social provider returned HTTP ${response.status}.`);
   const input = await response.json();
   const normalized = normalizeSocialPayload(input);
-  const payload = platform === 'Instagram' ? validateInstagramPayload(normalized) : normalized;
+  const payload = platform === 'Instagram' ? validateInstagramPayload(normalized) : platform === 'Facebook' ? validateFacebookPayload(normalized) : normalized;
   if (!payload.data.length) {
     const saved = await readSocialData();
     const savedRecords = Array.isArray(saved) ? saved : saved.data || [];

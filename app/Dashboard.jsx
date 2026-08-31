@@ -23,7 +23,7 @@ const adProviders = [
   { key: 'tawseel', name: 'Zain-tawseel', id: '444661005390298', color: '#00a651' },
   { key: 'gamez', name: 'Gamez Card', id: '101008544936040', color: '#f59e0b' },
 ];
-const bannerCategories = ['Homepage Offers', 'Homepage Carousel', 'Offer Banners', 'Homepage Hero', 'Offers News More'];
+const bannerCategories = ['Homepage Hero', 'Promotional Banner', 'Offer Banner', 'Campaign Visual', 'Promotional Card', 'Homepage Visual'];
 const deviceCategories = ['Smartphones', 'Tablets', 'Laptops', 'Internet Devices', 'Gaming', 'Accessories', 'Smartwatches', 'TV'];
 const deviceSourceLinks = [
   { provider: 'ooredoo', label: 'Ooredoo smartphones', url: 'https://store.ooredoo.com.kw/gadgets/smartphones.html' },
@@ -83,7 +83,6 @@ const sectionPaths = {
   organicInstagram: '/organic-instagram',
   organicFacebook: '/organic-facebook',
   organicTikTok: '/organic-tiktok',
-  organicTwitter: '/organic-twitter',
   plans: '/plan-comparison',
   banners: '/banner-comparison',
   devices: '/device-comparison',
@@ -285,7 +284,6 @@ function Sidebar({ active, onChange, open, onClose }) {
     ['organicInstagram', 'Organic Instagram', Activity],
     ['organicFacebook', 'Organic Facebook', Activity],
     ['organicTikTok', 'Organic TikTok', Activity],
-    ['organicTwitter', 'Organic Twitter', Activity],
     ['plans', 'Plan Comparison', Grid2X2],
     ['banners', 'Banner Comparison', Camera],
     ['devices', 'Device Comparison', Smartphone],
@@ -371,11 +369,49 @@ function OpportunityMatrix({ rows }) {
 }
 
 function BannerComparison({ banners, visibleProviders }) {
-  if (!banners.length) return <div className="empty-state"><CircleAlert /><b>No banners match these filters</b><span>Try another provider, category, or keyword, then click Fetch live plans to refresh banners.</span></div>;
-  return <div className="banner-gallery">{visibleProviders.map((provider) => {
-    const providerBanners = banners.filter((banner) => banner.provider === provider.key);
-    return <section className="banner-provider-section" key={provider.key} style={{ '--brand': provider.color }}><header><div>{providerLogo(provider, banners) ? <img className="provider-logo" src={providerLogo(provider, banners)} alt={provider.name} /> : <BrandMark pageId={provider.id} />}<span><b>{provider.name}</b><small>{providerBanners.length} matching banners</small></span></div></header><div className="banner-card-grid">{providerBanners.length ? providerBanners.map((banner) => <article className="banner-card" key={banner.id}><div className="banner-image">{bannerImage(banner) ? <img src={bannerImage(banner)} alt={banner.title || `${provider.name} banner`} /> : <EmptyArtwork label="Banner" />}</div><div className="banner-copy"><span>{banner.sub_category || banner.category}</span><h3>{banner.title || 'Banner'}</h3>{banner.text ? <p>{banner.text}</p> : <p>No banner text was detected near this image.</p>}<small>{banner.source_method || 'Live source'}{banner.api_url ? ` · API` : ''}</small><div>{banner.link_url ? <a href={banner.link_url} target="_blank" rel="noreferrer">Open campaign <ArrowUpRight size={14} /></a> : null}<a href={banner.api_url || banner.source_url} target="_blank" rel="noreferrer">Open source <ArrowUpRight size={14} /></a></div></div></article>) : <p className="column-empty">No matching banners</p>}</div></section>;
-  })}</div>;
+  const [selectedBanner, setSelectedBanner] = useState(null);
+
+  useEffect(() => {
+    if (!selectedBanner) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setSelectedBanner(null);
+    };
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [selectedBanner]);
+
+  if (!banners.length) return <div className="empty-state"><CircleAlert /><b>No banners match these filters</b><span>Try another provider, category, or keyword, then click Fetch Live Data.</span></div>;
+  const selectedProvider = selectedBanner ? providers.find((provider) => provider.key === selectedBanner.provider) : null;
+  const selectedDimensions = selectedBanner?.dimensions || (selectedBanner?.width && selectedBanner?.height ? `${selectedBanner.width} × ${selectedBanner.height}` : 'Not exposed');
+
+  return <>
+    <div className="banner-gallery">{visibleProviders.map((provider) => {
+      const providerBanners = banners.filter((banner) => banner.provider === provider.key);
+      return <section className="banner-provider-section" key={provider.key} style={{ '--brand': provider.color }}>
+        <header><div>{providerLogo(provider, banners) ? <img className="provider-logo" src={providerLogo(provider, banners)} alt={provider.name} /> : <BrandMark pageId={provider.id} />}<span><b>{provider.name}</b><small>{providerBanners.length} matching visuals</small></span></div></header>
+        <div className="banner-card-grid">{providerBanners.length ? providerBanners.map((banner) => <article className="banner-card banner-teaser-card" key={banner.id}>
+          <button className="banner-teaser-button" type="button" onClick={() => setSelectedBanner(banner)} aria-label={`View full details for ${banner.title || `${provider.name} homepage visual`}`}>
+            <div className="banner-image">{bannerImage(banner) ? <img src={bannerImage(banner)} alt={banner.title || `${provider.name} banner`} loading="lazy" decoding="async" /> : <EmptyArtwork label="Banner" />}</div>
+            <div className="banner-teaser-copy"><span>{banner.sub_category || banner.category || 'Homepage visual'}</span><h3>{banner.title || 'Homepage visual'}</h3><small>{banner.section_position || 'Homepage section'} · {banner.dimensions || (banner.width && banner.height ? `${banner.width} × ${banner.height}` : 'Size not exposed')}</small><b>View full details <ArrowUpRight size={13} /></b></div>
+          </button>
+        </article>) : <p className="column-empty">No matching visuals</p>}</div>
+      </section>;
+    })}</div>
+    {selectedBanner ? <div className="banner-detail-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedBanner(null); }}>
+      <section className="banner-detail-modal" role="dialog" aria-modal="true" aria-labelledby="banner-detail-title" style={{ '--brand': selectedProvider?.color || 'var(--stc)' }}>
+        <header><div><span>Banner detail</span><h2 id="banner-detail-title">{selectedBanner.title || 'Homepage visual'}</h2><small>{selectedProvider?.name || selectedBanner.provider_name || selectedBanner.provider}</small></div><button type="button" onClick={() => setSelectedBanner(null)} aria-label="Close banner details"><X size={20} /></button></header>
+        <div className="banner-detail-layout">
+          <div className="banner-detail-image">{bannerImage(selectedBanner) ? <img src={bannerImage(selectedBanner)} alt={selectedBanner.title || `${selectedProvider?.name || 'Competitor'} banner full size`} /> : <EmptyArtwork label="Banner" />}</div>
+          <div className="banner-detail-copy"><span>{selectedBanner.sub_category || selectedBanner.category || 'Homepage visual'}</span>{selectedBanner.text ? <p>{selectedBanner.text}</p> : <p>No nearby promotional text was detected.</p>}<dl className="banner-detail-metadata"><div><dt>Website / brand</dt><dd>{selectedProvider?.name || selectedBanner.provider_name || selectedBanner.provider}</dd></div><div><dt>Homepage position</dt><dd>{selectedBanner.section_position || 'Homepage section'}</dd></div><div><dt>Image dimensions</dt><dd>{selectedDimensions}</dd></div><div><dt>Last fetched</dt><dd>{selectedBanner.last_checked ? new Date(selectedBanner.last_checked).toLocaleString() : 'Unknown'}</dd></div><div><dt>Source method</dt><dd>{selectedBanner.source_method || 'Rendered live homepage'}</dd></div><div><dt>Category</dt><dd>{selectedBanner.sub_category || selectedBanner.category || 'Homepage visual'}</dd></div></dl><div className="banner-detail-links">{selectedBanner.link_url ? <a href={selectedBanner.link_url} target="_blank" rel="noreferrer">Open CTA <ArrowUpRight size={14} /></a> : null}{selectedBanner.image_url ? <a href={selectedBanner.image_url} target="_blank" rel="noreferrer">Original image <ArrowUpRight size={14} /></a> : null}{selectedBanner.source_url ? <a href={selectedBanner.source_url} target="_blank" rel="noreferrer">Open homepage <ArrowUpRight size={14} /></a> : null}</div>{selectedBanner.image_url ? <div className="banner-detail-url"><small>Image URL</small><code>{selectedBanner.image_url}</code></div> : null}</div>
+        </div>
+      </section>
+    </div> : null}
+  </>;
 }
 
 function Boosted({ ads, meta, onFetchLive, fetchState, updatedAt }) {
@@ -422,16 +458,65 @@ function Organic({ platform, posts, profiles, source, coverage, onRefresh, onFet
   return <>
     <section className="organic-status"><div><span><i /> Live monitoring</span><h2>{platformLabel} publishing watch</h2><p>Posts published during the last 30 days are displayed with their source-verification status.</p></div><button type="button" disabled={platformFetchState.state === 'fetching'} onClick={() => onFetchLive(platform)}><RefreshCw size={16} /> {platformFetchState.state === 'fetching' ? `Refreshing ${platformLabel}...` : `Refresh ${platformLabel} posts`}</button><div className="source-chip"><small>Data source</small><b>Official {platformLabel} accounts</b></div></section>
     <div className={`live-fetch-status organic-live-status ${platformFetchState.state}`}><span><i />{platformFetchState.message}</span><small>{updatedAt ? `Last checked ${new Date(updatedAt).toLocaleString()} · manual refresh available anytime · 24-hour backup refresh` : `Not yet verified · use Refresh ${platformLabel} posts`}</small></div>
+    {platform === 'Facebook' ? <FacebookConnection onRefresh={() => onFetchLive('Facebook')} fetchState={platformFetchState} /> : null}
     <section className="organic-kpis"><div><b>{trackedAccountCount}</b><span>{platformLabel} accounts</span></div><div><b>{filtered.length}</b><span>Available posts · last 30 days</span></div><div><b>{verifiedAccountCount}/{trackedAccountCount}</b><span>Verified account sources</span></div><div><b>{representedAccounts}</b><span>Competitors represented</span></div></section>
     <section className="organic-platform-coverage" aria-label={`${platformLabel} source coverage`}><div className={filtered.length ? 'available' : 'blocked'}><span>{platformLabel}</span><b>{filtered.length} captured posts</b><small>{representedAccounts ? `${representedAccounts} of ${trackedAccountCount} tracked accounts represented · ${verifiedAccountCount} fully verified` : 'No posts returned by the collector; use the official live source below'}</small></div></section>
     <div className="organic-mobile-layout">
       <section className="organic-feed-main organic-mobile-main">
         <div className="feed-toolbar surface organic-platform-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder={`Search ${platformLabel} post captions or descriptions`} /></label><select value={filters.company} onChange={(event) => setFilters({ ...filters, company: event.target.value })}><option value="">All companies</option><option value="stc">stc</option><option value="ooredoo">Ooredoo</option><option value="zain">Zain</option></select></div>
-        <SocialAccountFrame platform={platform} posts={filtered} profiles={profiles} companyKey={filters.company} onRefresh={onRefresh} />
-        {platform !== 'Instagram' ? <OfficialLiveFeed companyKey={filters.company} platform={platform} posts={filtered} /> : null}
+        {platform === 'TikTok' ? <OfficialLiveFeed companyKey={filters.company} platform={platform} posts={filtered} /> : <SocialAccountFrame platform={platform} posts={filtered} profiles={profiles} companyKey={filters.company} onRefresh={onRefresh} />}
+        {platform === 'X' ? <OfficialLiveFeed companyKey={filters.company} platform={platform} posts={filtered} /> : null}
       </section>
     </div>
   </>;
+}
+
+function FacebookConnection({ onRefresh, fetchState }) {
+  const [status, setStatus] = useState({ loading: true, configured: false, connected: false, profile: null });
+  const [notice, setNotice] = useState('');
+  const callbackHandled = useRef(false);
+  const loadStatus = useCallback(async () => {
+    try {
+      const response = await fetch(apiUrl('/api/facebook/status'), { cache: 'no-store' });
+      const result = await response.json();
+      setStatus({ loading: false, configured: Boolean(result.configured), connected: Boolean(result.connected), profile: result.profile || null, connectedAt: result.connected_at || '', expiresAt: result.expires_at || '' });
+      return result;
+    } catch {
+      setStatus({ loading: false, configured: false, connected: false, profile: null });
+      return null;
+    }
+  }, []);
+  useEffect(() => { loadStatus(); }, [loadStatus]);
+  useEffect(() => {
+    if (callbackHandled.current || typeof window === 'undefined') return;
+    const parameters = new URLSearchParams(window.location.search);
+    const result = parameters.get('facebook');
+    if (!result) return;
+    callbackHandled.current = true;
+    const detail = parameters.get('detail') || '';
+    window.history.replaceState({}, '', window.location.pathname);
+    if (result === 'connected') {
+      setNotice('Facebook connected successfully. Fetching the latest available content now.');
+      loadStatus().then((connection) => { if (connection?.connected) onRefresh(); });
+    } else {
+      setNotice(detail || 'Facebook connection was not completed.');
+    }
+  }, [loadStatus, onRefresh]);
+  useEffect(() => {
+    if (!status.connected) return;
+    if (fetchState.state === 'success') setNotice('Facebook connected successfully. The latest available Facebook content was fetched.');
+    if (fetchState.state === 'error') setNotice('Facebook remains connected, but the latest refresh did not complete. The saved verified posts are still displayed.');
+  }, [fetchState.state, status.connected]);
+
+  return <section className={`facebook-connection surface ${status.connected ? 'connected' : ''}`}>
+    <div><span><i /> Secure Meta OAuth</span><h3>{status.connected ? `Connected as ${status.profile?.name || 'Facebook user'}` : 'Connect Facebook'}</h3><p>{status.connected ? 'The access token is encrypted and stored only on the server. Passwords never pass through this dashboard.' : 'Sign in on Facebook’s own OAuth screen. This dashboard never asks for or stores your Facebook password.'}</p></div>
+    <div className="facebook-connection-actions">
+      {status.connected ? <button type="button" disabled={fetchState.state === 'fetching'} onClick={onRefresh}><RefreshCw size={15} /> {fetchState.state === 'fetching' ? 'Refreshing…' : 'Refresh Facebook'}</button> : status.configured ? <a href={apiUrl('/api/facebook/auth')}><ArrowUpRight size={15} /> Connect Facebook</a> : <button type="button" disabled><ArrowUpRight size={15} /> Connect Facebook</button>}
+      <small>{status.loading ? 'Checking Facebook connection…' : status.connected ? 'Connection verified by Meta Login.' : status.configured ? 'Meta Login is ready.' : 'Server setup required: FACEBOOK_APP_ID, FACEBOOK_APP_SECRET, and FACEBOOK_TOKEN_ENCRYPTION_KEY.'}</small>
+    </div>
+    {notice ? <p className="facebook-connection-notice">{notice}</p> : null}
+    <p className="facebook-permission-note"><CircleAlert size={14} /> Fetching public posts, videos, reels, and engagement from competitor Pages additionally requires Meta approval for Page Public Content Access.</p>
+  </section>;
 }
 
 function SocialAccountFrame({ platform, posts, profiles, companyKey, onRefresh }) {
@@ -484,16 +569,22 @@ function OfficialLiveFeed({ companyKey, platform, posts = [] }) {
     if (platform === 'X') addScript('x-widgets-script', 'https://platform.twitter.com/widgets.js', () => window.twttr?.widgets?.load(containerRef.current));
     if (platform === 'TikTok') addScript('tiktok-embed-script', 'https://www.tiktok.com/embed.js', null, true);
     if (platform === 'Instagram') addScript('instagram-embed-script', 'https://www.instagram.com/embed.js', () => window.instgrm?.Embeds?.process());
-  }, [companyKey, platform]);
+  }, [companyKey, platform, posts.length]);
 
-  return <section className="official-live-feed surface" ref={containerRef}>
+  return <section className={`official-live-feed surface ${platform === 'TikTok' ? 'tiktok-live-feed' : ''}`} ref={containerRef}>
     <header><div><span>Official live source</span><h3>Latest {platform} posts</h3><p>Rendered directly by {platform}; refresh the page to request the newest public posts.</p></div><span className="official-live-badge"><i /> Live</span></header>
-    <div className={`official-embed-grid ${accounts.length === 1 ? 'single' : ''}`}>{accounts.map((account) => {
+    <div className={`official-embed-grid ${platform === 'TikTok' ? 'tiktok-live-grid' : ''} ${accounts.length === 1 ? 'single' : ''}`}>{accounts.map((account) => {
       if (platform === 'Facebook') {
         const src = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(account.facebook)}&tabs=timeline&width=500&height=700&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`;
         return <article key={account.name}><h4>{account.name}</h4><iframe src={src} width="500" height="700" title={`${account.name} Facebook timeline`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" /></article>;
       }
-      if (platform === 'TikTok') return <article key={account.name}><h4>{account.name}</h4><blockquote className="tiktok-embed" cite={`https://www.tiktok.com/@${account.tiktok}`} data-unique-id={account.tiktok} data-embed-type="creator"><section><a target="_blank" rel="noreferrer" href={`https://www.tiktok.com/@${account.tiktok}`}>@{account.tiktok}</a></section></blockquote></article>;
+      if (platform === 'TikTok') {
+        const accountPosts = posts.filter((post) => organicCompany(post).name === account.name && /tiktok\.com\/@[^/]+\/video\/\d+/i.test(organicLink(post)));
+        return <article className="tiktok-live-column" key={account.name}><h4>{account.name}</h4>{accountPosts.length ? <div className="tiktok-post-stack">{accountPosts.map((post) => {
+          const postUrl = organicLink(post); const videoId = postUrl.match(/\/video\/(\d+)/)?.[1] || '';
+          return <blockquote className="tiktok-embed" cite={postUrl} data-video-id={videoId} key={post.id || postUrl}><section><a target="_blank" rel="noreferrer" href={postUrl}>{organicCaption(post) || `${account.name} TikTok post`}</a></section></blockquote>;
+        })}</div> : <><p className="tiktok-profile-fallback">Individual posts will appear vertically after Refresh returns official TikTok post URLs.</p><blockquote className="tiktok-embed" cite={`https://www.tiktok.com/@${account.tiktok}`} data-unique-id={account.tiktok} data-embed-type="creator"><section><a target="_blank" rel="noreferrer" href={`https://www.tiktok.com/@${account.tiktok}`}>@{account.tiktok}</a></section></blockquote></>}</article>;
+      }
       if (platform === 'X') return <article key={account.name}><h4>{account.name}</h4><a className="twitter-timeline" data-height="700" data-dnt="true" href={`https://x.com/${account.x}`}>Latest posts from @{account.x}</a></article>;
       return <article key={account.name}><h4>{account.name}</h4><blockquote className="instagram-media" data-instgrm-permalink={`https://www.instagram.com/${account.instagram}/`} data-instgrm-version="14"><a href={`https://www.instagram.com/${account.instagram}/`} target="_blank" rel="noreferrer">Latest posts from @{account.instagram}</a></blockquote></article>;
     })}</div>
@@ -554,10 +645,10 @@ function PlanComparison({ plans, sourceMatrix, fetchState, updatedAt, onFetchPla
   </>;
 }
 
-function BannerDashboard({ banners, bannerCoverage, fetchState, updatedAt, onFetchPlans }) {
+function BannerDashboard({ banners, bannerCoverage, fetchState, updatedAt, onFetchBanners }) {
   const [filters, setFilters] = useState({ search: '', provider: '', category: '' });
   const filtered = useMemo(() => banners.filter((banner) => {
-    const haystack = `${banner.title || ''} ${banner.text || ''} ${banner.category || ''} ${banner.sub_category || ''} ${banner.provider_name || ''}`.toLowerCase();
+    const haystack = `${banner.title || ''} ${banner.text || ''} ${banner.category || ''} ${banner.sub_category || ''} ${banner.section_position || ''} ${banner.provider_name || ''}`.toLowerCase();
     if (filters.search && !haystack.includes(filters.search.toLowerCase())) return false;
     if (filters.provider && banner.provider !== filters.provider) return false;
     if (filters.category && banner.category !== filters.category) return false;
@@ -565,12 +656,13 @@ function BannerDashboard({ banners, bannerCoverage, fetchState, updatedAt, onFet
   }), [banners, filters]);
   const counts = providers.map((provider) => ({ ...provider, count: filtered.filter((banner) => banner.provider === provider.key).length }));
   const visibleProviders = filters.provider ? providers.filter((provider) => provider.key === filters.provider) : providers;
+  const categories = [...new Set([...bannerCategories, ...banners.map((banner) => banner.category).filter(Boolean)])];
   return <>
-    <section className="organic-status plan-status"><div><span><i /> Live banner intelligence</span><h2>Current homepage banners</h2><p>Every detected homepage hero, carousel, offer, and campaign image currently published by the three competitors.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={onFetchPlans}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching banners...' : 'Fetch live banners'}</button><div className="source-chip"><small>Current banners</small><b>{banners.length}</b></div></section>
-    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Last updated ${new Date(updatedAt).toLocaleString()} · Auto-refresh every hour` : 'Auto-refresh every hour'}</small></div>
+    <section className="organic-status plan-status"><div><span><i /> Live banner intelligence</span><h2>Current homepage banners and visuals</h2><p>Rendered directly from the live stc, Ooredoo, and Zain homepages. Icons, navigation graphics, logos, and minor UI assets are excluded.</p></div><button type="button" disabled={fetchState.state === 'fetching'} onClick={() => onFetchBanners(filters.provider)}><RefreshCw size={16} /> {fetchState.state === 'fetching' ? 'Fetching live data...' : 'Fetch Live Data'}</button><div className="source-chip"><small>Current visuals</small><b>{banners.length}</b></div></section>
+    <div className={`live-fetch-status ${fetchState.state}`}><span><i />{fetchState.message}</span><small>{updatedAt ? `Latest dataset ${new Date(updatedAt).toLocaleString()} · manual live refresh` : 'Use Fetch Live Data to render the current homepages'}</small></div>
     <section className="organic-kpis">{counts.map((item) => <div key={item.key}><b>{item.count}</b><span>{item.name}</span></div>)}<div><b>{new Set(filtered.map((banner) => banner.category)).size}</b><span>Categories</span></div></section>
-    <div className="feed-toolbar surface banner-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search banner text or category" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All providers</option>{providers.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}><option value="">All banner categories</option>{bannerCategories.map((category) => <option key={category}>{category}</option>)}</select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '' })}><Filter size={16} /> Clear</button></div>
-    <div className="banner-source-strip">{(bannerCoverage || []).map((item) => <a key={`${item.provider}-${item.category}`} href={item.api_url || '#'} target={item.api_url ? '_blank' : undefined} rel="noreferrer"><b>{item.category}</b><span>{item.source}</span><em className={item.status === 'ok' ? 'ok' : 'warn'}>{item.count} found</em></a>)}</div>
+    <div className="feed-toolbar surface banner-toolbar"><label><Search /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search banner text, position, or category" /></label><select value={filters.provider} onChange={(event) => setFilters({ ...filters, provider: event.target.value })}><option value="">All live domains</option>{providers.map((provider) => <option key={provider.key} value={provider.key}>{provider.name}</option>)}</select><select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}><option value="">All visual categories</option>{categories.map((category) => <option key={category}>{category}</option>)}</select><button type="button" onClick={() => setFilters({ search: '', provider: '', category: '' })}><Filter size={16} /> Clear</button></div>
+    <div className="banner-source-strip">{(bannerCoverage || []).map((item) => <a key={`${item.provider}-${item.category}`} href={item.source_url || '#'} target={item.source_url ? '_blank' : undefined} rel="noreferrer"><b>{providers.find((provider) => provider.key === item.provider)?.name || item.provider}</b><span>{item.source}</span><em className={item.status === 'ok' ? 'ok' : 'warn'}>{item.status === 'ok' ? `${item.count} live visuals` : 'Blocked / preserved'}</em></a>)}</div>
     <BannerComparison banners={filtered} visibleProviders={visibleProviders} />
   </>;
 }
@@ -796,6 +888,10 @@ export default function Dashboard({ initialSection = 'overview' }) {
       const result = await response.json();
       if (!response.ok || !result.ok || !result.payload) throw new Error(result.error || 'Organic fetch failed.');
       applySocialPayload(result.payload);
+      if (result.state === 'configuration') {
+        setSocialFetchState({ state: 'warning', platform, message: result.message });
+        return;
+      }
       const accountCoverage = (result.payload.coverage || []).filter((item) => item.platform === platform);
       const failed = accountCoverage.filter((item) => item.status !== 'ok' || Number(item.count || 0) < 1);
       setSocialFetchState({ state: failed.length ? 'error' : 'live', platform, message: result.message || `${platformLabel} refresh completed.${failed.length ? ` ${failed.length} account sources were partial or blocked.` : ''}` });
@@ -817,6 +913,24 @@ export default function Dashboard({ initialSection = 'overview' }) {
     } catch (error) {
       setPlansFetchState({ state: 'error', message: `Plan fetch failed: ${error.message}. The previous snapshot is still displayed.` });
       setBannerFetchState({ state: 'error', message: `Banner fetch failed: ${error.message}. The previous snapshot is still displayed.` });
+    }
+  }, [applyPlansPayload]);
+  const fetchBanners = useCallback(async (provider = '') => {
+    const providerName = providers.find((item) => item.key === provider)?.name || 'stc, Ooredoo, and Zain';
+    setBannerFetchState({ state: 'fetching', message: `Rendering the live ${providerName} homepage${provider ? '' : 's'} and checking every meaningful visual.` });
+    try {
+      const endpoint = `/api/fetch-banners${provider ? `?provider=${encodeURIComponent(provider)}` : ''}`;
+      const response = await fetch(apiUrl(endpoint), { method: 'POST', cache: 'no-store' });
+      await responseJson(response, 'Banner refresh');
+      const job = await waitForComparisonJob('/api/fetch-banners', 'Banner', (message) => setBannerFetchState({ state: 'fetching', message }));
+      if (job.state === 'error') throw new Error(job.message || 'Banner refresh failed.');
+      const dataResponse = await fetch(apiUrl('/api/plans'), { cache: 'no-store' });
+      const payload = await responseJson(dataResponse, 'Updated banner data');
+      applyPlansPayload(payload);
+      const failed = (payload.banner_coverage || []).filter((item) => item.status !== 'ok');
+      setBannerFetchState({ state: failed.length ? 'error' : 'live', message: `${job.message}${failed.length ? ` ${failed.length} domain was blocked; preserved visuals are clearly marked.` : ''}` });
+    } catch (error) {
+      setBannerFetchState({ state: 'error', message: `Banner fetch failed: ${error.message}. The previous verified visuals remain displayed.` });
     }
   }, [applyPlansPayload]);
   const fetchDevices = useCallback(async () => {
@@ -844,8 +958,9 @@ export default function Dashboard({ initialSection = 'overview' }) {
     setMenuOpen(false);
     router.push(path);
   }, [router]);
-  const organicPlatforms = { organicInstagram: 'Instagram', organicFacebook: 'Facebook', organicTikTok: 'TikTok', organicTwitter: 'X' };
-  const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organicInstagram: ['Organic Instagram', 'Monitor the latest verified Instagram posts from stc, Ooredoo, and Zain.'], organicFacebook: ['Organic Facebook', 'Monitor collected posts and official Facebook timelines from all three competitors.'], organicTikTok: ['Organic TikTok', 'Monitor collected posts and official TikTok creator feeds from all three competitors.'], organicTwitter: ['Organic Twitter', 'Monitor collected posts and official X timelines from all three competitors.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
+  const organicPlatforms = { organicInstagram: 'Instagram', organicFacebook: 'Facebook', organicTikTok: 'TikTok' };
+  const titles = { overview: ['Intelligence overview', 'A clear view of competitor momentum across paid and organic social.'], boosted: ['Boosted ads', 'Explore campaign activity, creative patterns, and offer gaps.'], organicInstagram: ['Organic Instagram', 'Monitor the latest verified Instagram posts from stc, Ooredoo, and Zain.'], organicFacebook: ['Organic Facebook', 'Monitor collected posts and official Facebook timelines from all three competitors.'], organicTikTok: ['Organic TikTok', 'Monitor collected posts and official TikTok creator feeds from all three competitors.'], plans: ['Plan comparison', 'Compare live public telecom plans across stc, Ooredoo, and Zain.'], banners: ['Banner comparison', 'Compare public website banners and campaign copy across stc, Ooredoo, and Zain.'], devices: ['Device comparison', 'Compare devices, prices, installment options, stock, and gaps across stc, Ooredoo, and Zain.'] };
   const organicPlatform = organicPlatforms[active];
-  return <div className="app-shell"><Sidebar active={active} onChange={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={navigate} /> : active === 'boosted' ? <Boosted ads={ads} meta={adsMeta} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : organicPlatform ? <Organic platform={organicPlatform} posts={posts} profiles={socialProfiles} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={bannerFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} sourceMatrix={planSourceMatrix} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
+  const onClose = () => setMenuOpen(false);
+  return <div className="app-shell"><Sidebar active={active} onChange={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />{menuOpen ? <button className="sidebar-backdrop" onClick={onClose} aria-label="Close navigation" /> : null}<main className="app-main"><Topbar title={titles[active][0]} subtitle={titles[active][1]} onMenu={() => setMenuOpen(true)} /><div className="page-body">{active === 'overview' ? <Overview ads={ads} onNavigate={navigate} /> : active === 'boosted' ? <Boosted ads={ads} meta={adsMeta} onFetchLive={fetchLiveAds} fetchState={adsFetchState} updatedAt={adsUpdatedAt} /> : organicPlatform ? <Organic platform={organicPlatform} posts={posts} profiles={socialProfiles} source={source} coverage={socialCoverage} onRefresh={loadPosts} onFetchLive={fetchLiveOrganic} fetchState={socialFetchState} updatedAt={socialUpdatedAt} /> : active === 'banners' ? <BannerDashboard banners={banners} bannerCoverage={bannerCoverage} fetchState={bannerFetchState} updatedAt={plansUpdatedAt} onFetchBanners={fetchBanners} /> : active === 'devices' ? <DeviceComparison devices={devices} payload={devicesPayload} fetchState={devicesFetchState} onFetchDevices={fetchDevices} onReload={loadDevices} /> : <PlanComparison plans={plans} sourceMatrix={planSourceMatrix} fetchState={plansFetchState} updatedAt={plansUpdatedAt} onFetchPlans={fetchPlans} />}</div></main></div>;
 }

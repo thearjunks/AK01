@@ -11,7 +11,6 @@ const sections = {
   'organic-instagram': 'organicInstagram',
   'organic-facebook': 'organicFacebook',
   'organic-tiktok': 'organicTikTok',
-  'organic-twitter': 'organicTwitter',
   'plan-comparison': 'plans',
   'banner-comparison': 'banners',
   'device-comparison': 'devices',

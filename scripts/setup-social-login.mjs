@@ -31,20 +31,17 @@ const pages = context.pages();
 const instagramPage = pages[0] || await context.newPage();
 await instagramPage.goto('https://www.instagram.com/accounts/login/', { waitUntil: 'domcontentloaded', timeout: 90000 });
 
-const facebookPage = await context.newPage();
-await facebookPage.goto('https://www.facebook.com/login/', { waitUntil: 'domcontentloaded', timeout: 90000 });
-
 console.log('');
-console.log('A browser window is open.');
-console.log('1. Log in to Instagram in one tab.');
-console.log('2. Log in to Facebook in the other tab.');
-console.log('3. Complete any security checks.');
-console.log('4. Come back to this window and press Enter.');
+console.log('An Instagram browser window is open.');
+console.log('1. Log in to Instagram.');
+console.log('2. Complete any security checks.');
+console.log('3. Come back to this window and press Enter.');
+console.log('Facebook uses the dashboard Connect Facebook button and Meta OAuth; this script never collects a Facebook password.');
 console.log('');
 
 const rl = createInterface({ input, output });
-await rl.question('Press Enter after both accounts are logged in...');
+await rl.question('Press Enter after Instagram is logged in...');
 rl.close();
 
 await context.close();
-console.log('Social login session saved. You can now use Fetch live organic posts in the dashboard.');
+console.log('Instagram login session saved. Use Connect Facebook in the Facebook dashboard for Meta OAuth.');
